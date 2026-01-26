@@ -1,0 +1,25 @@
+{
+  "name": "finosync",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "api:dev": "dotenv -e .env.local -- turbo dev --filter api",
+    "db:generate": "dotenv -e .env.local -- turbo run db:generate",
+    "db:push": "dotenv -e .env.local -- turbo run db:push",
+    "check-types": "turbo run check-types",
+    "sherif": "npx sherif@latest"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^7.4.2",
+    "prettier": "^3.5.3",
+    "turbo": "^2.5.3",
+    "typescript": "~5.8.3"
+  },
+  "packageManager": "pnpm@10.5.2",
+  "engines": {
+    "node": ">=18"
+  }
+}
