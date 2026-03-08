@@ -1,6 +1,7 @@
-class GetUserBalances < PowerTypes::Command.new(:user)
+class GetUserBalances < PowerTypes::Command.new(:user, :currency)
   def perform
     accounts = @user.accounts
+    accounts = accounts.where(currency: @currency) if @currency.present?
 
     accounts
       .group(:currency)
@@ -12,7 +13,7 @@ class GetUserBalances < PowerTypes::Command.new(:user)
         "SUM(investments_return) as investments_return"
       )
       .map do |record|
-        @currency = record.currency
+        @current_currency = record.currency
         {
           currency: record.currency,
           balance: parse_amount(record.balance),
@@ -27,11 +28,11 @@ class GetUserBalances < PowerTypes::Command.new(:user)
 
   def parse_amount(amount)
     if amount.is_a?(Money)
-      amount.format(currency: @currency)
+      amount.format(currency: @current_currency)
     elsif amount.is_a?(Numeric)
-      Money.new(amount * 100).format(currency: @currency)
+      Money.new(amount * 100).format(currency: @current_currency)
     elsif amount.is_a?(String)
-      Money.from_amount(amount.to_f, @currency).format
+      Money.from_amount(amount.to_f, @current_currency).format
     else
       raise ArgumentError, "Invalid amount type: #{amount.class}"
     end
