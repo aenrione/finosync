@@ -1,9 +1,10 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native"
-import { useTranslation } from "react-i18next"
 import React from "react"
 
 import { useCategories } from "@/context/categories.context"
 import { useAccounts } from "@/context/accounts.context"
+
+import { useTranslation } from "./_texts/TransactionFilters.text"
 
 interface TransactionFiltersProps {
   selectedFilter: string;
@@ -22,33 +23,28 @@ export default function TransactionFilters({
   showAccountFilters = false,
   customFilters = []
 }: TransactionFiltersProps) {
-  const { t } = useTranslation()
+  const text = useTranslation()
   const { categoriesData: categories } = useCategories()
   const { accountsData: accounts } = useAccounts()
 
-  // Build dynamic filter options
   const buildFilters = () => {
-    const filters: { key: string, label: string }[] = [{ key: "all", label: t("all") }]
+    const filters: { key: string, label: string }[] = [{ key: "all", label: text.all }]
 
-    // Add type filters
     if (showTypeFilters) {
-      filters.push({ key: "income", label: t("transaction_view.incomes") })
-      filters.push({ key: "expenses", label: t("transaction_view.expenses") })
+      filters.push({ key: "income", label: text.incomes })
+      filters.push({ key: "expenses", label: text.expenses })
     }
 
-    // Add category filters from actual categories
     if (showCategoryFilters && categories.length > 0) {
       const categoryFilters = categories.map(cat => ({ key: cat.name, label: cat.name }))
       filters.push(...categoryFilters)
     }
 
-    // Add account filters
     if (showAccountFilters && accounts.length > 0) {
       const accountFilters = accounts.map(acc => ({ key: acc.account_name, label: acc.account_name }))
       filters.push(...accountFilters)
     }
 
-    // Add custom filters
     if (customFilters.length > 0) {
       const custom = customFilters.map(filter => ({ key: filter, label: filter }))
       filters.push(...custom)
@@ -87,9 +83,9 @@ export default function TransactionFilters({
 
   return (
     <View className="mb-4">
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
         className="flex-row"
         contentContainerStyle={{ paddingHorizontal: 20 }}
       >
@@ -111,4 +107,4 @@ export default function TransactionFilters({
       </ScrollView>
     </View>
   )
-} 
+}

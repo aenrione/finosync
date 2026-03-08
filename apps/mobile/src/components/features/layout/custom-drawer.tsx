@@ -1,7 +1,6 @@
 import { DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer"
 import { DrawerContentComponentProps } from "@react-navigation/drawer"
 import { SafeAreaView } from "react-native-safe-area-context"
-import {useTranslation} from "react-i18next"
 import { View, Image } from "react-native"
 import React from "react"
 
@@ -12,9 +11,11 @@ import { appName } from "@/constants/config"
 import { useStore } from "@/utils/store"
 import Icon from "@/components/ui/icon"
 
+import { useTranslation } from "./_texts/text"
+
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
   const logout = useStore((state) => state.logout)
-  const { t } = useTranslation()
+  const text = useTranslation()
 
   return (
     <DrawerContentScrollView className="flex-1 bg-background" {...props}>
@@ -43,7 +44,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
             <Icon
               name="LogOut"
             />
-            <ButtonText className="text-[16px]"> {t("logout")}</ButtonText>
+            <ButtonText className="text-[16px]"> {text.logout}</ButtonText>
           </Button>
 
         </View>
@@ -51,4 +52,3 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
     </DrawerContentScrollView>
   )
 }
-

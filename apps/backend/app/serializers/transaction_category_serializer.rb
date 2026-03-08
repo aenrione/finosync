@@ -16,7 +16,7 @@
 #
 # Foreign Keys
 #
-#  user_id  (user_id => transaction_categories.id)
+#  user_id  (user_id => users.id)
 #
 class TransactionCategorySerializer 
   include JSONAPI::Serializer

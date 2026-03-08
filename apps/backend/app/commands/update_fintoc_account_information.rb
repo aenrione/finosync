@@ -7,7 +7,7 @@ class UpdateFintocAccountInformation < PowerTypes::Command.new(:account)
     @balance = 0
     @income = 0
     @expense = 0
-    @client = Fintoc::Client.new(@account.secret)
+    @client = Fintoc::Client.new(ENV.fetch("FINTOC_SECRET_KEY"))
     @link = @client.get_link(@account.primary_key)
 
     @link.accounts.each do |fintoc_acc|

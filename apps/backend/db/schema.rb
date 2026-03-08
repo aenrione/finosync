@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_10_000038) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_08_160243) do
   create_table "account_assets", force: :cascade do |t|
     t.string "name", null: false
     t.date "creation_date"
@@ -27,7 +27,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_10_000038) do
   end
 
   create_table "accounts", force: :cascade do |t|
-    t.string "secret", null: false
+    t.string "secret"
     t.string "primary_key", null: false
     t.string "currency", default: "CLP", null: false
     t.string "account_name", default: "Local", null: false

@@ -13,6 +13,11 @@ class TransactionsController < ApplicationController
       transactions_scope = transactions_scope.where(account: account)
     end
 
+    # Filter by currency if provided
+    if params[:currency].present?
+      transactions_scope = transactions_scope.joins(:account).where(accounts: { currency: params[:currency] })
+    end
+
     pagy, transactions = get_pagination(transactions_scope)
 
     # Include pagination metadata in response headers and body

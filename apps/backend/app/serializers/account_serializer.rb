@@ -11,7 +11,7 @@
 #  income             :decimal(14, 2)   default(0.0)
 #  investments_return :decimal(14, 2)   default(0.0)
 #  primary_key        :string           not null
-#  secret             :string           not null
+#  secret             :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  user_id            :integer          not null

@@ -1,24 +1,62 @@
-# README
+# FinoSync Backend
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Rails 8 API-only app for FinoSync personal finance management.
 
-Things you may want to cover:
+## Requirements
 
-* Ruby version
+- Ruby (see `.ruby-version`)
+- SQLite3
+- Redis (for Sidekiq)
+- [Doppler CLI](https://docs.doppler.com/docs/install-cli) for secret management
 
-* System dependencies
+## Environment Variables
 
-* Configuration
+This project uses **Doppler** for secret management. Never commit real secrets.
 
-* Database creation
+```bash
+# One-time Doppler setup
+doppler setup
 
-* Database initialization
+# See all required variables
+cat .env.example
+```
 
-* How to run the test suite
+To generate Active Record Encryption keys (add the output to Doppler):
+```bash
+bundle exec rails db:encryption:init
+```
 
-* Services (job queues, cache servers, search engines, etc.)
+## Getting Started
 
-* Deployment instructions
+```bash
+# Install dependencies
+bundle install
 
-* ...
+# Set up database
+doppler run -- bundle exec rails db:migrate
+doppler run -- bundle exec rails db:seed
+
+# Start server
+doppler run -- bundle exec rails server
+
+# Start background jobs
+doppler run -- bundle exec sidekiq
+```
+
+## Testing
+
+```bash
+bundle exec rspec               # All tests
+bundle exec rspec spec/path     # Single file
+```
+
+## Linting & Security
+
+```bash
+bundle exec rubocop             # Ruby style
+bundle exec brakeman            # Security scan
+```
+
+## Deployment
+
+Deployed via **Kamal** (Docker-based). Config at `.kamal/`. Doppler injects secrets at runtime in production.

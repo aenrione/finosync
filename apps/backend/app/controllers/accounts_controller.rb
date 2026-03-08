@@ -3,6 +3,7 @@ class AccountsController < ApplicationController
 
   def index
     @accounts = current_user.accounts
+    @accounts = @accounts.where(currency: params[:currency]) if params[:currency].present?
     render_jsonapi @accounts
   end
 
@@ -60,7 +61,11 @@ class AccountsController < ApplicationController
 
   def create
     # Only require primary_key and secret if not a local account
-    unless params[:account_type] == "local" || (params[:primary_key].present? && params[:secret].present?)
+    # Fintoc accounts only need primary_key (link_token from widget); secret is backend-only
+    fintoc_account = params[:account_type] == "fintoc"
+    unless params[:account_type] == "local" ||
+           (fintoc_account && params[:primary_key].present?) ||
+           (!fintoc_account && params[:primary_key].present? && params[:secret].present?)
       return render json: { error: "Primary key and secret are required for non-local accounts" }, status: :bad_request
     end
 

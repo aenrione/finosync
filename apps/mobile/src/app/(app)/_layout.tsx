@@ -12,11 +12,10 @@ export default function AppLayout() {
         <Stack.Screen name="add-account" options={{ headerShown: false }} />
         <Stack.Screen name="add-budget" options={{ headerShown: false }} />
         <Stack.Screen name="notifications" options={{ headerShown: false }} />
-        <Stack.Screen name="budget" options={{ headerShown: false }} />
-        <Stack.Screen name="transaction" options={{ headerShown: false }} />
+        <Stack.Screen name="budget/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="budget/[id]/add-item" options={{ headerShown: false }} />
         <Stack.Screen name="transaction/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="account/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="account" options={{ headerShown: false }} />
         <Stack.Screen name="transactions" options={{ headerShown: false }} />
       </Stack>
     </GlobalProvider>

@@ -6,7 +6,7 @@ export interface ConfigSlice {
 }
 
 export const createConfigSlice: StateCreator<ConfigSlice> = (set, get) => ({
-  url: "http://localhost:2999", // TODO: Make this configurable with env
+  url: process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000",
   setUrl: (url) => {
     set({ url })
   }

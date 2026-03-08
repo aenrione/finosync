@@ -11,7 +11,7 @@
 #  income             :decimal(14, 2)   default(0.0)
 #  investments_return :decimal(14, 2)   default(0.0)
 #  primary_key        :string           not null
-#  secret             :string           not null
+#  secret             :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  user_id            :integer          not null
@@ -38,9 +38,11 @@ class Account < ApplicationRecord
 
   enum :account_type, { local: 0, fintoc: 1, fintual: 2, buda: 3 }
 
+  encrypts :primary_key, deterministic: false
+
   validates :account_name, presence: true
   validates :primary_key, presence: true, unless: :local?
-  validates :secret, presence: true, unless: :local?
+  validates :secret, presence: true, unless: -> { local? || fintoc? }
   validate :validate_api, on: :create
 
   before_create :set_default_credentials_for_local
