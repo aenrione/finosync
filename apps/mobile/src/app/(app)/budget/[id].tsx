@@ -1,13 +1,13 @@
-import { Calendar, DollarSign, ShoppingCart, TrendingUp, TrendingDown, Plus, Edit, Trash } from "lucide-react-native"
-import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native"
+import { View, ScrollView, TouchableOpacity, Alert } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import React, { useState } from "react"
 import { useQuery } from "react-query"
 
-import { BudgetItemForm } from "@/components/BudgetItemForm"
+import { BudgetItemForm } from "@/components/features/to-buy/budget-item-form"
 import { mockBudgetLists } from "@/utils/mock/budget.mock"
 import { BudgetList, BudgetItem } from "@/types/budget"
+import { Text } from "@/components/ui/text"
 import Icon from "@/components/ui/icon"
 
 export default function BudgetDetailScreen() {
@@ -50,8 +50,8 @@ export default function BudgetDetailScreen() {
       "Are you sure you want to delete this item?",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
+        {
+          text: "Delete",
           style: "destructive",
           onPress: () => {
             // In a real app, this would call an API to delete the item
@@ -87,7 +87,7 @@ export default function BudgetDetailScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
-      <View className="px-5 pb-3 bg-white border-b border-border">
+      <View className="px-5 pb-3 bg-card border-b border-border">
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
             <Text className="text-2xl font-bold text-foreground mb-1">{budget.title}</Text>
@@ -96,13 +96,13 @@ export default function BudgetDetailScreen() {
             )}
           </View>
           <View className="flex-row gap-2">
-            <TouchableOpacity 
+            <TouchableOpacity
               className="w-10 h-10 rounded-full bg-muted items-center justify-center"
               onPress={() => {/* Edit budget */}}
             >
               <Icon name="Pencil" className="text-muted-foreground" size={20} />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               className="w-10 h-10 rounded-full bg-red-100 items-center justify-center"
               onPress={() => {/* Delete budget */}}
             >
@@ -115,7 +115,7 @@ export default function BudgetDetailScreen() {
       <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
         {/* Budget Overview */}
         <View className="mt-5">
-          <View className="bg-white rounded-2xl p-5 border border-border">
+          <View className="bg-card rounded-2xl p-5 border border-border">
             <View className="flex-row items-center mb-4">
               <View className={`px-3 py-1 rounded-full ${isActive ? "bg-green-100" : "bg-red-100"}`}>
                 <Text className={`text-xs font-semibold ${isActive ? "text-green-700" : "text-red-700"}`}>
@@ -156,7 +156,7 @@ export default function BudgetDetailScreen() {
 
             <View className="mb-3">
               <View className="h-3 bg-muted rounded-full">
-                <View 
+                <View
                   className={`h-3 rounded-full ${isOverBudget ? "bg-red-500" : "bg-blue-500"}`}
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 />
@@ -172,17 +172,17 @@ export default function BudgetDetailScreen() {
         <View className="mt-5">
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-xl font-semibold text-foreground">Budget Items</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               className="bg-primary px-4 py-2 rounded-xl flex-row items-center"
               onPress={() => router.push({ pathname: "/(app)/budget/[id]/add-item", params: { id: budget.id.toString() } })}
             >
-              <Icon name="Plus" className="text-white mr-2" size={20} />
-              <Text className="text-white font-semibold">Add Item</Text>
+              <Icon name="Plus" className="text-primary-foreground mr-2" size={20} />
+              <Text className="text-primary-foreground font-semibold">Add Item</Text>
             </TouchableOpacity>
           </View>
 
           {budget.items.length === 0 ? (
-            <View className="bg-white rounded-2xl p-8 border border-border items-center">
+            <View className="bg-card rounded-2xl p-8 border border-border items-center">
               <View className="w-16 h-16 rounded-full bg-muted items-center justify-center mb-4">
                 <Icon name="ShoppingCart" className="text-muted-foreground" size={32} />
               </View>
@@ -190,17 +190,17 @@ export default function BudgetDetailScreen() {
               <Text className="text-sm text-muted-foreground text-center mb-4">
                 Add your first item to start tracking your budget.
               </Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 className="bg-primary px-6 py-3 rounded-xl flex-row items-center"
                 onPress={() => router.push({ pathname: "/(app)/budget/[id]/add-item", params: { id: budget.id.toString() } })}
               >
-                <Icon name="Plus" className="text-white mr-2" size={20} />
-                <Text className="text-white font-semibold">Add First Item</Text>
+                <Icon name="Plus" className="text-primary-foreground mr-2" size={20} />
+                <Text className="text-primary-foreground font-semibold">Add First Item</Text>
               </TouchableOpacity>
             </View>
           ) : (
             budget.items.map((item) => (
-              <View key={item.id} className="bg-white rounded-2xl p-4 mb-3 border border-border">
+              <View key={item.id} className="bg-card rounded-2xl p-4 mb-3 border border-border">
                 <View className="flex-row justify-between items-start mb-3">
                   <View className="flex-1">
                     <Text className="text-lg font-semibold text-foreground mb-1">{item.title}</Text>
@@ -210,13 +210,13 @@ export default function BudgetDetailScreen() {
                     <Text className="text-lg font-bold text-foreground">${item.price.toFixed(2)}</Text>
                   </View>
                   <View className="flex-row gap-2">
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       className="w-8 h-8 rounded-full bg-muted items-center justify-center"
                       onPress={() => handleEditItem(item)}
                     >
                       <Icon name="Pencil" className="text-muted-foreground" size={16} />
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       className="w-8 h-8 rounded-full bg-red-100 items-center justify-center"
                       onPress={() => handleDeleteItem(item.id)}
                     >
@@ -256,4 +256,4 @@ export default function BudgetDetailScreen() {
       )}
     </SafeAreaView>
   )
-} 
+}

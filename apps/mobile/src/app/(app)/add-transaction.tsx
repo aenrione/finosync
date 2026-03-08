@@ -1,9 +1,7 @@
 import {
   View,
   ScrollView,
-  Text,
   Switch,
-  TextInput,
   TouchableOpacity,
   Alert,
 } from "react-native"
@@ -16,10 +14,12 @@ import { useTranslation } from "react-i18next"
 import { useTransactions } from "@/context/transactions.context"
 import { useCategories } from "@/context/categories.context"
 import { useDashboard } from "@/context/dashboard.context"
-import BackHeader from "@/components/Headers/BackHeader"
+import BackHeader from "@/components/back-header"
 import { useAccounts } from "@/context/accounts.context"
+import { Button, ButtonText } from "@/components/ui/button"
 import { Transaction } from "@/types/transaction"
-import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Text } from "@/components/ui/text"
 import { useStore } from "@/utils/store"
 
 const AddTransaction = () => {
@@ -29,7 +29,7 @@ const AddTransaction = () => {
   const { createTransaction, updateTransaction } = useTransactions()
   const { categoriesData: categories } = useCategories()
   const { accounts } = useDashboard()
-  
+
   const transaction = useStore((state) => state.currentTransaction)
   const setCurrentTransaction = useStore((state) => state.setCurrentTransaction)
 
@@ -84,7 +84,7 @@ const AddTransaction = () => {
         // Default to first local account
         setSelectedAccount(localAccounts[0].id as number)
       }
-      
+
       if (categories.length > 0) {
         setSelectedCategory(categories[0].id)
       }
@@ -147,11 +147,11 @@ const AddTransaction = () => {
           <Text className="text-foreground text-lg text-center mb-4">
             You need to create a local account first to add manual transactions.
           </Text>
-          <Button 
-            title="Create Local Account" 
+          <Button
             onPress={() => router.push("/(app)/add-account")}
-            className="bg-primary"
-          />
+          >
+            <ButtonText>Create Local Account</ButtonText>
+          </Button>
         </View>
       </View>
     )
@@ -165,39 +165,36 @@ const AddTransaction = () => {
         {/* Amount */}
         <View className="mb-6">
           <Text className="text-sm text-muted-foreground mb-2">{t("new_transaction.amount")}</Text>
-          <TextInput
+          <Input
             value={amount}
             placeholder={t("new_transaction.amount_placeholder")}
             keyboardType="numeric"
             onChangeText={setAmount}
-            placeholderTextColor="#6b7280"
-            className="p-4 rounded-lg bg-muted border border-border text-foreground text-base"
+            className="w-full"
           />
         </View>
 
         {/* Description */}
         <View className="mb-6">
           <Text className="text-sm text-muted-foreground mb-2">{t("new_transaction.desc")}</Text>
-          <TextInput
+          <Input
             value={description}
             placeholder={t("new_transaction.desc_placeholder")}
             onChangeText={setDescription}
-            placeholderTextColor="#6b7280"
-            className="p-4 rounded-lg bg-muted border border-border text-foreground text-base"
+            className="w-full"
           />
         </View>
 
         {/* Comment */}
         <View className="mb-6">
           <Text className="text-sm text-muted-foreground mb-2">Comment (Optional)</Text>
-          <TextInput
+          <Input
             value={comment}
             placeholder="Add a comment..."
             onChangeText={setComment}
-            placeholderTextColor="#6b7280"
             multiline
             numberOfLines={3}
-            className="p-4 rounded-lg bg-muted border border-border text-foreground text-base"
+            className="w-full"
           />
         </View>
 
@@ -208,14 +205,13 @@ const AddTransaction = () => {
             <Picker
               selectedValue={selectedAccount}
               onValueChange={(value) => setSelectedAccount(value)}
-              dropdownIconColor="#6b7280"
               className="text-foreground"
             >
               {localAccounts.map((account) => (
-                <Picker.Item 
-                  key={account.id} 
-                  label={account.account_name} 
-                  value={account.id} 
+                <Picker.Item
+                  key={account.id}
+                  label={account.account_name}
+                  value={account.id}
                 />
               ))}
             </Picker>
@@ -231,15 +227,14 @@ const AddTransaction = () => {
             <Picker
               selectedValue={selectedCategory}
               onValueChange={(value) => setSelectedCategory(value)}
-              dropdownIconColor="#6b7280"
               className="text-foreground"
             >
               <Picker.Item label="No Category" value={null} />
               {categories.map((category) => (
-                <Picker.Item 
-                  key={category.id} 
-                  label={category.name} 
-                  value={category.id} 
+                <Picker.Item
+                  key={category.id}
+                  label={category.name}
+                  value={category.id}
                 />
               ))}
             </Picker>
@@ -256,9 +251,6 @@ const AddTransaction = () => {
             <Switch
               value={!isIncome}
               onValueChange={() => setIsIncome(!isIncome)}
-              thumbColor={!isIncome ? "#dc2626" : "#22c55e"}
-              trackColor={{ false: "#374151", true: "#374151" }}
-              ios_backgroundColor="#374151"
             />
             <Text className={`text-base font-medium ${!isIncome ? "text-red-600" : "text-muted-foreground"}`}>
               {t("new_transaction.expense")}
@@ -291,17 +283,20 @@ const AddTransaction = () => {
       {/* Footer Buttons */}
       <View className="p-6 border-t border-border bg-background">
         <View className="flex-row space-x-3">
-          <Button 
-            title="Cancel" 
+          <Button
+            variant="secondary"
             onPress={handleCancel}
-            className="flex-1 bg-muted"
-          />
-          <Button 
-            title={loading ? "Saving..." : (transaction ? "Update" : "Save")}
+            className="flex-1"
+          >
+            <ButtonText variant="secondary">Cancel</ButtonText>
+          </Button>
+          <Button
             disabled={!isValid() || loading}
             onPress={handleSave}
-            className="flex-1 bg-primary"
-          />
+            className="flex-1"
+          >
+            <ButtonText>{loading ? "Saving..." : (transaction ? "Update" : "Save")}</ButtonText>
+          </Button>
         </View>
       </View>
     </View>

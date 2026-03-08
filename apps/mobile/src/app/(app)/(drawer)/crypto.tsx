@@ -1,13 +1,13 @@
-import { View, StyleSheet, StatusBar, FlatList, TextInput } from "react-native"
+import { View, FlatList } from "react-native"
 import React, { useState } from "react"
 import { useQuery } from "react-query"
 import axios from "axios"
 
-import CustomIndicator from "@/components/CustomIndicator"
-import CoinItem from "@/components/CoinItem"
+import { Spinner } from "@/components/ui/spinner"
+import CoinItem from "@/components/features/crypto/coin-item"
+import { Input } from "@/components/ui/input"
 
 const Crypto = () => {
-  // const [coins, setCoins] = useState([]);
   const [refreshing, setRefreshing] = useState(false)
   const [search, setSearch] = useState("")
 
@@ -21,26 +21,25 @@ const Crypto = () => {
   const { data: coins, status, refetch } = useQuery("crypto-market", loadData)
 
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="#141414" />
-
-      <View style={styles.header}>
+    <View className="flex-1 items-center bg-background">
+      <View className="flex-row w-[90%] justify-between mb-2.5">
         <View />
-        <TextInput
-          style={styles.searchInput}
+        <Input
           placeholder="Search a Coin"
-          placeholderTextColor="#858585"
           onChangeText={(text) => text && setSearch(text)}
+          className="w-2/5 text-center border-b border-primary"
         />
       </View>
 
       {status !== "success" ? (
-        <CustomIndicator size={150} />
+        <View className="flex-1 items-center justify-center">
+          <Spinner size="large" />
+        </View>
       ) : (
         <FlatList
-          style={styles.list}
+          className="w-[90%]"
           data={coins.filter(
-            (coin) =>
+            (coin: any) =>
               coin.name.toLowerCase().includes(search.toLocaleLowerCase()) ||
               coin.symbol.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
           )}
@@ -58,34 +57,4 @@ const Crypto = () => {
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    // backgroundColor: '#141414',
-    flex: 1,
-    alignItems: "center",
-  },
-  header: {
-    flexDirection: "row",
-    width: "90%",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 20,
-    // color: '#fff',
-    marginTop: 10,
-  },
-  list: {
-    width: "90%",
-  },
-  searchInput: {
-    // color: '#fff',
-    borderBottomColor: "#4657CE",
-    borderBottomWidth: 1,
-    width: "40%",
-    textAlign: "center",
-  },
-})
-
 export default Crypto
-

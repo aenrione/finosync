@@ -1,19 +1,20 @@
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from "react-native"
+import { View, ScrollView, TouchableOpacity, RefreshControl } from "react-native"
 import React, { useState, useCallback, useEffect } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useLocalSearchParams, router } from "expo-router"
 import { useTranslation } from "react-i18next"
 
-import AccountBalanceChart from "@/components/screens/charts/account-balance-chart"
+import AccountBalanceChart from "@/components/features/charts/account-balance-chart"
 import { useTransactions } from "@/context/transactions.context"
-import TransactionFilters from "@/components/TransactionFilters"
+import TransactionFilters from "@/components/transaction-filters"
 import { filterTransactions } from "@/utils/transactionFilters"
 import { useCategories } from "@/context/categories.context"
-import TransactionList from "@/components/TransactionList"
+import TransactionList from "@/components/transaction-list"
 import DeleteAlertWrapper from "@/components/delete-alert"
 import { useAccounts } from "@/context/accounts.context"
 import { showAmount } from "@/utils/currency"
 import { fetchWithAuth } from "@/utils/api"
+import { Text } from "@/components/ui/text"
 import { useStore } from "@/utils/store"
 import Icon from "@/components/ui/icon"
 
@@ -22,16 +23,16 @@ export default function AccountDetailsScreen() {
   const { id } = useLocalSearchParams()
   const { t } = useTranslation()
   const { accountsData: accounts, deleteAccount } = useAccounts()
-  const { 
-    transactionsData: transactions, 
-    loading, 
-    hasMore, 
-    loadMore, 
-    refreshData 
+  const {
+    transactionsData: transactions,
+    loading,
+    hasMore,
+    loadMore,
+    refreshData
   } = useTransactions()
   const { categoriesData: categories } = useCategories()
   const isVisible = useStore((state) => state.isVisible)
-  
+
   const [refreshing, setRefreshing] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState("All")
   const [selectedPeriod, setSelectedPeriod] = useState("30D")
@@ -58,11 +59,8 @@ export default function AccountDetailsScreen() {
       await deleteAccount(id.toString())
       console.log("Account deleted, refreshing data")
       await refreshData()
-      //console.log("Navigating back");
-      //router.back();
     } catch (error) {
       console.error("Failed to delete account:", error)
-      // Handle error (e.g., show alert)
     } finally {
       setShowDeleteAlert(false)
     }
@@ -102,7 +100,7 @@ export default function AccountDetailsScreen() {
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 py-4 bg-background border-b border-border">
-        <TouchableOpacity 
+        <TouchableOpacity
           className="w-10 h-10 rounded-full bg-muted justify-center items-center"
           onPress={() => router.back()}
         >
@@ -128,7 +126,7 @@ export default function AccountDetailsScreen() {
         errorMessage={t("delete_account.confirmation_message", { name: account.account_name })}
       />
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -147,13 +145,13 @@ export default function AccountDetailsScreen() {
                   <Text className="text-sm text-muted-foreground mb-2">Current Balance</Text>
                   <View className="flex-row items-center">
                     <Text className="text-3xl font-bold text-foreground mr-3">
-                      {isVisible ? showAmount(account.balance) : "••••••"}
+                      {isVisible ? showAmount(account.balance) : "------"}
                     </Text>
                     <TouchableOpacity className="p-1">
-                      <Icon 
-                        name={isVisible ? "EyeOff" : "Eye"} 
-                        className="text-muted-foreground" 
-                        size={20} 
+                      <Icon
+                        name={isVisible ? "EyeOff" : "Eye"}
+                        className="text-muted-foreground"
+                        size={20}
                       />
                     </TouchableOpacity>
                   </View>
@@ -201,7 +199,7 @@ export default function AccountDetailsScreen() {
         {/* Monthly Insights */}
         <View className="px-5 mt-6">
           <Text className="text-xl font-bold text-foreground mb-4">This Month's Insights</Text>
-          
+
           <View className="flex-row flex-wrap -mx-3 mb-4">
             <View className="w-1/2 px-3 mb-4">
               <View className="bg-background border border-border rounded-2xl p-4 items-center">
@@ -214,7 +212,7 @@ export default function AccountDetailsScreen() {
                 <Text className="text-sm text-muted-foreground text-center">Total Income</Text>
               </View>
             </View>
-            
+
             <View className="w-1/2 px-3 mb-4">
               <View className="bg-background border border-border rounded-2xl p-4 items-center">
                 <View className="w-10 h-10 rounded-full bg-red-100 justify-center items-center mb-3">
@@ -226,7 +224,7 @@ export default function AccountDetailsScreen() {
                 <Text className="text-sm text-muted-foreground text-center">Total Expenses</Text>
               </View>
             </View>
-            
+
             <View className="w-1/2 px-3 mb-4">
               <View className="bg-background border border-border rounded-2xl p-4 items-center">
                 <View className="w-10 h-10 rounded-full bg-purple-100 justify-center items-center mb-3">
@@ -236,7 +234,7 @@ export default function AccountDetailsScreen() {
                 <Text className="text-sm text-muted-foreground text-center">Transactions</Text>
               </View>
             </View>
-            
+
             <View className="w-1/2 px-3 mb-4">
               <View className="bg-background border border-border rounded-2xl p-4 items-center">
                 <View className="w-10 h-10 rounded-full bg-yellow-100 justify-center items-center mb-3">
@@ -298,8 +296,8 @@ export default function AccountDetailsScreen() {
             refreshData={refreshData}
             showLoadMore={true}
             emptyMessage={
-              selectedFilter === "All" 
-                ? "No transactions for this account" 
+              selectedFilter === "All"
+                ? "No transactions for this account"
                 : `No ${selectedFilter.toLowerCase()} transactions for this account`
             }
           />
@@ -307,4 +305,4 @@ export default function AccountDetailsScreen() {
       </ScrollView>
     </SafeAreaView>
   )
-} 
+}

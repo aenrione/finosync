@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Share, Alert } from "react-native"
+import { View, ScrollView, TouchableOpacity, Share, Alert } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useLocalSearchParams, router } from "expo-router"
 import { useTranslation } from "react-i18next"
@@ -8,41 +8,34 @@ import { useTransactions } from "@/context/transactions.context"
 import { useCategories } from "@/context/categories.context"
 import { useAccounts } from "@/context/accounts.context"
 import { showAmount } from "@/utils/currency"
+import { Text } from "@/components/ui/text"
 import { useStore } from "@/utils/store"
 import Icon from "@/components/ui/icon"
 
 // Currency configurations
 const currencyConfig = {
-  USD: { symbol: "$", flag: "🇺🇸", name: "US Dollar" },
-  EUR: { symbol: "€", flag: "🇪🇺", name: "Euro" },
-  GBP: { symbol: "£", flag: "🇬🇧", name: "British Pound" },
-  CLP: { symbol: "$", flag: "🇨🇱", name: "Chilean Peso" }
+  USD: { symbol: "$", flag: "US", name: "US Dollar" },
+  EUR: { symbol: "E", flag: "EU", name: "Euro" },
+  GBP: { symbol: "P", flag: "GB", name: "British Pound" },
+  CLP: { symbol: "$", flag: "CL", name: "Chilean Peso" }
 }
 
 // Status configurations
 const statusConfig = {
   completed: {
     icon: "CircleCheck",
-    color: "#059669",
-    backgroundColor: "#F0FDF4",
     label: "Completed"
   },
   pending: {
     icon: "Clock",
-    color: "#D97706",
-    backgroundColor: "#FFFBEB",
     label: "Pending"
   },
   failed: {
     icon: "XCircle",
-    color: "#DC2626",
-    backgroundColor: "#FEF2F2",
     label: "Failed"
   },
   cancelled: {
     icon: "AlertCircle",
-    color: "#6B7280",
-    backgroundColor: "#F9FAFB",
     label: "Cancelled"
   }
 }
@@ -54,7 +47,7 @@ export default function TransactionDetailsScreen() {
   const { categoriesData: categories } = useCategories()
   const { accountsData: accounts } = useAccounts()
   const isVisible = useStore((state) => state.isVisible)
-  
+
   const [showFullDescription, setShowFullDescription] = useState(false)
 
   const transaction = transactions.find(t => t.id.toString() === id)
@@ -70,11 +63,11 @@ export default function TransactionDetailsScreen() {
           <Text className="text-base text-muted-foreground text-center mb-6">
             The requested transaction could not be found.
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             className="bg-primary rounded-xl px-6 py-3"
             onPress={() => router.back()}
           >
-            <Text className="text-base font-semibold text-white">Go Back</Text>
+            <Text className="text-base font-semibold text-primary-foreground">Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -88,10 +81,10 @@ export default function TransactionDetailsScreen() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", { 
+    return date.toLocaleDateString("en-US", {
       weekday: "long",
-      year: "numeric", 
-      month: "long", 
+      year: "numeric",
+      month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit"
@@ -100,8 +93,8 @@ export default function TransactionDetailsScreen() {
 
   const formatDateShort = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", { 
-      month: "short", 
+    return date.toLocaleDateString("en-US", {
+      month: "short",
       day: "numeric",
       year: "numeric"
     })
@@ -110,7 +103,7 @@ export default function TransactionDetailsScreen() {
   const handleShare = async () => {
     try {
       const message = `Transaction Details\n\n${transaction.description || "Transaction"}\nAmount: ${transaction.amount > 0 ? "+" : ""}${formatAmount(transaction.amount, account?.currency || "USD")}\nDate: ${formatDateShort(transaction.transaction_date)}\nAccount: ${account?.account_name || "Unknown"}`
-      
+
       await Share.share({
         message,
         title: "Transaction Details"
@@ -158,13 +151,13 @@ export default function TransactionDetailsScreen() {
   const config = currencyConfig[account?.currency as keyof typeof currencyConfig] || currencyConfig.USD
   const statusInfo = statusConfig.completed // Default to completed for now
   const isIncome = transaction.amount > 0
-  const transactionAmount = isVisible ? transaction.amount : "••••••"
+  const transactionAmount = isVisible ? transaction.amount : "------"
 
   return (
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 py-4 bg-background border-b border-border">
-        <TouchableOpacity 
+        <TouchableOpacity
           className="w-10 h-10 rounded-full bg-muted justify-center items-center"
           onPress={() => router.back()}
         >
@@ -174,7 +167,7 @@ export default function TransactionDetailsScreen() {
           <Text className="text-lg font-bold text-foreground">Transaction Details</Text>
         </View>
         <View className="flex-row gap-2">
-          <TouchableOpacity 
+          <TouchableOpacity
             className="w-10 h-10 rounded-full bg-muted justify-center items-center"
             onPress={handleShare}
           >
@@ -197,10 +190,10 @@ export default function TransactionDetailsScreen() {
                 <View className={`w-14 h-14 rounded-full justify-center items-center mr-4 ${
                   isIncome ? "bg-green-100" : "bg-red-100"
                 }`}>
-                  <Icon 
-                    name={isIncome ? "TrendingUp" : "TrendingDown"} 
-                    className={isIncome ? "text-green-600" : "text-red-500"} 
-                    size={28} 
+                  <Icon
+                    name={isIncome ? "TrendingUp" : "TrendingDown"}
+                    className={isIncome ? "text-green-600" : "text-red-500"}
+                    size={28}
                   />
                 </View>
                 <View className="flex-1">
@@ -227,11 +220,9 @@ export default function TransactionDetailsScreen() {
 
             {/* Status and Date */}
             <View className="flex-row justify-between items-center mb-4">
-              <View className={`flex-row items-center rounded-full px-3 py-2 ${
-                statusInfo.backgroundColor
-              }`}>
-                <Icon name={statusInfo.icon as any} className={statusInfo.color} size={16} />
-                <Text className={`text-sm font-semibold ml-2 ${statusInfo.color}`}>
+              <View className="flex-row items-center rounded-full px-3 py-2 bg-green-100">
+                <Icon name={statusInfo.icon as any} className="text-green-600" size={16} />
+                <Text className="text-sm font-semibold ml-2 text-green-600">
                   {statusInfo.label}
                 </Text>
               </View>
@@ -268,21 +259,21 @@ export default function TransactionDetailsScreen() {
               </View>
               <Text className="text-sm font-semibold text-foreground text-center">Edit</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity className="items-center flex-1" onPress={handleDownloadReceipt}>
               <View className="w-14 h-14 rounded-full bg-green-100 justify-center items-center mb-2">
                 <Icon name="Receipt" className="text-green-600" size={20} />
               </View>
               <Text className="text-sm font-semibold text-foreground text-center">Receipt</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity className="items-center flex-1" onPress={handleToggleIgnore}>
               <View className="w-14 h-14 rounded-full bg-yellow-100 justify-center items-center mb-2">
                 <Icon name="Eye" className="text-yellow-600" size={20} />
               </View>
               <Text className="text-sm font-semibold text-foreground text-center">Ignore</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity className="items-center flex-1" onPress={handleDeleteTransaction}>
               <View className="w-14 h-14 rounded-full bg-red-100 justify-center items-center mb-2">
                 <Icon name="Trash2" className="text-red-500" size={20} />
@@ -376,4 +367,4 @@ export default function TransactionDetailsScreen() {
       </ScrollView>
     </SafeAreaView>
   )
-} 
+}

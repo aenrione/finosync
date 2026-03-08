@@ -9,6 +9,7 @@ import {
 } from "react"
 
 import { fetchWithAuth } from "@/utils/api"
+import { colors } from "@/lib/colors"
 
 type ChartData = {
   name: string
@@ -96,11 +97,11 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
   const [userCurrencies, setUserCurrencies] = useState<string[]>([])
 
   const generateChartColors = (count: number): string[] => {
-    const colors = [
-      "#EF4444", "#F59E0B", "#8B5CF6", "#06B6D4", "#10B981",
-      "#F97316", "#EC4899", "#6366F1", "#84CC16", "#14B8A6"
+    const palette = [
+      colors.error, colors.warning, colors.chart.purple, colors.savings, colors.success,
+      colors.chart.amber, colors.chart.red, colors.chart.blue, colors.chart.green, colors.primary,
     ]
-    return colors.slice(0, count)
+    return palette.slice(0, count)
   }
 
   const fetchChartData = useCallback(async (params?: {
@@ -134,7 +135,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
           amount: item.amount,
           color: colors[index],
           legendFontSize: 12,
-          legendFontColor: "#374151",
+          legendFontColor: colors.neutral[700],
         }))
         setExpenseData(expenseChartData)
       }
@@ -146,7 +147,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
           amount: item.amount,
           color: colors[index],
           legendFontSize: 12,
-          legendFontColor: "#374151",
+          legendFontColor: colors.neutral[700],
         }))
         setIncomeData(incomeChartData)
       }

@@ -4,8 +4,9 @@ import { useTranslation } from "react-i18next"
 import { useRouter } from "expo-router"
 
 import { checkSession } from "@/services/auth.service"
-import CustomInput from "@/components/CustomInput"
-import { Button } from "@/components/ui/button"
+import { Button, ButtonText } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Text } from "@/components/ui/text"
 import { login } from "@/services/auth.service"
 import Logo from "@/assets/images/wallet.png"
 import { useStore } from "@/utils/store"
@@ -28,7 +29,7 @@ export function SignInScreen() {
       const user = await checkSession()
       if (user) {
         router.replace("/(app)/(drawer)/(tabs)/dashboard")
-      } 
+      }
       setIsLoading(false)
     }
     init()
@@ -53,7 +54,6 @@ export function SignInScreen() {
   const onSignInPressed = async function () {
     const result = await login(email, password)
     if (!result.success) {
-      // show toast / feedback
       console.warn(result.error)
     }
   }
@@ -77,39 +77,55 @@ export function SignInScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <Image source={Logo} className="flex-1 w-[70%] h-20 max-w-[300px] max-h-[200px]" resizeMode="contain" />
+      <View className="flex-1 items-center justify-center bg-background">
+        <Image source={Logo} className="w-[70%] h-20 max-w-[300px] max-h-[200px]" resizeMode="contain" />
       </View>
     )
   }
 
   return (
-    <ScrollView>
-      <View>
-        <View className="flex-1 items-center p-4 mt-5">
-          <Image
-            source={Logo}
-            className="flex-1 w-[70%] max-w-[300px] max-h-[200px] my-2"
-            resizeMode="contain"
-          />
-          <CustomInput placeholder="Email" value={email} setValue={setEmail} />
-          <CustomInput
-            placeholder="Password"
-            secureTextEntry
-            value={password}
-            setValue={setPassword}
-            onSubmitEditing={onSignInPressed}
-          />
-          <Button title={t("signin_view.sign_in")} disabled={!buttonStatus} onPress={onSignInPressed} />
-          { currentUrl === "https://" || currentUrl === "" && (
-            <Button title="Server URL can't be empty" variant="ghost" />
-          )}
+    <ScrollView className="bg-background">
+      <View className="flex-1 items-center px-4 pt-5 gap-3">
+        <Image
+          source={Logo}
+          className="w-[70%] max-w-[300px] max-h-[200px] my-2"
+          resizeMode="contain"
+        />
+        <Input
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          className="w-full"
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <Input
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          onSubmitEditing={onSignInPressed}
+          className="w-full"
+        />
+        <Button disabled={!buttonStatus} onPress={onSignInPressed} className="w-full mt-2">
+          <ButtonText>{t("signin_view.sign_in")}</ButtonText>
+        </Button>
+        {(currentUrl === "https://" || currentUrl === "") && (
+          <Text className="text-sm text-destructive">Server URL can't be empty</Text>
+        )}
 
-          <Button title={t("signin_view.no_account")} variant="ghost" onPress={onNoAccountPressed}/>
-          <Button title={t("signin_view.forgot_password")} action="tertiary" variant="ghost" onPress={onNoAccountPressed}/>
-        </View>
-        <Button title="Server URL" variant="ghost"/>
-        <Button title={currentUrl}  onPress={updateUrl} variant="ghost"/>
+        <Button variant="ghost" onPress={onNoAccountPressed} className="w-full">
+          <ButtonText variant="ghost">{t("signin_view.no_account")}</ButtonText>
+        </Button>
+        <Button variant="ghost" onPress={onForgotPasswordPressed} className="w-full">
+          <ButtonText variant="ghost" className="text-muted-foreground">{t("signin_view.forgot_password")}</ButtonText>
+        </Button>
+      </View>
+      <View className="items-center mt-6 gap-1">
+        <Text className="text-sm text-muted-foreground">Server URL</Text>
+        <Button variant="ghost" onPress={updateUrl}>
+          <ButtonText variant="ghost" className="text-sm text-primary">{currentUrl}</ButtonText>
+        </Button>
       </View>
     </ScrollView>
   )

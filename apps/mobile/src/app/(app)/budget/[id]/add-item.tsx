@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router"
 import React from "react"
 
-import { BudgetItemForm } from "@/components/BudgetItemForm"
+import { BudgetItemForm } from "@/components/features/to-buy/budget-item-form"
 import { BudgetItem } from "@/types/budget"
 
 export default function AddBudgetItemScreen() {

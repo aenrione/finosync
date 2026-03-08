@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import {Drawer} from "expo-router/drawer"
 import React from "react"
 
-import CustomDrawer from "@/components/CustomDrawerContent"
+import CustomDrawer from "@/components/features/layout/custom-drawer"
 import { drawerScreens } from "@/utils/screen-config"
 import Icon from "@/components/ui/icon"
 

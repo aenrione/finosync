@@ -1,29 +1,30 @@
-import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from "react-native"
+import { View, ScrollView, RefreshControl, TouchableOpacity } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import React, { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { filterTransactions, getFilterStats } from "@/utils/transactionFilters"
 import { useTransactions } from "@/context/transactions.context"
-import TransactionFilters from "@/components/TransactionFilters"
+import TransactionFilters from "@/components/transaction-filters"
 import { useCategories } from "@/context/categories.context"
-import TransactionList from "@/components/TransactionList"
+import TransactionList from "@/components/transaction-list"
 import { useAccounts } from "@/context/accounts.context"
 import { showAmount } from "@/utils/currency"
+import { Text } from "@/components/ui/text"
 import Icon from "@/components/ui/icon"
 
 export default function TransactionsScreen() {
   const { t } = useTranslation()
-  const { 
-    transactionsData: transactions, 
-    loading, 
-    hasMore, 
-    loadMore, 
-    refreshData 
+  const {
+    transactionsData: transactions,
+    loading,
+    hasMore,
+    loadMore,
+    refreshData
   } = useTransactions()
   const { categoriesData: categories } = useCategories()
   const { accountsData: accounts } = useAccounts()
-  
+
   const [selectedFilter, setSelectedFilter] = useState("All")
   const [showFilters, setShowFilters] = useState(false)
 
@@ -33,7 +34,7 @@ export default function TransactionsScreen() {
 
   // Filter transactions based on selected filter
   const filteredTransactions = filterTransactions(transactions, selectedFilter, categories, accounts)
-  
+
   // Get filter statistics
   const filterStats = getFilterStats(transactions, selectedFilter)
 
@@ -52,16 +53,16 @@ export default function TransactionsScreen() {
           </Text>
         </View>
         <View className="flex-row gap-2">
-          <TouchableOpacity 
+          <TouchableOpacity
             className={`w-10 h-10 rounded-full justify-center items-center ${
               showFilters ? "bg-primary" : "bg-muted"
             }`}
             onPress={() => setShowFilters(!showFilters)}
           >
-            <Icon 
-              name="ListFilter" 
-              className={showFilters ? "text-white" : "text-muted-foreground"} 
-              size={20} 
+            <Icon
+              name="ListFilter"
+              className={showFilters ? "text-primary-foreground" : "text-muted-foreground"}
+              size={20}
             />
           </TouchableOpacity>
           <View className="w-10 h-10 rounded-full bg-muted justify-center items-center">
@@ -73,7 +74,7 @@ export default function TransactionsScreen() {
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -137,8 +138,8 @@ export default function TransactionsScreen() {
             refreshData={refreshData}
             showLoadMore={true}
             emptyMessage={
-              selectedFilter === "All" 
-                ? "No transactions found" 
+              selectedFilter === "All"
+                ? "No transactions found"
                 : `No ${selectedFilter.toLowerCase()} transactions found`
             }
           />
@@ -146,4 +147,4 @@ export default function TransactionsScreen() {
       </ScrollView>
     </SafeAreaView>
   )
-} 
+}

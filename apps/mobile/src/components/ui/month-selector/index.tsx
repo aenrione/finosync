@@ -6,7 +6,8 @@ import {
 } from "react-native"
 import moment from "moment"
 
-import { Text, View } from "@/components/theme/Themed"
+import { Text } from "@/components/ui/text"
+import { View } from "react-native"
 
 const DATE_FORMAT = "DD-MM-YYYY"
 const MONTH_YEAR_FORMAT = "MMYYYY"
@@ -25,23 +26,23 @@ const MonthSelector = ({
   currentDate = moment(),
   maxDate = moment(),
   minDate = moment("01-01-2000", DATE_FORMAT),
-  selectedBackgroundColor = "#000",
-  selectedMonthTextStyle = { color: "#fff" },
+  selectedBackgroundColor = "hsl(var(--primary))",
+  selectedMonthTextStyle = { color: "hsl(var(--primary-foreground))" },
   seperatorHeight = 1,
-  seperatorColor = "#b6c3cb",
+  seperatorColor = "hsl(var(--border))",
   nextIcon = null,
   prevIcon = null,
   nextText = "Next",
   prevText = "Prev",
   containerStyle = {},
   yearTextStyle = {},
-  monthTextStyle = { color: "#000" },
-  currentMonthTextStyle = { color: "#22ee11" },
+  monthTextStyle = { color: "hsl(var(--foreground))" },
+  currentMonthTextStyle = { color: "hsl(var(--primary))" },
   monthFormat = "MMM",
   initialView = moment(),
   onMonthTapped = () => {},
   onYearChanged = () => {},
-  monthDisabledStyle = { color: "#00000050" },
+  monthDisabledStyle = { color: "hsl(var(--muted-foreground))" },
   localeLanguage = "en",
   localeSettings = {},
   swipable = false,
@@ -164,7 +165,7 @@ const MonthSelector = ({
         directionalOffsetThreshold,
         gestureIsClickThreshold,
       }}
-      style={[{ alignItems: "center", backgroundColor: "#fff" }, containerStyle]}
+      style={[{ alignItems: "center" }, containerStyle]}
     >
       {renderHeader()}
       {renderRow(months, 0)}

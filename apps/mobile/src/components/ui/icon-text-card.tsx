@@ -1,8 +1,8 @@
 import React from "react"
 
-import { View } from "@/components/theme/Themed"
-import {Text} from "@/components/ui/text"
-import { cn } from "@/utils/tailwind"
+import { View } from "react-native"
+import { Text } from "@/components/ui/text"
+import { cn } from "@/lib/utils"
 
 import IconCard from "./icon-card"
 

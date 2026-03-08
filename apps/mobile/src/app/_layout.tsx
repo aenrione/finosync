@@ -1,6 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
 import { QueryClient, QueryClientProvider } from "react-query"
-import FontAwesome from "@expo/vector-icons/FontAwesome"
 
 import "@/global.css"
 
@@ -11,8 +10,18 @@ import { Stack } from "expo-router"
 import { useEffect } from "react"
 import "react-native-reanimated"
 
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider"
-import { useColorScheme } from "@/components/theme/useColorScheme"
+import {
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_600SemiBold,
+  DMSans_700Bold,
+} from "@expo-google-fonts/dm-sans"
+import {
+  IBMPlexMono_400Regular,
+  IBMPlexMono_500Medium,
+} from "@expo-google-fonts/ibm-plex-mono"
+
+import { useColorScheme } from "@/components/theme/use-color-scheme"
 import { useStore } from "@/utils/store"
 
 export {
@@ -27,8 +36,12 @@ SplashScreen.preventAutoHideAsync()
 
 export function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-    ...FontAwesome.font,
+    "DM Sans": DMSans_400Regular,
+    "DM Sans Medium": DMSans_500Medium,
+    "DM Sans SemiBold": DMSans_600SemiBold,
+    "DM Sans Bold": DMSans_700Bold,
+    "IBM Plex Mono": IBMPlexMono_400Regular,
+    "IBM Plex Mono Medium": IBMPlexMono_500Medium,
   })
   const router = useRouter()
   const setRouter = (useStore.getState()).setRouter
@@ -48,7 +61,7 @@ export function RootLayout() {
     return null
   }
 
-  return <GluestackUIProvider mode="light"><RootLayoutNav /></GluestackUIProvider>
+  return <RootLayoutNav />
 }
 
 function RootLayoutNav() {

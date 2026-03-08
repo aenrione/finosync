@@ -1,5 +1,5 @@
 
-import ChartsScreen from "@/components/screens/charts"
+import ChartsScreen from "@/components/features/charts"
 
 export default function ProfileScreen() {
 
