@@ -1,37 +1,30 @@
-import { 
-  Plus, 
-  Search, 
-  RefreshCw, 
-  CircleAlert as AlertCircle, 
-  Folder, 
-  X
-} from "lucide-react-native"
 import {
   View,
-  Text,
   TouchableOpacity,
   RefreshControl,
   FlatList,
-  TextInput,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import React, { useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useRouter } from "expo-router"
 
-import { CategoryCard } from "@/components/screens/categories/category-card"
+import { CategoryCard } from "@/components/features/categories/category-card"
 import { useCategories } from "@/context/categories.context"
 import { Category } from "@/types/category"
+import { Input } from "@/components/ui/input"
+import { Text } from "@/components/ui/text"
 import { useStore } from "@/utils/store"
+import Icon from "@/components/ui/icon"
 
 const Categories = () => {
   const router = useRouter()
   const { t } = useTranslation()
-  const { 
-    filteredCategories: categories, 
-    loading, 
-    error, 
-    deleteCategory, 
+  const {
+    filteredCategories: categories,
+    loading,
+    error,
+    deleteCategory,
     refreshData,
     searchTerm,
     setSearchTerm
@@ -83,7 +76,7 @@ const Categories = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <View className="bg-white px-5 pb-4 border-b border-border">
+      <View className="bg-card px-5 pb-4 border-b border-border">
         <View className="flex-row justify-between items-start pt-4">
           <View className="flex-1">
             <Text className="text-2xl font-bold text-foreground mb-1">
@@ -98,31 +91,30 @@ const Categories = () => {
               className="w-10 h-10 rounded-full bg-muted justify-center items-center"
               onPress={onRefresh}
             >
-              <RefreshCw size={20} className="text-muted-foreground" />
+              <Icon name="RefreshCw" className="text-muted-foreground" size={20} />
             </TouchableOpacity>
             <TouchableOpacity
               className="w-10 h-10 rounded-full bg-muted justify-center items-center"
               onPress={() => setSearchVisible(!searchVisible)}
             >
-              <Search size={20} className="text-muted-foreground" />
+              <Icon name="Search" className="text-muted-foreground" size={20} />
             </TouchableOpacity>
           </View>
         </View>
         {searchVisible && (
           <View className="mb-4">
             <View className="flex-row items-center bg-muted rounded-xl px-4 py-3">
-              <Search size={20} className="text-muted-foreground mr-3" />
-              <TextInput
-                className="flex-1 text-foreground text-base"
+              <Icon name="Search" className="text-muted-foreground mr-3" size={20} />
+              <Input
+                className="flex-1 border-0"
                 placeholder="Search categories..."
-                placeholderTextColor="#9CA3AF"
                 value={searchTerm}
                 onChangeText={setSearchTerm}
                 autoFocus
               />
               {searchTerm.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchTerm("")}>
-                  <X size={20} className="text-muted-foreground" />
+                  <Icon name="X" className="text-muted-foreground" size={20} />
                 </TouchableOpacity>
               )}
             </View>
@@ -133,34 +125,34 @@ const Categories = () => {
         {loading && !refreshing ? (
           <View className="flex-1 justify-center items-center px-5">
             <View className="items-center">
-              <RefreshCw size={32} className="text-muted-foreground mb-3" />
+              <Icon name="RefreshCw" className="text-muted-foreground mb-3" size={32} />
               <Text className="text-base text-muted-foreground">Loading categories...</Text>
             </View>
           </View>
         ) : error ? (
           <View className="flex-1 justify-center items-center px-5">
             <View className="items-center max-w-xs">
-              <AlertCircle size={48} className="text-red-500 mb-4" />
+              <Icon name="CircleAlert" className="text-red-500 mb-4" size={48} />
               <Text className="text-xl font-semibold text-foreground mb-2">Something went wrong</Text>
               <Text className="text-sm text-muted-foreground text-center mb-6">Error: {error}</Text>
-              <TouchableOpacity 
-                className="flex-row items-center bg-red-500 rounded-xl px-5 py-3"
+              <TouchableOpacity
+                className="flex-row items-center bg-destructive rounded-xl px-5 py-3"
                 onPress={onRefresh}
               >
-                <RefreshCw size={16} className="text-white mr-2" />
-                <Text className="text-sm font-semibold text-white">Try Again</Text>
+                <Icon name="RefreshCw" className="text-destructive-foreground mr-2" size={16} />
+                <Text className="text-sm font-semibold text-destructive-foreground">Try Again</Text>
               </TouchableOpacity>
             </View>
           </View>
         ) : categories.length === 0 ? (
           <View className="flex-1 justify-center items-center px-5">
             <View className="items-center max-w-xs">
-              <Folder size={64} className="text-muted-foreground mb-4" />
+              <Icon name="Folder" className="text-muted-foreground mb-4" size={64} />
               <Text className="text-xl font-semibold text-foreground mb-2">
                 {searchTerm ? "No categories found" : "No categories yet"}
               </Text>
               <Text className="text-sm text-muted-foreground text-center leading-5 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? "Try adjusting your search terms"
                   : "Create your first category to start organizing your transactions"
                 }
@@ -170,8 +162,8 @@ const Categories = () => {
                   className="flex-row items-center bg-primary rounded-xl px-5 py-3"
                   onPress={() => router.push("/(app)/add-category")}
                 >
-                  <Plus size={16} className="text-white mr-2" />
-                  <Text className="text-sm font-semibold text-white">Create Category</Text>
+                  <Icon name="Plus" className="text-primary-foreground mr-2" size={16} />
+                  <Text className="text-sm font-semibold text-primary-foreground">Create Category</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -185,14 +177,9 @@ const Categories = () => {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor="#6B7280"
-                colors={["#6B7280"]}
               />
             }
-            contentContainerStyle={{ 
-              padding: 20, 
-              paddingBottom: 100,
-            }}
+            contentContainerClassName="p-5 pb-24"
             showsVerticalScrollIndicator={false}
             numColumns={1}
           />
@@ -203,7 +190,7 @@ const Categories = () => {
         onPress={() => router.push("/(app)/add-category")}
         activeOpacity={0.8}
       >
-        <Plus size={24} className="text-white" />
+        <Icon name="Plus" className="text-primary-foreground" size={24} />
       </TouchableOpacity>
     </SafeAreaView>
   )

@@ -1,8 +1,8 @@
 import { icons } from "lucide-react-native"
 import React from "react"
 
-import { View } from "@/components/theme/Themed"
-import { cn } from "@/utils/tailwind"
+import { View } from "react-native"
+import { cn } from "@/lib/utils"
 
 import Icon from "./icon"
 

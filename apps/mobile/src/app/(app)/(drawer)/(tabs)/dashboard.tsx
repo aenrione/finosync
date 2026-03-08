@@ -1,14 +1,16 @@
-import { View, ScrollView, RefreshControl, Text } from "react-native"
+import { View, ScrollView, RefreshControl } from "react-native"
 import { useTranslation } from "react-i18next"
 import React from "react"
 
-import RecentTransactions from "@/components/screens/dashboard/recent-transactions"
-import SpendingInsights from "@/components/screens/dashboard/spending-insights"
-import TotalBalance from "@/components/screens/dashboard/total-balance"
-import QuickActions from "@/components/screens/dashboard/quick-actions"
-import AccountsList from "@/components/screens/dashboard/accounts-list"
-import DashboardHeader from "@/components/screens/dashboard/header"
+import RecentTransactions from "@/components/features/dashboard/recent-transactions"
+import SpendingInsights from "@/components/features/dashboard/spending-insights"
+import TotalBalance from "@/components/features/dashboard/total-balance"
+import QuickActions from "@/components/features/dashboard/quick-actions"
+import AccountsList from "@/components/features/dashboard/accounts-list"
+import DashboardHeader from "@/components/features/dashboard/header"
 import { useDashboard } from "@/context/dashboard.context"
+import { Spinner } from "@/components/ui/spinner"
+import { Text } from "@/components/ui/text"
 
 export default function DashboardScreen() {
   const { t } = useTranslation()
@@ -17,14 +19,15 @@ export default function DashboardScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
-        <Text className="text-lg text-muted-foreground">Loading dashboard...</Text>
+        <Spinner size="large" />
+        <Text className="text-lg text-muted-foreground mt-4">Loading dashboard...</Text>
       </View>
     )
   }
   if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
-        <Text className="text-lg text-red-500">{error}</Text>
+        <Text className="text-lg text-destructive">{error}</Text>
       </View>
     )
   }
@@ -40,7 +43,6 @@ export default function DashboardScreen() {
           <RefreshControl
             refreshing={loading}
             onRefresh={refresh}
-            tintColor="#6B7280"
           />
         }
       >
@@ -54,4 +56,3 @@ export default function DashboardScreen() {
     </View>
   )
 }
-

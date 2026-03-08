@@ -1,19 +1,17 @@
-import { View, Text } from "react-native"
+import { View } from "react-native"
 import React from "react"
 
-import BackHeader from "@/components/Headers/BackHeader"
-import { Typography } from "@/styles"
+import BackHeader from "@/components/back-header"
+import { Text } from "@/components/ui/text"
 
 const Notifications = () => (
-  <View className="flex-1 bg-black">
+  <View className="flex-1 bg-background">
     {/* Header */}
     <BackHeader title="Notifications" />
 
     {/* Body */}
     <View className="flex-1 px-5 pt-0 items-center justify-center">
-      <Text
-        className="text-center text-white text-sm"
-      >
+      <Text className="text-center text-muted-foreground text-sm">
           You don&#39;t have any notification yet.
       </Text>
     </View>
@@ -21,4 +19,3 @@ const Notifications = () => (
 )
 
 export default Notifications
-

@@ -1,46 +1,26 @@
 import {
   View,
-  Pressable,
   TouchableOpacity,
-  StyleSheet
 } from "react-native"
-import Icon from "react-native-vector-icons/FontAwesome5"
 import React from "react"
 
-import { Colors } from "@/styles"
+import Icon from "@/components/ui/icon"
 
 const QuickActions = (item, updateItem, deleteItem, canDelete = true) => (
-  <View style={styles.container}>
-    <View style={[styles.button, { marginLeft: 10, backgroundColor: Colors.SUCCESS }]}>
+  <View className="flex-1 my-2.5 flex-row justify-end">
+    <View className="w-[60px] rounded-2xl items-center justify-center ml-2.5 bg-green-600">
       <TouchableOpacity onPress={() => updateItem(item)}>
-        <Icon name="pen" color={Colors.WHITE} size={15} />
+        <Icon name="Pencil" className="text-primary-foreground" size={15} />
       </TouchableOpacity>
     </View>
     {canDelete && (
-      <View style={[styles.button, { backgroundColor: Colors.ALERT, marginLeft: 10 }]}>
+      <View className="w-[60px] rounded-2xl items-center justify-center ml-2.5 bg-destructive">
         <TouchableOpacity onPress={() => deleteItem(item.id)}>
-          <Icon name="trash" color={Colors.WHITE} size={15} />
+          <Icon name="Trash" className="text-primary-foreground" size={15} />
         </TouchableOpacity>
       </View>
     )}
   </View>
 )
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: 10,
-    marginBottom: 10,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  button: {
-    width: 60,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-})
-
 export default QuickActions
-

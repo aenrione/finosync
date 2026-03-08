@@ -1,9 +1,10 @@
-import { Text, View, StyleSheet, ScrollView } from "react-native"
+import { View, ScrollView } from "react-native"
 import React, { useState } from "react"
 import { useRouter } from "expo-router"
 
-import CustomButton from "@/components/CustomButton"
-import CustomInput from "@/components/CustomInput"
+import { Button, ButtonText } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Text } from "@/components/ui/text"
 
 export default function ForgotPasswordScreen() {
   const [username, setUsername] = useState("")
@@ -14,43 +15,29 @@ export default function ForgotPasswordScreen() {
     console.warn("Sign Up")
   }
 
-  // const onForgotPasswordPressed = () => {
-  //   console.warn('Forgot Password pressed');
-  // };
-
   const onSignInPressed = () => {
     router.navigate("/sign-in")
   }
 
   return (
-    <ScrollView>
-      <View style={styles.root}>
-        <Text style={styles.title}>Reset your Password</Text>
-        <CustomInput placeholder="Username" value={username} setValue={setUsername} />
-        <CustomInput
+    <ScrollView className="bg-background">
+      <View className="flex-1 items-center px-5 mt-7 gap-3">
+        <Text className="text-xl font-bold mb-2">Reset your Password</Text>
+        <Input placeholder="Username" value={username} onChangeText={setUsername} className="w-full" />
+        <Input
           placeholder="Password"
           secureTextEntry
           value={password}
-          setValue={setPassword}
+          onChangeText={setPassword}
+          className="w-full"
         />
-        <CustomButton text="Register" onPress={onSignUpPressed} />
-        <CustomButton text="Back to Sign in" onPress={onSignInPressed} type="tertiary" />
+        <Button onPress={onSignUpPressed} className="w-full mt-2">
+          <ButtonText>Register</ButtonText>
+        </Button>
+        <Button variant="ghost" onPress={onSignInPressed} className="w-full">
+          <ButtonText variant="ghost">Back to Sign in</ButtonText>
+        </Button>
       </View>
     </ScrollView>
   )
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    alignItems: "center",
-    padding: 20,
-    marginTop: 30,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-})
-

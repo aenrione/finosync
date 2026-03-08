@@ -3,7 +3,7 @@ import { Tabs } from "expo-router"
 import React from "react"
 
 import { tabScreens } from "@/utils/screen-config"
-import { Icon } from "@/components/ui/icon"
+import Icon from "@/components/ui/icon"
 
 export default function Navitagion() {
   const { t } = useTranslation()
@@ -15,7 +15,7 @@ export default function Navitagion() {
           const iconName = tabScreens.find(screen => screen.name === route.name)?.icon || "House"
           return <Icon name={iconName} />
         },
-        tabBarInactiveTintColor: "gray",
+        tabBarInactiveTintColor: undefined,
       })}
     >
       {

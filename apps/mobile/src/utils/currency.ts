@@ -1,27 +1,15 @@
-export const PRIMARY = "#3653fe"
-export const PRIMARY_LIGHT = "#00aeff"
-export const SECONDARY = "#B3B3B3"
-export const WHITE = "#FFFFFF"
-export const BLACK = "#18191E"
-export const LIGHT_BLACK = "#282A37"
+/**
+ * Currency formatting and amount styling utilities.
+ * All color references use design-token Tailwind classes.
+ */
 
-export const GRAY_THIN = "#F8F8F8"
-export const GRAY_LIGHT = "#D3D3D3"
-export const GRAY_MEDIUM = "#B3B3B3"
-export const GRAY_DARK = "#81838B"
-export const GRAY_DARKER = "#2a2a2a"
-
-// Success
-export const SUCCESS = "#60D97D"
-export const WARNING = "#ffae00"
-export const ALERT = "#cc4b37"
-//Format Currencies
-export const curStyle = (amount:number | undefined) => {
-  if (!amount) { return { color: WHITE, colorClass: "text-white" } }
-  const result = amount >= 0 ? { color: SUCCESS, colorClass: "text-success" } : { color: ALERT, colorClass: "text-alert" }
-  return result
+/** Returns a token-based text color class for positive/negative amounts */
+export const curStyle = (amount: number | undefined) => {
+  if (!amount) { return { colorClass: "text-foreground" } }
+  return amount >= 0
+    ? { colorClass: "text-income" }
+    : { colorClass: "text-expense" }
 }
-
 
 export const showAmount = (amount: string | number | undefined, showInfo = true, symbol: string | undefined = undefined) => {
   if (!amount) return "-"
@@ -30,17 +18,28 @@ export const showAmount = (amount: string | number | undefined, showInfo = true,
   return "• ".repeat(calcAmount.toString().length)
 }
 
+/** Returns a token-based text color class for positive/negative amounts */
 export const amountStyle = (amount: string | number | undefined) => {
   if (!amount) return ""
   let num: number = 0
   if (typeof amount !== "number") {
     num = parseFloat(amount.toString().replace(/[^0-9.-]+/g, ""))
-  }  else {
+  } else {
     num = amount
   }
-  if (num > 0) return "text-green-400"
-  if (num < 0) return "text-red-400"
+  if (num > 0) return "text-income"
+  if (num < 0) return "text-expense"
   return ""
+}
+
+/** Simple currency formatter */
+export const formatCurrency = (amount: number, currency?: string) => {
+  const absAmount = Math.abs(amount)
+  const formatted = absAmount.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+  return currency ? `${currency} ${formatted}` : formatted
 }
 
 

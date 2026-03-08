@@ -11,7 +11,8 @@ import {
   AlertDialogBackdrop,
 } from "@/components/ui/alert-dialog"
 import { Button, ButtonText } from "@/components/ui/button"
-import { Text, View } from "@/components/theme/Themed"
+import { Text } from "@/components/ui/text"
+import { View } from "react-native"
 import { Heading } from "@/components/ui/heading"
 
 type DeleteAlertProps = {
@@ -63,7 +64,7 @@ const DeleteAlert = ({
         <AlertDialogBackdrop />
         <AlertDialogContent>
           <AlertDialogHeader>
-            <Heading className="text-typography-950 font-semibold" size="md">
+            <Heading className="text-foreground font-semibold text-lg">
               {title || t("delete.confirm_title")}
             </Heading>
           </AlertDialogHeader>
@@ -82,9 +83,9 @@ const DeleteAlert = ({
               <ButtonText>{t("cancel")}</ButtonText>
             </Button>
             <Button
+              variant="destructive"
               size="sm"
               onPress={() => { onDelete(); onClose() }}
-              className="bg-red-500"
             >
               <ButtonText>{t("delete")}</ButtonText>
             </Button>
