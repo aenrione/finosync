@@ -10,6 +10,7 @@ import {
 
 import { fetchWithAuth } from "@/utils/api"
 import { Account } from "@/types/account"
+import { useStore } from "@/utils/store"
 
 type AccountsContextType = {
   accountsData: Account[]
@@ -26,11 +27,12 @@ export function AccountsProvider({ children }:{ children: React.ReactNode }) {
   const [accountsData, setAccountsData] = useState<Account[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const baseCurrency = useStore((s) => s.baseCurrency)
 
   const fetchAccountss = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await fetchWithAuth("/accounts")
+      const res = await fetchWithAuth(`/accounts?currency=${baseCurrency}`)
       const data = await res.json()
 
       if (!res.ok) throw new Error(data.error || "Unknown error")
@@ -43,7 +45,7 @@ export function AccountsProvider({ children }:{ children: React.ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [baseCurrency])
 
   const createAccount = useCallback(async (account: Partial<Account>) => {
     try {
