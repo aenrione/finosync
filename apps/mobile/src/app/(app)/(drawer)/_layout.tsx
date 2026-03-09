@@ -19,6 +19,7 @@ export default function Navitagion() {
     crypto: "Crypto Markets",
     settings: "Settings",
     about: "About",
+    feedback: "Feedback",
   };
 
   return (

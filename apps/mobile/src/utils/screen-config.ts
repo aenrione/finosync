@@ -66,4 +66,8 @@ export const drawerScreens: ScreenConfig[] = [
     name: "about",
     icon: "Info",
   },
+  {
+    name: "feedback",
+    icon: "MessageSquare",
+  },
 ];

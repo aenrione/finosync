@@ -2,10 +2,11 @@ import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { View, TouchableOpacity, Image } from "react-native";
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components/ui/text";
 import { appName } from "@/constants/config";
+import { useCharts } from "@/context/charts.context";
 import { useStore } from "@/utils/store";
 import Icon from "@/components/ui/icon";
 import { IconName } from "@/types/icon";
@@ -13,6 +14,8 @@ import { Divider } from "@/components/ui/card";
 import { colors } from "@/lib/colors";
 
 import { useTranslation } from "./_texts/text";
+
+const TIME_RANGES = ["1M", "3M", "6M", "1Y"];
 
 type DrawerItem = {
   label: string;
@@ -25,9 +28,9 @@ type DrawerSection = {
   items: DrawerItem[];
 };
 
-function SectionHeader({ title }: { title: string }) {
+function SectionHeader({ title, first }: { title: string; first?: boolean }) {
   return (
-    <Text className="text-[10px] font-bold uppercase tracking-[2px] text-muted-foreground px-4 pt-5 pb-2">
+    <Text className={`text-[10px] font-bold uppercase tracking-[2px] text-muted-foreground px-4 ${first ? "pt-2" : "pt-5"} pb-2`}>
       {title}
     </Text>
   );
@@ -77,7 +80,9 @@ export default function CustomDrawerContent(
 ) {
   const logout = useStore((state) => state.logout);
   const user = useStore((state) => state.user);
+  const { timeRange, setTimeRange } = useCharts();
   const text = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const currentRoute = props.state.routes[props.state.index]?.name;
 
@@ -128,6 +133,11 @@ export default function CustomDrawerContent(
           route: "settings",
         },
         { label: text.items.about || "About", icon: "Info", route: "about" },
+        {
+          label: text.items.feedback || "Feedback",
+          icon: "MessageSquare",
+          route: "feedback",
+        },
       ],
     },
   ];
@@ -146,7 +156,7 @@ export default function CustomDrawerContent(
     : "?";
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <View className="items-center px-4 pt-4 pb-2">
         <View className="w-14 h-14 rounded-2xl bg-primary/10 items-center justify-center mb-2 overflow-hidden">
           <Image
@@ -168,9 +178,30 @@ export default function CustomDrawerContent(
       <DrawerContentScrollView
         {...props}
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingTop: 0, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* Global time range */}
+        <View className="pb-1">
+          <SectionHeader title={text.timeRange || "Time Range"} first />
+          <View className="flex-row gap-1.5 rounded-full bg-card border border-border p-1 mx-4">
+            {TIME_RANGES.map((range) => (
+              <TouchableOpacity
+                key={range}
+                className={`flex-1 items-center py-1.5 rounded-full ${timeRange === range ? "bg-primary" : "bg-transparent"}`}
+                onPress={() => setTimeRange(range)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  className={`text-xs font-semibold ${timeRange === range ? "text-white" : "text-muted-foreground"}`}
+                >
+                  {range}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {sections.map((section) => (
           <View key={section.title}>
             <SectionHeader title={section.title} />
@@ -215,6 +246,6 @@ export default function CustomDrawerContent(
           <Icon name="LogOut" size={16} className="text-destructive" />
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
