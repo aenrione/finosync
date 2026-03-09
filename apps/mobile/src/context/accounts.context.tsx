@@ -134,12 +134,15 @@ export function AccountsProvider({ children }: { children: React.ReactNode }) {
     let active = true;
 
     const restoreAndFetch = async () => {
+      const hadData = hasDataRef.current;
       const snapshot = await loadSnapshot<Account[]>(cacheKey);
 
       if (active && snapshot) {
         setAccountsData(snapshot.value);
         setLastUpdated(snapshot.updatedAt);
-        setIsStale(true);
+        if (!hadData) {
+          setIsStale(true);
+        }
         setLoading(false);
       }
 

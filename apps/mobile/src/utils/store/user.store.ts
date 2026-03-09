@@ -3,6 +3,7 @@ import { StateCreator } from "zustand"
 import { User } from "@/types/user"
 
 import { deleteToken } from "./session-store"
+import { RouterSlice } from "./router.store"
 
 export interface UserSlice {
   user: User | null
@@ -12,7 +13,12 @@ export interface UserSlice {
   logout: () => void
 }
 
-export const createUserSlice: StateCreator<UserSlice & { router?: any }> = (set, get) => ({
+export const createUserSlice: StateCreator<
+  UserSlice & RouterSlice,
+  [],
+  [],
+  UserSlice
+> = (set, get) => ({
   user: null,
   isVisible: true,
   setUser: (user) =>  set({ user }),

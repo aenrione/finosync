@@ -1,3 +1,5 @@
+import { Account } from "@/types/account";
+import { Category } from "@/types/category";
 import { Transaction } from "@/types/transaction";
 
 const normalizeFilterKey = (selectedFilter: string) =>
@@ -6,8 +8,8 @@ const normalizeFilterKey = (selectedFilter: string) =>
 export function filterTransactions(
   transactions: Transaction[],
   selectedFilter: string,
-  categories: any[] = [],
-  accounts: any[] = [],
+  categories: Category[] = [],
+  accounts: Account[] = [],
 ): Transaction[] {
   const normalizedFilter = normalizeFilterKey(selectedFilter);
 

@@ -56,8 +56,8 @@ const sampleCategories = [
 ];
 
 const sampleAccounts = [
-  { account_name: "Bank", id: 10 },
-  { account_name: "Wallet", id: 20 },
+  { account_name: "Bank", id: 10, account_type: "local" as const, code: "CLP" },
+  { account_name: "Wallet", id: 20, account_type: "local" as const, code: "CLP" },
 ];
 
 describe("filterTransactions", () => {

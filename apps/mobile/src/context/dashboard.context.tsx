@@ -10,11 +10,32 @@ import React, {
 
 import { fetchJsonWithAuth, getErrorMessage } from "@/utils/api";
 import { Account } from "@/types/account";
+import { Transaction } from "@/types/transaction";
 import { loadSnapshot, saveSnapshot } from "@/utils/offline-cache";
 import { normalizeTransactions } from "@/utils/normalizers";
 import { useStore } from "@/utils/store";
 
-type DashboardData = any; // Replace with a more specific type if available
+type SpendingPeriod = {
+  total_spent?: string | number;
+  total_earned?: string | number;
+};
+
+type DashboardData = {
+  accounts?: Account[];
+  recent_transactions?: Transaction[];
+  balances?: {
+    currency: string;
+    label?: string;
+    symbol?: string;
+    balance: string | number;
+    changePct?: number;
+  }[];
+  spending_insights?: {
+    this_month?: SpendingPeriod;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
 
 type DashboardContextType = {
   dashboard: DashboardData | null;
@@ -97,12 +118,15 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     let active = true;
 
     const restoreAndFetch = async () => {
+      const hadData = hasDataRef.current;
       const snapshot = await loadSnapshot<DashboardData>(cacheKey);
 
       if (active && snapshot) {
         setDashboard(snapshot.value);
         setLastUpdated(snapshot.updatedAt);
-        setIsStale(true);
+        if (!hadData) {
+          setIsStale(true);
+        }
         setLoading(false);
       }
 
@@ -128,7 +152,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
         isStale,
         lastUpdated,
         refresh: () => fetchDashboard({ refresh: true }),
-        accounts: dashboard?.accounts,
+        accounts: dashboard?.accounts ?? null,
       }}
     >
       {children}

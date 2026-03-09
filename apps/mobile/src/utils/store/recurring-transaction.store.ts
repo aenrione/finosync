@@ -2,13 +2,18 @@ import { StateCreator } from "zustand"
 
 import { RecurringTransaction } from "@/types/recurring-transaction"
 
+import { RouterSlice } from "./router.store"
+
 export interface RecurringTransactionSlice {
   currentRecurringTransaction?: RecurringTransaction
   setCurrentRecurringTransaction: (rt?: RecurringTransaction) => void
 }
 
 export const createRecurringTransactionSlice: StateCreator<
-  RecurringTransactionSlice & { router: any }
+  RecurringTransactionSlice & RouterSlice,
+  [],
+  [],
+  RecurringTransactionSlice
 > = (set, get) => ({
   currentRecurringTransaction: undefined,
   setCurrentRecurringTransaction: (rt) => {

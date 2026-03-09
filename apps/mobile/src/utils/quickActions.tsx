@@ -6,7 +6,7 @@ import React from "react"
 
 import Icon from "@/components/ui/icon"
 
-const QuickActions = (item: any, updateItem: (item: any) => void, deleteItem: (id: any) => void, canDelete = true) => (
+const QuickActions = <T extends { id: string | number }>(item: T, updateItem: (item: T) => void, deleteItem: (id: T["id"]) => void, canDelete = true) => (
   <View className="flex-1 my-2.5 flex-row justify-end">
     <View className="w-[60px] rounded-2xl items-center justify-center ml-2.5 bg-income">
       <TouchableOpacity onPress={() => updateItem(item)}>

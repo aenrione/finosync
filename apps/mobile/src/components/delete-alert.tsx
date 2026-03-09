@@ -97,9 +97,9 @@ const DeleteAlert = ({
 }
 
 // Platform-specific alert implementation
-const platformAlert: typeof Alert.alert = Platform.OS === "web" 
-  ? alertPolyfill as any // Type assertion needed for compatibility
-  : Alert.alert
+const platformAlert = Platform.OS === "web"
+  ? alertPolyfill
+  : (title: string, description: string | undefined, options: AlertOption[]) => Alert.alert(title, description, options)
 
 const DeleteAlertWrapper = (props: DeleteAlertProps) => {
   const { isOpen, onClose, onDelete, errorMessage, title } = props

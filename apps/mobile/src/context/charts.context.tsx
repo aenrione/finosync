@@ -82,6 +82,47 @@ type ChartsContextType = {
   avgSavings: number;
 };
 
+type RawCategoryAmount = {
+  category_name?: string;
+  name?: string;
+  amount: string | number;
+};
+type RawBalanceItem = {
+  month?: string;
+  week?: string;
+  income: string | number;
+  expenses: string | number;
+  net: string | number;
+  currency?: string;
+};
+type RawAccountBalance = {
+  id: number;
+  name: string;
+  currency: string;
+  account_type: string;
+  balance: string | number;
+  data: (string | number | null | undefined)[];
+  labels: string[];
+  color: string;
+};
+type RawCurrencyOverview = {
+  currency: string;
+  income: string | number;
+  expenses: string | number;
+  net: string | number;
+};
+
+type ChartsApiResponse = {
+  expenses?: RawCategoryAmount[];
+  income?: RawCategoryAmount[];
+  balance?: RawBalanceItem[];
+  account_balances?: RawAccountBalance[];
+  currency_overview?: RawCurrencyOverview[];
+  avgIncome?: string | number;
+  avgExpenses?: string | number;
+  avgSavings?: string | number;
+};
+
 const ChartsContext = createContext<ChartsContextType | undefined>(undefined);
 
 export function ChartsProvider({ children }: { children: React.ReactNode }) {
@@ -169,15 +210,15 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
         if (nextTimeRange) queryParams.append("time_range", nextTimeRange);
         if (params?.type) queryParams.append("type", params.type);
 
-        const data = await fetchJsonWithAuth<any>(
+        const data = await fetchJsonWithAuth<ChartsApiResponse>(
           `/charts/data?${queryParams.toString()}`,
         );
 
         if (params?.type === "expense" || !params?.type) {
           const palette = generateChartColors(data.expenses?.length || 0);
           const expenseChartData = (data.expenses || []).map(
-            (item: any, index: number) => ({
-              name: item.category_name || item.name,
+            (item: RawCategoryAmount, index: number) => ({
+              name: item.category_name || item.name || "",
               amount: parseNumericAmount(item.amount) ?? 0,
               color: palette[index],
               legendFontSize: 12,
@@ -190,8 +231,8 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
         if (params?.type === "income" || !params?.type) {
           const palette = generateChartColors(data.income?.length || 0);
           const incomeChartData = (data.income || []).map(
-            (item: any, index: number) => ({
-              name: item.category_name || item.name,
+            (item: RawCategoryAmount, index: number) => ({
+              name: item.category_name || item.name || "",
               amount: parseNumericAmount(item.amount) ?? 0,
               color: palette[index],
               legendFontSize: 12,
@@ -203,7 +244,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
 
         if (data.balance) {
           const normalizedBalanceData = (data.balance || []).map(
-            (item: any) => ({
+            (item: RawBalanceItem) => ({
               month: item.month,
               week: item.week,
               income: parseNumericAmount(item.income) ?? 0,
@@ -224,7 +265,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
 
         if (data.account_balances) {
           const normalizedAccountBalances = (data.account_balances || []).map(
-            (item: any) => ({
+            (item: RawAccountBalance) => ({
               id: item.id,
               name: item.name,
               currency: item.currency,
@@ -243,7 +284,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (data.currency_overview) {
-          const overview = data.currency_overview.map((item: any) => ({
+          const overview = data.currency_overview.map((item: RawCurrencyOverview) => ({
             currency: item.currency,
             income: parseNumericAmount(item.income) ?? 0,
             expenses: parseNumericAmount(item.expenses) ?? 0,
@@ -262,7 +303,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
         if (hasLocalData) {
           setIsStale(true);
         } else {
-          const snapshot = await loadSnapshot<any>(nextCacheKey);
+          const snapshot = await loadSnapshot<ChartsApiResponse>(nextCacheKey);
           if (snapshot) {
             hydrateChartState(snapshot.value);
             setLastUpdated(snapshot.updatedAt);
@@ -277,13 +318,13 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
     [baseCurrency, selectedAccount, timeRange],
   );
 
-  const hydrateChartState = useCallback((data: any) => {
+  const hydrateChartState = useCallback((data: ChartsApiResponse | undefined) => {
     const paletteExpenses = generateChartColors(data?.expenses?.length || 0);
     const paletteIncome = generateChartColors(data?.income?.length || 0);
 
     setExpenseData(
-      (data?.expenses || []).map((item: any, index: number) => ({
-        name: item.category_name || item.name,
+      (data?.expenses || []).map((item: RawCategoryAmount, index: number) => ({
+        name: item.category_name || item.name || "",
         amount: parseNumericAmount(item.amount) ?? 0,
         color: paletteExpenses[index],
         legendFontSize: 12,
@@ -292,8 +333,8 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
     );
 
     setIncomeData(
-      (data?.income || []).map((item: any, index: number) => ({
-        name: item.category_name || item.name,
+      (data?.income || []).map((item: RawCategoryAmount, index: number) => ({
+        name: item.category_name || item.name || "",
         amount: parseNumericAmount(item.amount) ?? 0,
         color: paletteIncome[index],
         legendFontSize: 12,
@@ -302,7 +343,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
     );
 
     setBalanceData(
-      (data?.balance || []).map((item: any) => ({
+      (data?.balance || []).map((item: RawBalanceItem) => ({
         month: item.month,
         week: item.week,
         income: parseNumericAmount(item.income) ?? 0,
@@ -317,7 +358,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
     setAvgSavings(parseNumericAmount(data?.avgSavings) ?? 0);
 
     setAccountBalances(
-      (data?.account_balances || []).map((item: any) => ({
+      (data?.account_balances || []).map((item: RawAccountBalance) => ({
         id: item.id,
         name: item.name,
         currency: item.currency,
@@ -333,7 +374,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
     );
 
     setCurrencyOverview(
-      (data?.currency_overview || []).map((item: any) => ({
+      (data?.currency_overview || []).map((item: RawCurrencyOverview) => ({
         currency: item.currency,
         income: parseNumericAmount(item.income) ?? 0,
         expenses: parseNumericAmount(item.expenses) ?? 0,
@@ -357,12 +398,19 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
     let active = true;
 
     const restoreAndFetch = async () => {
-      const snapshot = await loadSnapshot<any>(cacheKey);
+      const hadData = hasDataRef.current;
+      const snapshot = await loadSnapshot<ChartsApiResponse>(cacheKey);
 
       if (active && snapshot) {
         hydrateChartState(snapshot.value);
         setLastUpdated(snapshot.updatedAt);
-        setIsStale(true);
+        // Only mark as stale on initial load (no data yet).
+        // When changing filters with data already on screen, skip the
+        // stale banner — the fetch below will either succeed (clearing
+        // any staleness) or fail (which sets isStale in the catch block).
+        if (!hadData) {
+          setIsStale(true);
+        }
         setLoading(false);
       }
 

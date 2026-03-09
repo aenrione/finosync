@@ -10,6 +10,7 @@ import React, { useCallback, useMemo } from "react";
 import { router } from "expo-router";
 
 import { Transaction } from "@/types/transaction";
+import { IconName } from "@/types/icon";
 import { showAmount } from "@/utils/currency";
 import { useStore } from "@/utils/store";
 import Icon from "@/components/ui/icon";
@@ -55,8 +56,8 @@ const groupTransactionsByDate = (
   return Object.entries(groups).map(([title, data]) => ({ title, data }));
 };
 
-const getCategoryIcon = (categoryName: string) => {
-  const categoryMap: Record<string, string> = {
+const getCategoryIcon = (categoryName: string): IconName => {
+  const categoryMap: Record<string, IconName> = {
     "Food & Dining": "Utensils",
     Transportation: "Car",
     Shopping: "ShoppingBag",
@@ -111,7 +112,7 @@ interface TransactionListProps {
   showLoadMore?: boolean;
   maxItems?: number;
   emptyMessage?: string;
-  onTransactionPress?: (transaction: any) => void;
+  onTransactionPress?: (transaction: Transaction) => void;
   scrollEnabled?: boolean;
   featuredTransactions?: Transaction[];
   featuredTitle?: string;
@@ -152,7 +153,7 @@ export default function TransactionList({
   }, [displayTransactions, featuredTitle, featuredTransactions]);
 
   const renderTransaction = useCallback(
-    ({ item: transaction }: { item: any }) => {
+    ({ item: transaction }: { item: Transaction }) => {
       const categoryName = transaction.category?.name || "Other";
       const iconName = getCategoryIcon(categoryName);
       const categoryColor = getCategoryColor(categoryName);
@@ -178,7 +179,7 @@ export default function TransactionList({
                 className={`w-12 h-12 rounded-full justify-center items-center mr-3 ${categoryColor.bg}`}
               >
                 <Icon
-                  name={iconName as any}
+                  name={iconName}
                   size={24}
                   className={categoryColor.text}
                 />

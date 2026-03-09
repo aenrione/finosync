@@ -2,12 +2,19 @@ import { StateCreator } from "zustand"
 
 import { Tag } from "@/types/tag"
 
+import { RouterSlice } from "./router.store"
+
 export interface TagSlice {
   currentTag?: Tag
   setCurrentTag: (tag?: Tag) => void
 }
 
-export const createTagSlice: StateCreator<TagSlice & { router: any }> = (set, get) => ({
+export const createTagSlice: StateCreator<
+  TagSlice & RouterSlice,
+  [],
+  [],
+  TagSlice
+> = (set, get) => ({
   currentTag: undefined,
   setCurrentTag: (tag) => {
     set({ currentTag: tag })
