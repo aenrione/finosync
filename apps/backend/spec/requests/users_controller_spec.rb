@@ -64,6 +64,33 @@ RSpec.describe UsersController, type: :request do
     end
   end
 
+  describe "DELETE /user" do
+    it "destroys the current user and returns no content" do
+      delete "/user", headers: auth_headers
+
+      expect(response).to have_http_status(:no_content)
+      expect(User.find_by(id: user.id)).to be_nil
+    end
+
+    it "destroys all associated records" do
+      create(:session, user: user)
+
+      delete "/user", headers: auth_headers
+
+      expect(response).to have_http_status(:no_content)
+      expect(Session.where(user_id: user.id)).to be_empty
+    end
+  end
+
+  describe "PATCH /user/preferences" do
+    it "updates preferred_currency" do
+      patch "/user/preferences", params: { preferred_currency: "USD" }, headers: auth_headers
+
+      expect(response).to have_http_status(:ok)
+      expect(user.reload.preferred_currency).to eq("USD")
+    end
+  end
+
   describe "POST /set_quota" do
     context "with valid quota param" do
       it "updates the user's quota" do

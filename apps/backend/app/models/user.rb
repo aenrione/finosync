@@ -2,17 +2,21 @@
 #
 # Table name: users
 #
-#  id                 :integer          not null, primary key
-#  balance            :decimal(14, 2)   default(0.0)
-#  email_address      :string           not null
-#  expense            :decimal(14, 2)   default(0.0)
-#  income             :decimal(14, 2)   default(0.0)
-#  investments_return :decimal(14, 2)   default(0.0)
-#  name               :string           not null
-#  password_digest    :string           not null
-#  quota              :decimal(14, 2)   default(0.0)
-#  created_at         :datetime         not null
-#  updated_at         :datetime         not null
+#  id                   :integer          not null, primary key
+#  balance              :decimal(14, 2)   default(0.0)
+#  email_address        :string           not null
+#  expense              :decimal(14, 2)   default(0.0)
+#  financial_goals      :text
+#  income               :decimal(14, 2)   default(0.0)
+#  investments_return   :decimal(14, 2)   default(0.0)
+#  monthly_income       :decimal(14, 2)   default(0.0)
+#  name                 :string           not null
+#  onboarding_completed :boolean          default(FALSE)
+#  password_digest      :string           not null
+#  preferred_currency   :string
+#  quota                :decimal(14, 2)   default(0.0)
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
 #
 # Indexes
 #
@@ -38,6 +42,11 @@ class User < ApplicationRecord
   monetize :expense, as: "expense_amount"
   monetize :investments_return, as: "investments_amount"
   monetize :quota, as: "quota_amount"
+  monetize :monthly_income, as: "monthly_income_amount"
+
+  serialize :financial_goals, coder: JSON
+
+  validates :preferred_currency, length: { maximum: 5 }, allow_nil: true
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 

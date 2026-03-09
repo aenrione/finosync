@@ -5,6 +5,9 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   # User
+  post "/user", to: "users#create"
+  patch "/user/preferences", to: "users#update_preferences"
+  delete "/user", to: "users#destroy"
   get "/user", to: "users#show"
   get "/user/balances", to: "users#balances"
   get "/user/capabilities", to: "users#get_capabilities"

@@ -2,17 +2,21 @@
 #
 # Table name: users
 #
-#  id                 :integer          not null, primary key
-#  balance            :decimal(14, 2)   default(0.0)
-#  email_address      :string           not null
-#  expense            :decimal(14, 2)   default(0.0)
-#  income             :decimal(14, 2)   default(0.0)
-#  investments_return :decimal(14, 2)   default(0.0)
-#  name               :string           not null
-#  password_digest    :string           not null
-#  quota              :decimal(14, 2)   default(0.0)
-#  created_at         :datetime         not null
-#  updated_at         :datetime         not null
+#  id                   :integer          not null, primary key
+#  balance              :decimal(14, 2)   default(0.0)
+#  email_address        :string           not null
+#  expense              :decimal(14, 2)   default(0.0)
+#  financial_goals      :text
+#  income               :decimal(14, 2)   default(0.0)
+#  investments_return   :decimal(14, 2)   default(0.0)
+#  monthly_income       :decimal(14, 2)   default(0.0)
+#  name                 :string           not null
+#  onboarding_completed :boolean          default(FALSE)
+#  password_digest      :string           not null
+#  preferred_currency   :string
+#  quota                :decimal(14, 2)   default(0.0)
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
 #
 # Indexes
 #
@@ -48,5 +52,11 @@ class UserSerializer
   end
   attribute :investments_return do |object|
     object.investments_amount.format
+  end
+
+  attributes :preferred_currency, :onboarding_completed, :financial_goals
+
+  attribute :monthly_income do |object|
+    object.monthly_income_amount.format
   end
 end

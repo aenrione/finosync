@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_09_000007) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_09_154946) do
   create_table "account_assets", force: :cascade do |t|
     t.string "name", null: false
     t.date "creation_date"
@@ -254,6 +254,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_09_000007) do
     t.decimal "quota", precision: 14, scale: 2, default: "0.0"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "preferred_currency"
+    t.decimal "monthly_income", precision: 14, scale: 2, default: "0.0"
+    t.text "financial_goals"
+    t.boolean "onboarding_completed", default: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
