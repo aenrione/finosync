@@ -38,3 +38,5 @@ pnpm-debug.log*
 .claude/worktrees
 .worktrees/
 .playwright-mcp
+screenshots
+docs/plans
