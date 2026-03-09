@@ -1,28 +1,30 @@
-import {
-  View,
-  ScrollView,
-  Switch,
-  TouchableOpacity,
-  Alert,
-} from "react-native"
-import DateTimePicker from "@react-native-community/datetimepicker"
+import { View, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native"
 import { useRouter, useLocalSearchParams } from "expo-router"
-import { Picker } from "@react-native-picker/picker"
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "@/locale/app/add-transaction.text"
+import {
+  DollarSign,
+  FileText,
+  MessageSquare,
+  Tag,
+} from "lucide-react-native"
 
 import { useTransactions } from "@/context/transactions.context"
 import { useCategories } from "@/context/categories.context"
 import { useDashboard } from "@/context/dashboard.context"
+import { FormField } from "@/components/ui/form-field"
+import { MoneyInput } from "@/components/ui/money-input"
+import { FormSelect } from "@/components/ui/form-select"
+import { FormDatePicker } from "@/components/ui/form-date-picker"
+import { FormToggle } from "@/components/ui/form-toggle"
+import { FormSection } from "@/components/ui/form-section"
 import BackHeader from "@/components/back-header"
-import { useAccounts } from "@/context/accounts.context"
 import { Button, ButtonText } from "@/components/ui/button"
-import { Transaction } from "@/types/transaction"
-import { Input } from "@/components/ui/input"
 import { Text } from "@/components/ui/text"
 import { useStore } from "@/utils/store"
 import { TagSelector } from "@/components/features/tags/tag-selector"
 import { tagService } from "@/services/tag.service"
+import { colors } from "@/lib/colors"
 
 const AddTransaction = () => {
   const text = useTranslation()
@@ -39,14 +41,12 @@ const AddTransaction = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [selectedAccount, setSelectedAccount] = useState<number | null>(null)
   const [isIncome, setIsIncome] = useState(true)
-  const [showDatePicker, setShowDatePicker] = useState(false)
   const [date, setDate] = useState(new Date())
   const [amount, setAmount] = useState("")
   const [comment, setComment] = useState("")
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
   const [loading, setLoading] = useState(false)
 
-  // Filter accounts to only show local accounts for manual transactions
   const localAccounts = accounts?.filter(account => account.account_type === "local") || []
 
   const parseAmount = (value: string): number => {
@@ -56,14 +56,13 @@ const AddTransaction = () => {
 
   const isValid = (): boolean => !!(
     selectedAccount &&
-      description.trim() &&
-      amount.trim() &&
-      parseFloat(amount) > 0
+    description.trim() &&
+    amount.trim() &&
+    parseFloat(amount) > 0
   )
 
   useEffect(() => {
     if (transaction) {
-      // Editing existing transaction
       setDescription(transaction.description || "")
       setSelectedCategory(transaction.transaction_category_id || null)
       setSelectedAccount(transaction.account_id || null)
@@ -73,19 +72,15 @@ const AddTransaction = () => {
       setComment(transaction.comment || "")
       setSelectedTagIds(transaction.tags?.map((t) => t.id) || [])
     } else {
-      // Creating new transaction
       if (accountId && localAccounts.length > 0) {
-        // Pre-select account from URL parameter
         const accountIdNum = parseInt(accountId)
         const targetAccount = localAccounts.find(acc => acc.id === accountIdNum)
         if (targetAccount) {
           setSelectedAccount(targetAccount.id as number)
         } else {
-          // Fallback to first local account if specified account not found
           setSelectedAccount(localAccounts[0].id as number)
         }
       } else if (localAccounts.length > 0) {
-        // Default to first local account
         setSelectedAccount(localAccounts[0].id as number)
       }
 
@@ -111,14 +106,12 @@ const AddTransaction = () => {
       }
 
       if (transaction) {
-        // Update existing transaction
         await updateTransaction(transaction.id, transactionData)
         if (selectedTagIds.length > 0) {
           await tagService.setTransactionTags(transaction.id, selectedTagIds)
         }
         Alert.alert("Success", "Transaction updated successfully")
       } else {
-        // Create new transaction
         const created = await createTransaction(transactionData)
         if (selectedTagIds.length > 0 && created?.id) {
           await tagService.setTransactionTags(created.id, selectedTagIds)
@@ -126,7 +119,6 @@ const AddTransaction = () => {
         Alert.alert("Success", "Transaction created successfully")
       }
 
-      // Clear current transaction and go back
       setCurrentTransaction(undefined)
       router.back()
     } catch (error) {
@@ -134,13 +126,6 @@ const AddTransaction = () => {
       Alert.alert("Error", error instanceof Error ? error.message : "Failed to save transaction")
     } finally {
       setLoading(false)
-    }
-  }
-
-  const onChangeDate = (_event: any, selectedDate?: Date) => {
-    setShowDatePicker(false)
-    if (selectedDate) {
-      setDate(selectedDate)
     }
   }
 
@@ -152,9 +137,7 @@ const AddTransaction = () => {
           <Text className="text-foreground text-lg text-center mb-4">
             You need to create a local account first to add manual transactions.
           </Text>
-          <Button
-            onPress={() => router.push("/(app)/add-account")}
-          >
+          <Button onPress={() => router.push("/(app)/add-account")}>
             <ButtonText>Create Local Account</ButtonText>
           </Button>
         </View>
@@ -162,146 +145,134 @@ const AddTransaction = () => {
     )
   }
 
+  const accountOptions = localAccounts.map((account) => ({
+    value: account.id as number,
+    label: account.account_name,
+  }))
+
+  const categoryOptions = [
+    { value: null, label: "No Category" },
+    ...categories.map((category) => ({
+      value: category.id,
+      label: category.name,
+    })),
+  ]
+
   return (
     <View className="flex-1 bg-background">
       <BackHeader title={transaction ? text.titleEdit : text.titleNew} />
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        {/* Amount */}
-        <View className="mb-6">
-          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.amount}</Text>
-          <Input
-            value={amount}
-            placeholder={text.amountPlaceholder}
-            keyboardType="numeric"
-            onChangeText={setAmount}
-            className="w-full"
-          />
-        </View>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          className="flex-1 px-5"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="pt-2" />
 
-        {/* Description */}
-        <View className="mb-6">
-          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.desc}</Text>
-          <Input
-            value={description}
-            placeholder={text.descPlaceholder}
-            onChangeText={setDescription}
-            className="w-full"
-          />
-        </View>
-
-        {/* Comment */}
-        <View className="mb-6">
-          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.comment}</Text>
-          <Input
-            value={comment}
-            placeholder="Add a comment..."
-            onChangeText={setComment}
-            multiline
-            numberOfLines={3}
-            className="w-full"
-          />
-        </View>
-
-        {/* Account Picker */}
-        <View className="mb-6">
-          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.account}</Text>
-          <View className="rounded-lg bg-muted border border-border overflow-hidden">
-            <Picker
-              selectedValue={selectedAccount}
-              onValueChange={(value) => setSelectedAccount(value)}
-              className="text-foreground"
-            >
-              {localAccounts.map((account) => (
-                <Picker.Item
-                  key={account.id}
-                  label={account.account_name}
-                  value={account.id}
-                />
-              ))}
-            </Picker>
-          </View>
-        </View>
-
-        {/* Category Picker */}
-        <View className="mb-6">
-          <Text className="text-sm font-medium text-muted-foreground mb-1.5">
-            {text.category}
-          </Text>
-          <View className="rounded-lg bg-muted border border-border overflow-hidden">
-            <Picker
-              selectedValue={selectedCategory}
-              onValueChange={(value) => setSelectedCategory(value)}
-              className="text-foreground"
-            >
-              <Picker.Item label="No Category" value={null} />
-              {categories.map((category) => (
-                <Picker.Item
-                  key={category.id}
-                  label={category.name}
-                  value={category.id}
-                />
-              ))}
-            </Picker>
-          </View>
-        </View>
-
-        {/* Tags */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">Tags (Optional)</Text>
-          <TagSelector
-            selectedTagIds={selectedTagIds}
-            onSelectionChange={setSelectedTagIds}
-          />
-        </View>
-
-        {/* Transaction Type Switch */}
-        <View className="mb-6">
-          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.type}</Text>
-          <View className="flex-row justify-between items-center p-4 rounded-lg bg-muted border border-border">
-            <Text className={`text-base font-medium ${isIncome ? "text-income" : "text-muted-foreground"}`}>
-              {text.income}
-            </Text>
-            <Switch
-              value={!isIncome}
-              onValueChange={() => setIsIncome(!isIncome)}
+          {/* Amount & Type */}
+          <FormSection title="Amount">
+            <MoneyInput
+              label={text.amount}
+              value={amount}
+              placeholder={text.amountPlaceholder}
+              onChangeValue={setAmount}
+              icon={DollarSign}
+              required
             />
-            <Text className={`text-base font-medium ${!isIncome ? "text-expense" : "text-muted-foreground"}`}>
-              {text.expense}
-            </Text>
-          </View>
-        </View>
 
-        {/* Date Picker */}
-        <View className="mb-6">
-          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.date}</Text>
-          <TouchableOpacity
-            onPress={() => setShowDatePicker(true)}
-            className="p-4 rounded-lg bg-muted border border-border"
-          >
-            <Text className="text-foreground text-base">{date.toLocaleDateString()}</Text>
-          </TouchableOpacity>
-        </View>
+            <FormToggle
+              label={text.type}
+              value={isIncome}
+              onValueChange={setIsIncome}
+              variant="segment"
+              leftLabel={text.income}
+              rightLabel={text.expense}
+              leftColor={colors.income}
+              rightColor={colors.expense}
+              containerClassName="mb-0"
+            />
+          </FormSection>
 
-        {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display="default"
-            onChange={onChangeDate}
-            maximumDate={new Date()}
-          />
-        )}
-      </ScrollView>
+          {/* Details */}
+          <FormSection title="Details">
+            <FormField
+              label={text.desc}
+              value={description}
+              placeholder={text.descPlaceholder}
+              onChangeText={setDescription}
+              icon={FileText}
+              required
+            />
 
-      {/* Footer Button */}
-      <View className="p-6 border-t border-border bg-background">
+            <FormField
+              label={text.comment}
+              value={comment}
+              placeholder="Add a comment..."
+              onChangeText={setComment}
+              multiline
+              numberOfLines={3}
+              icon={MessageSquare}
+            />
+          </FormSection>
+
+          {/* Classification */}
+          <FormSection title="Classification">
+            <FormSelect
+              label={text.account}
+              options={accountOptions}
+              value={selectedAccount}
+              onValueChange={(v) => setSelectedAccount(v as number | null)}
+              required
+            />
+
+            <FormSelect
+              label={text.category}
+              options={categoryOptions}
+              value={selectedCategory}
+              onValueChange={(v) => setSelectedCategory(v as number | null)}
+            />
+
+            <View className="mb-5">
+              <Text className="text-sm font-medium text-muted-foreground mb-2">
+                Tags
+              </Text>
+              <TagSelector
+                selectedTagIds={selectedTagIds}
+                onSelectionChange={setSelectedTagIds}
+              />
+            </View>
+          </FormSection>
+
+          {/* Date */}
+          <FormSection title="Date">
+            <FormDatePicker
+              label={text.date}
+              value={date}
+              onChange={setDate}
+              maximumDate={new Date()}
+              containerClassName="mb-0"
+            />
+          </FormSection>
+
+          <View className="h-6" />
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* Footer */}
+      <View className="px-5 py-4 border-t border-border bg-background">
         <Button
           disabled={!isValid() || loading}
           onPress={handleSave}
-          className="w-full rounded-xl"
+          className="w-full"
+          size="lg"
         >
-          <ButtonText>{loading ? "Saving..." : (transaction ? "Update" : "Save")}</ButtonText>
+          <ButtonText size="lg">
+            {loading ? "Saving..." : (transaction ? "Update" : "Save")}
+          </ButtonText>
         </Button>
       </View>
     </View>

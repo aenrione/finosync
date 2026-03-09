@@ -1,16 +1,22 @@
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Modal,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState } from "react";
+import { DollarSign, Calendar, Link2, Save } from "lucide-react-native";
 
 import { colors } from "@/lib/colors";
 import { ShoppingItem, ShoppingItemFormData } from "@/types/shopping";
+import { FormField } from "@/components/ui/form-field";
+import { MoneyInput } from "@/components/ui/money-input";
+import { FormSection } from "@/components/ui/form-section";
+import { showAmount } from "@/utils/currency";
 import Icon from "@/components/ui/icon";
 
 interface ShoppingItemFormProps {
@@ -70,26 +76,25 @@ export function ShoppingItemForm({
         {/* Header */}
         <View className="flex-row items-center justify-between px-5 pt-2 pb-4 bg-card border-b border-border">
           <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-muted items-center justify-center"
+            className="w-10 h-10 rounded-lg bg-surface items-center justify-center"
             onPress={onCancel}
           >
             <Icon name="X" className="text-muted-foreground" size={20} />
           </TouchableOpacity>
           <Text className="text-lg font-semibold text-foreground">
-            {initialData ? "Edit Shopping Item" : "Add Shopping Item"}
+            {initialData ? "Edit Item" : "Add Item"}
           </Text>
           <TouchableOpacity
-            className={`px-4 py-2 rounded-xl flex-row items-center ${isValid ? "bg-primary" : "bg-muted"}`}
+            className={`px-4 py-2.5 rounded-lg flex-row items-center ${isValid ? "bg-primary" : "bg-muted"}`}
             onPress={handleSave}
             disabled={!isValid}
           >
-            <Icon
-              name="Save"
-              className={isValid ? "text-white" : "text-muted-foreground"}
-              size={20}
+            <Save
+              size={16}
+              color={isValid ? "#FFFFFF" : colors.mutedForeground}
             />
             <Text
-              className={`ml-2 font-semibold ${isValid ? "text-white" : "text-muted-foreground"}`}
+              className={`ml-1.5 text-sm font-semibold ${isValid ? "text-white" : "text-muted-foreground"}`}
             >
               Save
             </Text>
@@ -97,95 +102,75 @@ export function ShoppingItemForm({
         </View>
 
         {/* Content */}
-        <ScrollView
-          className="flex-1 px-5"
-          showsVerticalScrollIndicator={false}
+        <KeyboardAvoidingView
+          className="flex-1"
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <View className="mt-5 space-y-5">
-            {/* Title */}
-            <View>
-              <Text className="text-sm font-medium text-foreground mb-2">
-                Title *
-              </Text>
-              <TextInput
-                className="w-full px-4 py-3 border border-border rounded-xl bg-card text-foreground"
+          <ScrollView
+            className="flex-1 px-5"
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View className="pt-4" />
+
+            <FormSection title="Item Details">
+              <FormField
+                label="Title"
                 placeholder="Item name"
-                placeholderTextColor={colors.mutedForeground}
                 value={title}
                 onChangeText={setTitle}
+                required
               />
-            </View>
 
-            {/* Description */}
-            <View>
-              <Text className="text-sm font-medium text-foreground mb-2">
-                Description
-              </Text>
-              <TextInput
-                className="w-full px-4 py-3 border border-border rounded-xl bg-card text-foreground"
+              <FormField
+                label="Description"
                 placeholder="Brief description (optional)"
-                placeholderTextColor={colors.mutedForeground}
                 value={description}
                 onChangeText={setDescription}
                 multiline
                 numberOfLines={3}
-                textAlignVertical="top"
               />
-            </View>
 
-            {/* Price */}
-            <View>
-              <Text className="text-sm font-medium text-foreground mb-2">
-                Price *
-              </Text>
-              <TextInput
-                className="w-full px-4 py-3 border border-border rounded-xl bg-card text-foreground"
+              <MoneyInput
+                label="Price"
                 placeholder="0.00"
-                placeholderTextColor={colors.mutedForeground}
                 value={price}
-                onChangeText={setPrice}
-                keyboardType="numeric"
+                onChangeValue={setPrice}
+                icon={DollarSign}
+                required
+                containerClassName="mb-0"
               />
-            </View>
+            </FormSection>
 
-            {/* Purchase Date */}
-            <View>
-              <Text className="text-sm font-medium text-foreground mb-2">
-                Purchase Date
-              </Text>
-              <TextInput
-                className="w-full px-4 py-3 border border-border rounded-xl bg-card text-foreground"
+            <FormSection title="Additional Info">
+              <FormField
+                label="Purchase Date"
                 placeholder="YYYY-MM-DD (optional)"
-                placeholderTextColor={colors.mutedForeground}
                 value={purchaseDate}
                 onChangeText={setPurchaseDate}
+                icon={Calendar}
               />
-            </View>
 
-            {/* Source URL */}
-            <View>
-              <Text className="text-sm font-medium text-foreground mb-2">
-                Source URL
-              </Text>
-              <TextInput
-                className="w-full px-4 py-3 border border-border rounded-xl bg-card text-foreground"
+              <FormField
+                label="Source URL"
                 placeholder="https://example.com (optional)"
-                placeholderTextColor={colors.mutedForeground}
                 value={sourceHref}
                 onChangeText={setSourceHref}
                 keyboardType="url"
                 autoCapitalize="none"
                 autoCorrect={false}
+                icon={Link2}
+                containerClassName="mb-0"
               />
-            </View>
+            </FormSection>
 
             {/* Summary */}
             {isValid && (
-              <View className="bg-card rounded-2xl p-4 border border-border">
-                <Text className="text-sm font-medium text-foreground mb-3">
+              <View className="rounded-xl border border-primary/20 bg-primary-light p-4 mb-4">
+                <Text className="text-xs font-semibold uppercase tracking-wider text-primary mb-3">
                   Summary
                 </Text>
-                <View className="space-y-2">
+                <View className="gap-2">
                   <View className="flex-row justify-between">
                     <Text className="text-sm text-muted-foreground">Item</Text>
                     <Text className="text-sm font-medium text-foreground">
@@ -194,15 +179,17 @@ export function ShoppingItemForm({
                   </View>
                   <View className="flex-row justify-between">
                     <Text className="text-sm text-muted-foreground">Price</Text>
-                    <Text className="text-sm font-medium text-foreground">
-                      ${parseFloat(price).toFixed(2)}
+                    <Text className="text-sm font-semibold text-primary">
+                      {showAmount(price)}
                     </Text>
                   </View>
                 </View>
               </View>
             )}
-          </View>
-        </ScrollView>
+
+            <View className="h-6" />
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
   );

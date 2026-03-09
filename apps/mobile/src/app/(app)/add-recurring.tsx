@@ -1,19 +1,22 @@
 import { useRouter } from "expo-router";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { Picker } from "@react-native-picker/picker";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Switch,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { DollarSign, FileText, MessageSquare } from "lucide-react-native";
 
 import ScreenHeader from "@/components/screen-header";
 import { Button, ButtonText } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/ui/form-field";
+import { MoneyInput } from "@/components/ui/money-input";
+import { FormSelect } from "@/components/ui/form-select";
+import { FormDatePicker } from "@/components/ui/form-date-picker";
+import { FormToggle } from "@/components/ui/form-toggle";
+import { FormSection } from "@/components/ui/form-section";
 import { Text } from "@/components/ui/text";
 import { useCategories } from "@/context/categories.context";
 import { useDashboard } from "@/context/dashboard.context";
@@ -23,6 +26,7 @@ import {
   RecurringFrequency,
   RecurringTransactionFormData,
 } from "@/types/recurring-transaction";
+import { colors } from "@/lib/colors";
 
 const FREQUENCIES: { value: RecurringFrequency; label: string }[] = [
   { value: "weekly", label: "Weekly" },
@@ -78,10 +82,6 @@ const AddRecurring = () => {
   );
   const [notes, setNotes] = useState(currentRecurring?.notes || "");
   const [loading, setLoading] = useState(false);
-
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showNextDueDatePicker, setShowNextDueDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [hasEndDate, setHasEndDate] = useState(!!currentRecurring?.end_date);
 
   const localAccounts =
@@ -148,6 +148,24 @@ const AddRecurring = () => {
     router.back();
   };
 
+  const frequencyOptions = FREQUENCIES.map((f) => ({
+    value: f.value,
+    label: f.label,
+  }));
+
+  const accountOptions = localAccounts.map((account) => ({
+    value: account.id as number,
+    label: account.account_name,
+  }));
+
+  const categoryOptions = [
+    { value: null, label: "No Category" },
+    ...categories.map((cat) => ({
+      value: cat.id,
+      label: cat.name,
+    })),
+  ];
+
   return (
     <View className="flex-1 bg-background">
       <ScreenHeader
@@ -155,216 +173,138 @@ const AddRecurring = () => {
         variant="back"
       />
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        {/* Name */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">Name</Text>
-          <Input
-            value={name}
-            onChangeText={setName}
-            placeholder="e.g., Netflix, Rent..."
-          />
-        </View>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          className="flex-1 px-5"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="pt-2" />
 
-        {/* Amount */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">Amount</Text>
-          <Input
-            value={amount}
-            onChangeText={setAmount}
-            placeholder="0"
-            keyboardType="numeric"
-          />
-        </View>
+          {/* Basics */}
+          <FormSection title="Basics">
+            <FormField
+              label="Name"
+              value={name}
+              onChangeText={setName}
+              placeholder="e.g., Netflix, Rent..."
+              icon={FileText}
+              required
+            />
 
-        {/* Type Toggle */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">Type</Text>
-          <View className="flex-row justify-between items-center p-4 rounded-lg bg-muted border border-border">
-            <Text
-              className={`text-base font-medium ${!isExpense ? "text-green-600" : "text-muted-foreground"}`}
-            >
-              Income
-            </Text>
-            <Switch value={isExpense} onValueChange={setIsExpense} />
-            <Text
-              className={`text-base font-medium ${isExpense ? "text-red-600" : "text-muted-foreground"}`}
-            >
-              Expense
-            </Text>
-          </View>
-        </View>
+            <MoneyInput
+              label="Amount"
+              value={amount}
+              onChangeValue={setAmount}
+              placeholder="0"
+              icon={DollarSign}
+              required
+            />
 
-        {/* Frequency */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">Frequency</Text>
-          <View className="rounded-lg bg-muted border border-border overflow-hidden">
-            <Picker
-              selectedValue={frequency}
-              onValueChange={(value) => setFrequency(value)}
-              className="text-foreground"
-            >
-              {FREQUENCIES.map((f) => (
-                <Picker.Item key={f.value} label={f.label} value={f.value} />
-              ))}
-            </Picker>
-          </View>
-        </View>
+            <FormToggle
+              label="Type"
+              value={!isExpense}
+              onValueChange={(v) => setIsExpense(!v)}
+              variant="segment"
+              leftLabel="Income"
+              rightLabel="Expense"
+              leftColor={colors.income}
+              rightColor={colors.expense}
+            />
 
-        {/* Start Date */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">Start Date</Text>
-          <TouchableOpacity
-            onPress={() => setShowStartDatePicker(true)}
-            className="p-4 rounded-lg bg-muted border border-border"
-          >
-            <Text className="text-foreground">
-              {startDate.toLocaleDateString()}
-            </Text>
-          </TouchableOpacity>
-          {showStartDatePicker && (
-            <DateTimePicker
+            <FormSelect
+              label="Frequency"
+              options={frequencyOptions}
+              value={frequency}
+              onValueChange={(v) => setFrequency(v as RecurringFrequency)}
+              required
+              containerClassName="mb-0"
+            />
+          </FormSection>
+
+          {/* Schedule */}
+          <FormSection title="Schedule">
+            <FormDatePicker
+              label="Start Date"
               value={startDate}
-              mode="date"
-              onChange={(_, d) => {
-                setShowStartDatePicker(Platform.OS === "ios");
-                if (d) setStartDate(d);
-              }}
+              onChange={setStartDate}
             />
-          )}
-        </View>
 
-        {/* Next Due Date */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">
-            Next Due Date
-          </Text>
-          <TouchableOpacity
-            onPress={() => setShowNextDueDatePicker(true)}
-            className="p-4 rounded-lg bg-muted border border-border"
-          >
-            <Text className="text-foreground">
-              {nextDueDate.toLocaleDateString()}
-            </Text>
-          </TouchableOpacity>
-          {showNextDueDatePicker && (
-            <DateTimePicker
+            <FormDatePicker
+              label="Next Due Date"
               value={nextDueDate}
-              mode="date"
-              onChange={(_, d) => {
-                setShowNextDueDatePicker(Platform.OS === "ios");
-                if (d) setNextDueDate(d);
-              }}
+              onChange={setNextDueDate}
             />
-          )}
-        </View>
 
-        {/* End Date Toggle */}
-        <View className="mb-6">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-sm text-muted-foreground">
-              End Date (optional)
-            </Text>
-            <Switch value={hasEndDate} onValueChange={setHasEndDate} />
-          </View>
-          {hasEndDate && (
-            <>
-              <TouchableOpacity
-                onPress={() => setShowEndDatePicker(true)}
-                className="p-4 rounded-lg bg-muted border border-border"
-              >
-                <Text className="text-foreground">
-                  {endDate ? endDate.toLocaleDateString() : "Select end date"}
-                </Text>
-              </TouchableOpacity>
-              {showEndDatePicker && (
-                <DateTimePicker
-                  value={endDate || new Date()}
-                  mode="date"
-                  onChange={(_, d) => {
-                    setShowEndDatePicker(Platform.OS === "ios");
-                    if (d) setEndDate(d);
-                  }}
-                />
-              )}
-            </>
-          )}
-        </View>
+            <FormToggle
+              value={hasEndDate}
+              onValueChange={setHasEndDate}
+              title="Has End Date"
+              subtitle="Set an optional end date for this recurring transaction"
+            />
 
-        {/* Auto Create Toggle */}
-        <View className="mb-6 flex-row items-center justify-between p-4 rounded-lg bg-muted border border-border">
-          <View className="flex-1 mr-4">
-            <Text className="text-sm font-medium text-foreground">
-              Auto-create transactions
-            </Text>
-            <Text className="text-xs text-muted-foreground">
-              Automatically create a transaction when due
-            </Text>
-          </View>
-          <Switch value={autoCreate} onValueChange={setAutoCreate} />
-        </View>
+            {hasEndDate && (
+              <FormDatePicker
+                label="End Date"
+                value={endDate || new Date()}
+                onChange={setEndDate}
+                containerClassName="mb-0"
+              />
+            )}
+          </FormSection>
 
-        {/* Account Picker (required when auto-create) */}
-        {autoCreate && (
-          <View className="mb-6">
-            <Text className="text-sm text-muted-foreground mb-2">
-              Account (required for auto-create)
-            </Text>
-            <View className="rounded-lg bg-muted border border-border overflow-hidden">
-              <Picker
-                selectedValue={selectedAccountId}
-                onValueChange={(value) => setSelectedAccountId(value)}
-                className="text-foreground"
-              >
-                {localAccounts.map((account) => (
-                  <Picker.Item
-                    key={account.id}
-                    label={account.account_name}
-                    value={account.id}
-                  />
-                ))}
-              </Picker>
-            </View>
-          </View>
-        )}
+          {/* Automation */}
+          <FormSection title="Automation">
+            <FormToggle
+              value={autoCreate}
+              onValueChange={setAutoCreate}
+              title="Auto-create transactions"
+              subtitle="Automatically create a transaction when due"
+            />
 
-        {/* Category Picker */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">
-            Category (optional)
-          </Text>
-          <View className="rounded-lg bg-muted border border-border overflow-hidden">
-            <Picker
-              selectedValue={selectedCategoryId}
-              onValueChange={(value) => setSelectedCategoryId(value)}
-              className="text-foreground"
-            >
-              <Picker.Item label="No Category" value={null} />
-              {categories.map((cat) => (
-                <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
-              ))}
-            </Picker>
-          </View>
-        </View>
+            {autoCreate && (
+              <FormSelect
+                label="Account"
+                options={accountOptions}
+                value={selectedAccountId}
+                onValueChange={(v) => setSelectedAccountId(v as number | null)}
+                required
+                helperText="Required for auto-create"
+              />
+            )}
+          </FormSection>
 
-        {/* Notes */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">
-            Notes (optional)
-          </Text>
-          <Input
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Add notes..."
-            multiline
-            numberOfLines={3}
-          />
-        </View>
-      </ScrollView>
+          {/* Classification */}
+          <FormSection title="Classification">
+            <FormSelect
+              label="Category"
+              options={categoryOptions}
+              value={selectedCategoryId}
+              onValueChange={(v) => setSelectedCategoryId(v as number | null)}
+            />
 
-      {/* Footer Buttons */}
-      <View className="p-6 border-t border-border bg-background">
-        <View className="flex-row space-x-3">
+            <FormField
+              label="Notes"
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Add notes..."
+              multiline
+              numberOfLines={3}
+              icon={MessageSquare}
+              containerClassName="mb-0"
+            />
+          </FormSection>
+
+          <View className="h-6" />
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* Footer */}
+      <View className="px-5 py-4 border-t border-border bg-background">
+        <View className="flex-row gap-3">
           <Button variant="secondary" onPress={handleCancel} className="flex-1">
             <ButtonText variant="secondary">Cancel</ButtonText>
           </Button>

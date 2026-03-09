@@ -8,8 +8,9 @@ import {
 } from "react-native";
 
 import Icon from "@/components/ui/icon";
-import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Text } from "@/components/ui/text";
+import { IconName } from "@/types/icon";
 import { BudgetAllocation } from "@/types/budget-period";
 import { showAmount } from "@/utils/currency";
 import { useStore } from "@/utils/store";
@@ -72,7 +73,7 @@ export default function EditAllocationModal({
             <View className="flex-row items-center">
               <View className="w-10 h-10 rounded-full bg-muted justify-center items-center mr-3">
                 <Icon
-                  name={allocation.category_icon as any}
+                  name={allocation.category_icon as IconName}
                   size={20}
                   className="text-muted-foreground"
                 />
@@ -102,16 +103,12 @@ export default function EditAllocationModal({
           </View>
 
           {/* Budget input */}
-          <Text className="text-sm text-muted-foreground mb-2">
-            Budget Amount
-          </Text>
-          <Input
+          <MoneyInput
+            label="Budget Amount"
             value={amount}
-            onChangeText={setAmount}
-            keyboardType="numeric"
+            onChangeValue={setAmount}
             placeholder="0"
-            className="text-lg font-mono mb-6"
-            autoFocus
+            containerClassName="mb-6"
           />
 
           {/* Save button */}
