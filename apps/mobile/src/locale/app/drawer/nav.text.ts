@@ -13,6 +13,7 @@ export const useTranslation = () =>
         crypto: "Crypto Markets",
         settings: "Settings",
         about: "About",
+        feedback: "Feedback",
       } as Record<string, string>,
     },
     es: {
@@ -26,6 +27,7 @@ export const useTranslation = () =>
         crypto: "Mercados Cripto",
         settings: "Ajustes",
         about: "Acerca de",
+        feedback: "Comentarios",
       } as Record<string, string>,
     },
   });

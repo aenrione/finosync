@@ -4,6 +4,7 @@ export const useTranslation = () =>
   useTranslationFactory({
     en: {
       tagline: "Your personal finance companion",
+      timeRange: "Time Range",
       guest: "Guest",
       logout: "Logout",
       sections: {
@@ -21,10 +22,12 @@ export const useTranslation = () =>
         recurring: "Recurring",
         settings: "Settings",
         about: "About",
+        feedback: "Feedback",
       },
     },
     es: {
       tagline: "Tu compañero de finanzas personales",
+      timeRange: "Rango de Tiempo",
       guest: "Invitado",
       logout: "Cerrar Sesión",
       sections: {
@@ -42,6 +45,7 @@ export const useTranslation = () =>
         recurring: "Recurrentes",
         settings: "Ajustes",
         about: "Acerca de",
+        feedback: "Comentarios",
       },
     },
   });
