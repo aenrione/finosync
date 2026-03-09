@@ -1,4 +1,4 @@
-class GetUserBalances < PowerTypes::Command.new(:user, :currency)
+class GetUserBalances < PowerTypes::Command.new(:user, currency: nil)
   def perform
     accounts = @user.accounts
     accounts = accounts.where(currency: @currency) if @currency.present?
