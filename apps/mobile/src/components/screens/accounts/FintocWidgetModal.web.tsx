@@ -47,8 +47,8 @@ const FintocWidgetModal = ({ visible, onSuccess, onExit }: Props) => {
         product: "movements",
         holderType: "individual",
         country: "cl",
-        onSuccess: (linkIntent: Record<string, any>) => {
-          const token: string = linkIntent?.link_token ?? linkIntent?.exchangeToken ?? ""
+        onSuccess: (linkIntent: Record<string, unknown>) => {
+          const token = String(linkIntent?.link_token ?? linkIntent?.exchangeToken ?? "")
           onSuccessRef.current(token)
         },
         onExit: () => onExitRef.current(),

@@ -4,7 +4,6 @@ import {
   TouchableOpacity,
   Switch,
   Linking,
-  Alert,
   Modal,
   Pressable,
 } from "react-native"
@@ -13,7 +12,9 @@ import { useQueryClient } from "react-query"
 import React, { useState } from "react"
 import Constants from "expo-constants"
 
+import { updatePreferences, deleteAccount } from "@/services/user.service"
 import { useTranslation } from "@/locale/app/drawer/settings.text"
+import ConfirmDialog from "@/components/confirm-dialog"
 import { Card, CardContent, Divider } from "@/components/ui/card"
 import { APP_LANGUAGES } from "@/shared/locale/config"
 import ScreenHeader from "@/components/screen-header"
@@ -184,13 +185,23 @@ export default function SettingsScreen() {
   const budgetWarnings = useStore((s) => s.budgetWarnings)
   const setBudgetWarnings = useStore((s) => s.setBudgetWarnings)
 
-  const handleCurrencyChange = (currency: string) => {
+  const logout = useStore((s) => s.logout)
+
+  const handleCurrencyChange = async (currency: string) => {
     setBaseCurrency(currency)
+    try {
+      await updatePreferences({ preferred_currency: currency })
+    } catch {
+      // preference saved locally even if sync fails
+    }
     queryClient.invalidateQueries()
   }
 
   const [urlModalVisible, setUrlModalVisible] = useState(false)
   const [tempUrl, setTempUrl] = useState(url)
+  const [clearCacheOpen, setClearCacheOpen] = useState(false)
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState(false)
 
   const handleSaveUrl = () => {
     setUrl(tempUrl)
@@ -199,20 +210,18 @@ export default function SettingsScreen() {
 
   const handleClearCache = () => {
     queryClient.clear()
-    Alert.alert(text.clearCache, text.cacheCleared)
+    setClearCacheOpen(false)
   }
 
-  const handleDeleteAccount = () => {
-    Alert.alert(text.deleteAccount, text.deleteAccountDesc, [
-      { text: text.cancel, style: "cancel" },
-      {
-        text: text.deleteAccount,
-        style: "destructive",
-        onPress: () => {
-          // TODO: implement account deletion API call
-        },
-      },
-    ])
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccount()
+      setDeleteAccountOpen(false)
+      logout()
+    } catch {
+      setDeleteAccountOpen(false)
+      setDeleteError(true)
+    }
   }
 
   return (
@@ -324,14 +333,14 @@ export default function SettingsScreen() {
               icon="Trash2"
               label={text.clearCache}
               description={text.clearCacheDesc}
-              onPress={handleClearCache}
+              onPress={() => setClearCacheOpen(true)}
             />
             <Divider />
             <SettingRow
               icon="UserX"
               label={text.deleteAccount}
               description={text.deleteAccountDesc}
-              onPress={handleDeleteAccount}
+              onPress={() => setDeleteAccountOpen(true)}
               destructive
             />
           </CardContent>
@@ -344,6 +353,41 @@ export default function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      {/* Clear Cache Confirmation */}
+      <ConfirmDialog
+        isOpen={clearCacheOpen}
+        onClose={() => setClearCacheOpen(false)}
+        onConfirm={handleClearCache}
+        title={text.clearCache}
+        message={text.clearCacheConfirm}
+        confirmLabel={text.clearCache}
+        cancelLabel={text.cancel}
+        destructive
+      />
+
+      {/* Delete Account Confirmation */}
+      <ConfirmDialog
+        isOpen={deleteAccountOpen}
+        onClose={() => setDeleteAccountOpen(false)}
+        onConfirm={handleDeleteAccount}
+        title={text.deleteAccount}
+        message={text.deleteAccountDesc}
+        confirmLabel={text.deleteAccount}
+        cancelLabel={text.cancel}
+        destructive
+      />
+
+      {/* Delete Account Error */}
+      <ConfirmDialog
+        isOpen={deleteError}
+        onClose={() => setDeleteError(false)}
+        onConfirm={() => setDeleteError(false)}
+        title={text.deleteAccount}
+        message={text.deleteAccountError}
+        confirmLabel="OK"
+        cancelLabel={text.cancel}
+      />
 
       {/* URL Edit Modal */}
       <Modal

@@ -2,14 +2,18 @@ import { useRouter } from "expo-router"
 import React, { useState } from "react"
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   TouchableOpacity,
   View,
 } from "react-native"
+import { Tag } from "lucide-react-native"
 
-import BackHeader from "@/components/back-header"
+import ScreenHeader from "@/components/screen-header"
 import { Button, ButtonText } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { FormField } from "@/components/ui/form-field"
+import { FormSection } from "@/components/ui/form-section"
 import { Text } from "@/components/ui/text"
 import Icon from "@/components/ui/icon"
 import { useStore } from "@/utils/store"
@@ -70,62 +74,88 @@ const AddTag = () => {
 
   return (
     <View className="flex-1 bg-background">
-      <BackHeader title={isEditing ? "Edit Tag" : "New Tag"} />
+      <ScreenHeader title={isEditing ? "Edit Tag" : "New Tag"} variant="back" />
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        {/* Name Input */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">Tag Name</Text>
-          <Input
-            value={name}
-            onChangeText={setName}
-            placeholder="e.g., Subscription, Travel..."
-          />
-        </View>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          className="flex-1 px-5"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="pt-2" />
 
-        {/* Color Picker */}
-        <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-3">Color</Text>
-          <View className="flex-row flex-wrap gap-3">
-            {TAG_COLORS.map((color) => (
-              <TouchableOpacity
-                key={color}
-                onPress={() => setSelectedColor(color)}
-                className={`h-10 w-10 items-center justify-center rounded-full ${
-                  selectedColor === color ? "border-2 border-foreground" : ""
-                }`}
-                style={{ backgroundColor: color }}
-              >
-                {selectedColor === color && (
-                  <Icon name="Check" size={20} color="white" />
-                )}
-              </TouchableOpacity>
-            ))}
+          <FormSection title="Tag Details">
+            <FormField
+              label="Tag Name"
+              value={name}
+              onChangeText={setName}
+              placeholder="e.g., Subscription, Travel..."
+              icon={Tag}
+              required
+            />
+
+            {/* Color Picker */}
+            <View className="mb-0">
+              <Text className="text-sm font-medium text-muted-foreground mb-3">
+                Color *
+              </Text>
+              <View className="flex-row flex-wrap gap-2.5">
+                {TAG_COLORS.map((color) => (
+                  <TouchableOpacity
+                    key={color}
+                    onPress={() => setSelectedColor(color)}
+                    className={`h-10 w-10 items-center justify-center rounded-lg ${
+                      selectedColor === color ? "border-2 border-foreground" : ""
+                    }`}
+                    style={{ backgroundColor: color }}
+                  >
+                    {selectedColor === color && (
+                      <Icon name="Check" size={18} color="white" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </FormSection>
+
+          {/* Preview */}
+          <View className="rounded-xl border border-border bg-card p-5 mb-4 items-center">
+            <View
+              className="mb-3 h-14 w-14 items-center justify-center rounded-xl"
+              style={{ backgroundColor: selectedColor + "20" }}
+            >
+              <Icon name="Tag" size={28} color={selectedColor} />
+            </View>
+            <Text className="text-lg font-semibold text-foreground">
+              {name || "Tag Name"}
+            </Text>
+            <View
+              className="mt-2 px-3 py-1 rounded-full"
+              style={{ backgroundColor: selectedColor + "15" }}
+            >
+              <Text className="text-xs font-medium" style={{ color: selectedColor }}>
+                {selectedColor}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* Preview */}
-        <View className="mb-6 items-center rounded-xl bg-card p-6 border border-border">
-          <View
-            className="mb-3 h-16 w-16 items-center justify-center rounded-full"
-            style={{ backgroundColor: selectedColor + "20" }}
-          >
-            <Icon name="Tag" size={32} color={selectedColor} />
-          </View>
-          <Text className="text-lg font-semibold text-foreground">
-            {name || "Tag Name"}
-          </Text>
-        </View>
-      </ScrollView>
+          <View className="h-6" />
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-      {/* Footer Buttons */}
-      <View className="p-6 border-t border-border bg-background">
-        <View className="flex-row space-x-3">
+      {/* Footer */}
+      <View className="px-5 py-4 border-t border-border bg-background">
+        <View className="flex-row gap-3">
           <Button variant="secondary" onPress={handleCancel} className="flex-1">
             <ButtonText variant="secondary">Cancel</ButtonText>
           </Button>
           <Button disabled={loading} onPress={handleSave} className="flex-1">
-            <ButtonText>{loading ? "Saving..." : isEditing ? "Update" : "Create"}</ButtonText>
+            <ButtonText>
+              {loading ? "Saving..." : isEditing ? "Update" : "Create"}
+            </ButtonText>
           </Button>
         </View>
       </View>

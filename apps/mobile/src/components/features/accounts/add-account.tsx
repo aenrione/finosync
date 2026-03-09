@@ -10,19 +10,25 @@ import { Button, ButtonText } from "@/components/ui/button"
 import { Account } from "@/types/account"
 import { useStore } from "@/utils/store"
 
+type AccountOption = {
+  subtype?: string;
+  editable?: boolean;
+  fintoc?: boolean;
+}
+
 const AddAccount = () => {
-  const [type, setType] = useState<any>({})
+  const [type, setType] = useState<AccountOption>({})
   const [accName, setName] = useState("")
   const [amount, setAmount] = useState("")
   const [showModal, setShowModal] = useState(false)
-  const [fintocOptions, setFintocOptions] = useState<any>(null)
+  const [fintocOptions, setFintocOptions] = useState<Record<string, unknown> | null>(null)
   const [currency, setCurrency] = useState<string | null>(null)
   const [editable, setEdit] = useState(true)
   const [email, setEmail] = useState("")
   const [secret, setSecret] = useState("")
   const text = useTranslation()
   const currentAccount = useStore((state) => state.currentAccount)
-  const accounts: Account[] = []
+  const accounts: AccountOption[] = []
 
   const isValid = () => (type.editable ? accName !== "" : true)
 
@@ -58,13 +64,13 @@ const AddAccount = () => {
     closeModal()
   }
 
-  const onEvent = (event: any) => {
+  const onEvent = (event: { nativeEvent: { data: string } }) => {
     const data = event.nativeEvent.data
     if (data === "fintocwidget://exit") closeModal()
     else if (data.includes("fintocwidget://succeeded")) onSuccess(data)
   }
 
-  const setAccount = async (acc_type: any) => {
+  const setAccount = async (acc_type: AccountOption) => {
     if (acc_type.fintoc) {
       // TODO: implement getOptions
       setShowModal(true)
@@ -96,7 +102,7 @@ const AddAccount = () => {
             style={{ color: "hsl(var(--muted-foreground))" }}
           >
             {accounts.map((type, index) => (
-              <Picker.Item key={index} label={text.types[(type as any).subtype as keyof typeof text.types] ?? (type as any).subtype} value={type} />
+              <Picker.Item key={index} label={text.types[type.subtype as keyof typeof text.types] ?? type.subtype} value={type} />
             ))}
           </Picker>
         </View>
@@ -124,7 +130,7 @@ const AddAccount = () => {
             <Text className="text-muted font-medium text-sm">{text.currency}</Text>
             <CurrenciesSelect
               value={currency}
-              onChange={setCurrency}
+              onChange={(c) => setCurrency(c.code)}
               placeholder={text.selectCurrency}
               className="mt-2"
             />

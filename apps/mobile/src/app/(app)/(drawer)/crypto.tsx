@@ -8,6 +8,16 @@ import { Spinner } from "@/components/ui/spinner"
 import CoinItem from "@/components/features/crypto/coin-item"
 import { Input } from "@/components/ui/input"
 
+type CoinMarket = {
+  id: string
+  name: string
+  symbol: string
+  current_price: number
+  market_cap: number
+  price_change_percentage_24h: number
+  image: string
+}
+
 const Crypto = () => {
   const [refreshing, setRefreshing] = useState(false)
   const [search, setSearch] = useState("")
@@ -19,7 +29,7 @@ const Crypto = () => {
     return response
   }
 
-  const { data: coins, status, refetch } = useQuery("crypto-market", loadData)
+  const { data: coins, status, refetch } = useQuery<CoinMarket[]>("crypto-market", loadData)
 
   return (
     <View className="flex-1 bg-background">
@@ -40,7 +50,7 @@ const Crypto = () => {
         <FlatList
           className="px-5"
           data={coins.filter(
-            (coin: any) =>
+            (coin: CoinMarket) =>
               coin.name.toLowerCase().includes(search.toLocaleLowerCase()) ||
               coin.symbol.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
           )}

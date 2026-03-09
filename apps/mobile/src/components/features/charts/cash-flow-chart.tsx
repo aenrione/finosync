@@ -25,7 +25,7 @@ export default function CashFlowChart() {
       }
 
       const stacks = balanceData.map((item) => {
-        const label = (item as any).week ?? (item as any).month ?? "";
+        const label = item.week ?? item.month ?? "";
         const income = Number(item.income) || 0;
         const expenseMagnitude = Math.abs(Number(item.expenses) || 0);
         const expenses = -expenseMagnitude;

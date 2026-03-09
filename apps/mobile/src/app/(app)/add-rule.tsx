@@ -1,7 +1,6 @@
 import {
   Alert,
   ScrollView,
-  Switch,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -39,6 +38,8 @@ import { useDashboard } from "@/context/dashboard.context";
 import { ruleService } from "@/services/rule.service";
 import { tagService } from "@/services/tag.service";
 import ScreenHeader from "@/components/screen-header";
+import { FormField } from "@/components/ui/form-field";
+import { FormToggle } from "@/components/ui/form-toggle";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { Category } from "@/types/category";
@@ -239,43 +240,34 @@ const AddRuleScreen = () => {
         </View>
 
         <View className="mt-6 rounded-3xl border border-border bg-card p-4">
-          <Text className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <Text className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Basics
           </Text>
 
           <View className="mt-4">
-            <Text className="mb-2 text-sm text-muted-foreground">
-              Rule name
-            </Text>
-            <Input
+            <FormField
+              label="Rule name"
               value={name}
               onChangeText={setName}
               placeholder="Give this automation a short name"
+              required
             />
-          </View>
 
-          <View className="mt-4">
-            <Text className="mb-2 text-sm text-muted-foreground">
-              Description
-            </Text>
-            <Input
+            <FormField
+              label="Description"
               value={description}
               onChangeText={setDescription}
               placeholder="Optional note so you remember what this rule does"
               multiline
             />
-          </View>
 
-          <View className="mt-4 flex-row items-center justify-between rounded-2xl bg-muted p-4">
-            <View className="flex-1 pr-4">
-              <Text className="text-sm font-medium text-foreground">
-                Enabled
-              </Text>
-              <Text className="mt-1 text-xs text-muted-foreground">
-                Disabled rules stay saved but will not run automatically.
-              </Text>
-            </View>
-            <Switch value={enabled} onValueChange={setEnabled} />
+            <FormToggle
+              value={enabled}
+              onValueChange={setEnabled}
+              title="Enabled"
+              subtitle="Disabled rules stay saved but will not run automatically."
+              containerClassName="mb-0"
+            />
           </View>
         </View>
 

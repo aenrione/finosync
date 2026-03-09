@@ -3,6 +3,7 @@ import React from "react"
 // import { showMessage } from 'react-native-flash-message';
 import axios from "axios"
 
+import { Account } from "@/types/account"
 import { Card, Divider, CardTitle } from "@/components/ui/card"
 import { Button, ButtonText } from "@/components/ui/button"
 import CustomAmountItem from "@/components/custom-amount-item"
@@ -25,7 +26,7 @@ import CustomAmountItem from "@/components/custom-amount-item"
 //   { text: 'Delete', onPress: () => deleteAccount(refetch) },
 // ]);
 
-export function BudaAccount({ account, refetch }: { account: any; refetch: () => void }) {
+export function BudaAccount({ account, refetch }: { account: Account; refetch: () => void }) {
   return (
     <Card>
       <CardTitle>Buda</CardTitle>

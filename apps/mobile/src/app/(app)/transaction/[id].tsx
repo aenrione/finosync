@@ -10,6 +10,7 @@ import { getCurrencyMeta, showAmount } from "@/utils/currency";
 import { Text } from "@/components/ui/text";
 import { useStore } from "@/utils/store";
 import Icon from "@/components/ui/icon";
+import { IconName } from "@/types/icon";
 
 // Status configurations
 const statusConfig = {
@@ -262,7 +263,7 @@ export default function TransactionDetailsScreen() {
             <View className="flex-row justify-between items-center mb-4">
               <View className="flex-row items-center rounded-full px-3 py-2 bg-income/10">
                 <Icon
-                  name={statusInfo.icon as any}
+                  name={statusInfo.icon as IconName}
                   className="text-income"
                   size={16}
                 />

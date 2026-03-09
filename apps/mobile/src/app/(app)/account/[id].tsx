@@ -26,6 +26,24 @@ import { Text } from "@/components/ui/text";
 import { useStore } from "@/utils/store";
 import Icon from "@/components/ui/icon";
 
+type AccountDetailData = {
+  insights?: {
+    total_income: number;
+    total_expenses: number;
+    transaction_count: number;
+    average_transaction: number;
+    top_category_name: string;
+    top_category_amount: number;
+  };
+  chart?: {
+    balance?: { label: string; balance?: number; net?: number }[];
+    avgIncome?: number;
+    avgExpenses?: number;
+    avgSavings?: number;
+    avgBalance?: number;
+  };
+};
+
 const getAccountTypeColor = (type: string) => {
   const colors: Record<string, string> = {
     local: "border-l-account-local",
@@ -53,7 +71,7 @@ export default function AccountDetailsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedPeriod, setSelectedPeriod] = useState("30D");
-  const [accountData, setAccountData] = useState<any>(null);
+  const [accountData, setAccountData] = useState<AccountDetailData | null>(null);
   const [loadingAccount, setLoadingAccount] = useState(true);
   const [accountError, setAccountError] = useState<string | null>(null);
   const [accountIsStale, setAccountIsStale] = useState(false);
@@ -68,12 +86,17 @@ export default function AccountDetailsScreen() {
     let active = true;
 
     const restoreAndFetch = async () => {
-      const snapshot = await loadSnapshot<any>(accountCacheKey);
+      const snapshot = await loadSnapshot<AccountDetailData>(accountCacheKey);
 
       if (active && snapshot) {
         setAccountData(snapshot.value);
         setAccountLastUpdated(snapshot.updatedAt);
-        setAccountIsStale(true);
+        // Only mark as stale on initial load (no data yet).
+        // When changing filters, skip the stale banner — the fetch
+        // will either succeed or fail (setting isStale in catch).
+        if (!accountData) {
+          setAccountIsStale(true);
+        }
         setLoadingAccount(false);
       }
 
@@ -82,7 +105,7 @@ export default function AccountDetailsScreen() {
           setLoadingAccount(true);
         }
 
-        const data = await fetchJsonWithAuth<any>(
+        const data = await fetchJsonWithAuth<AccountDetailData>(
           `/accounts/${id}?time_range=${selectedPeriod}`,
         );
 
@@ -144,7 +167,7 @@ export default function AccountDetailsScreen() {
     try {
       await Promise.all([
         refreshData(),
-        fetchJsonWithAuth<any>(
+        fetchJsonWithAuth<AccountDetailData>(
           `/accounts/${id}?time_range=${selectedPeriod}`,
         ).then(async (data) => {
           setAccountData(data);
@@ -197,7 +220,7 @@ export default function AccountDetailsScreen() {
           error={accountError}
           title="Couldn't load account details"
           onRetry={async () => {
-            const data = await fetchJsonWithAuth<any>(
+            const data = await fetchJsonWithAuth<AccountDetailData>(
               `/accounts/${id}?time_range=${selectedPeriod}`,
             );
             setAccountData(data);
@@ -350,7 +373,7 @@ export default function AccountDetailsScreen() {
         <View className="px-5 mt-6">
           <AccountBalanceChart
             balanceHistory={
-              accountData?.chart?.balance?.map((item: any) => ({
+              accountData?.chart?.balance?.map((item: { label: string; balance?: number; net?: number }) => ({
                 date: item.label,
                 balance: Number(item.balance ?? item.net ?? 0),
               })) || []

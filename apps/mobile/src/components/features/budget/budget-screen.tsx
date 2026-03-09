@@ -13,6 +13,7 @@ import StaleDataBanner from "@/components/errors/stale-data-banner";
 import Icon from "@/components/ui/icon";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
+import { IconName } from "@/types/icon";
 import {
   copyPreviousMonth,
   fetchBudgetSummary,
@@ -360,7 +361,7 @@ export default function BudgetScreen() {
                       >
                         <View className="mr-3 h-7 w-7 rounded-full bg-warning/10 items-center justify-center">
                           <Icon
-                            name={cat.icon as any}
+                            name={cat.icon as IconName}
                             size={14}
                             className="text-warning"
                           />

@@ -1,9 +1,10 @@
-import { View, ScrollView } from "react-native"
+import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import React, { useState } from "react"
 import { useRouter } from "expo-router"
+import { Mail, Lock } from "lucide-react-native"
 
 import { Button, ButtonText } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { FormField } from "@/components/ui/form-field"
 import { Text } from "@/components/ui/text"
 
 export default function ForgotPasswordScreen() {
@@ -11,33 +12,81 @@ export default function ForgotPasswordScreen() {
   const [password, setPassword] = useState("")
   const router = useRouter()
 
-  const onSignUpPressed = () => {
+  const isValid = username.trim().length > 0 && password.length >= 6
+
+  const onResetPressed = () => {
     console.warn("Sign Up")
   }
 
-  const onSignInPressed = () => {
-    router.navigate("/sign-in")
-  }
-
   return (
-    <ScrollView className="bg-background">
-      <View className="flex-1 items-center px-5 mt-7 gap-3">
-        <Text className="text-xl font-bold mb-2">Reset your Password</Text>
-        <Input placeholder="Username" value={username} onChangeText={setUsername} className="w-full" />
-        <Input
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          className="w-full"
-        />
-        <Button onPress={onSignUpPressed} className="w-full mt-2">
-          <ButtonText>Register</ButtonText>
-        </Button>
-        <Button variant="ghost" onPress={onSignInPressed} className="w-full">
-          <ButtonText variant="ghost">Back to Sign in</ButtonText>
-        </Button>
-      </View>
-    </ScrollView>
+    <KeyboardAvoidingView
+      className="flex-1 bg-background"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        className="bg-background"
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="flex-1 justify-center px-6 py-12">
+          {/* Header */}
+          <View className="items-center mb-8">
+            <View className="w-14 h-14 rounded-xl bg-primary/10 items-center justify-center mb-3">
+              <Lock size={24} color="#4F46E5" />
+            </View>
+            <Text className="text-2xl font-bold text-foreground">
+              Reset Password
+            </Text>
+            <Text className="text-sm text-muted-foreground mt-1 text-center px-4">
+              Enter your username and new password below
+            </Text>
+          </View>
+
+          {/* Form */}
+          <View className="bg-card rounded-xl p-5 border border-border">
+            <FormField
+              label="Username"
+              placeholder="Enter your username"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              icon={Mail}
+              required
+            />
+
+            <FormField
+              label="New Password"
+              placeholder="Min. 6 characters"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              icon={Lock}
+              required
+              containerClassName="mb-2"
+            />
+
+            <Button
+              disabled={!isValid}
+              onPress={onResetPressed}
+              className="w-full mt-3"
+              size="lg"
+            >
+              <ButtonText size="lg">Reset Password</ButtonText>
+            </Button>
+          </View>
+
+          {/* Link */}
+          <View className="mt-6">
+            <Button
+              variant="ghost"
+              onPress={() => router.navigate("/sign-in")}
+              className="w-full"
+            >
+              <ButtonText variant="ghost">Back to Sign in</ButtonText>
+            </Button>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }

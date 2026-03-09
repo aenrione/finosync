@@ -31,7 +31,9 @@ export const useTranslation = () =>
       cancel: "Cancel",
       editServerUrl: "Edit Server URL",
       serverUrlPlaceholder: "https://api.example.com",
+      clearCacheConfirm: "This will clear all cached data. Continue?",
       cacheCleared: "Cache cleared successfully",
+      deleteAccountError: "Failed to delete account. Please try again.",
       currencies: {
         CLP: "Chilean Peso (CLP)",
         USD: "US Dollar (USD)",
@@ -73,7 +75,9 @@ export const useTranslation = () =>
       cancel: "Cancelar",
       editServerUrl: "Editar URL del Servidor",
       serverUrlPlaceholder: "https://api.ejemplo.com",
+      clearCacheConfirm: "Esto limpiará todos los datos en caché. ¿Continuar?",
       cacheCleared: "Caché limpiado exitosamente",
+      deleteAccountError: "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
       currencies: {
         CLP: "Peso Chileno (CLP)",
         USD: "Dólar Americano (USD)",

@@ -1,116 +1,92 @@
-import { ChevronDownIcon } from "lucide-react-native"
-import React, { useEffect, useState } from "react" 
+import React, { useEffect, useState } from "react"
 import { View } from "react-native"
 
-import { 
-  Select, 
-  SelectTrigger, 
-  SelectInput, 
-  SelectIcon, 
-  SelectPortal, 
-  SelectBackdrop, 
-  SelectContent, 
-  SelectDragIndicatorWrapper, 
-  SelectDragIndicator, 
-  SelectItem 
-} from "@/components/ui/select"
+import { FormSelect } from "@/components/ui/form-select"
 import { Spinner } from "@/components/ui/spinner"
-import { Input } from "@/components/ui/input"
 import { fetchWithAuth } from "@/utils/api"
-import { fetchApi } from "@/utils/api"
 
-// Match backend response
 type Currency = {
-    code: string;
-    name: string;
-    symbol: string;
-};
+  code: string
+  name: string
+  symbol: string
+}
 
 type CurrenciesSelectProps = {
-    value?: any;
-    onChange?: (value: any) => void;
-    placeholder?: string;
-    className?: string;
-};
+  value?: string | Currency | null
+  onChange?: (value: Currency) => void
+  placeholder?: string
+  className?: string
+  label?: string
+  required?: boolean
+  error?: string
+  containerClassName?: string
+}
 
 export const CurrenciesSelect: React.FC<CurrenciesSelectProps> = ({
   value,
   onChange,
   placeholder = "Select currency...",
-  className,
+  label = "Currency",
+  required,
+  error,
+  containerClassName,
 }) => {
   const [currencies, setCurrencies] = useState<Currency[]>([])
   const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState("")
-  const [filtered, setFiltered] = useState<Currency[]>([])
 
   useEffect(() => {
     setLoading(true)
     fetchWithAuth("/currencies")
       .then((res) => res.json())
       .then((data) => {
-        const arr = (data.currencies || []).map((c: any) => ({
+        const arr = (data.currencies || []).map((c: { iso_code: string; name: string; symbol: string }) => ({
           code: c.iso_code,
           name: c.name,
           symbol: c.symbol,
         }))
         setCurrencies(arr)
-        setFiltered(arr)
       })
       .finally(() => setLoading(false))
   }, [])
 
-  // Filter currencies directly since we can't use the search input
-  useEffect(() => {
-    setFiltered(currencies)
-  }, [currencies])
+  const selectedValue = value
+    ? typeof value === "string"
+      ? value
+      : value.code
+    : null
 
-  // Find the selected currency object from code (either direct value or value.code)
-  const selectedValue = value ? 
-    (typeof value === "string" ? value : value.code) : 
-    ""
-    
-  // Handle selection of a currency
-  const handleValueChange = (code: string) => {
+  const handleValueChange = (code: string | number | null) => {
     if (!onChange) return
-    const selected = currencies.find(c => c.code === code)
+    const selected = currencies.find((c) => c.code === code)
     if (selected) {
       onChange(selected)
     }
   }
-    
+
+  if (loading) {
+    return (
+      <View className="py-4 items-center justify-center">
+        <Spinner />
+      </View>
+    )
+  }
+
+  const options = currencies.map((c) => ({
+    value: c.code,
+    label: `${c.code} — ${c.name} (${c.symbol})`,
+  }))
+
   return (
-    <Select 
-      defaultValue={selectedValue}
+    <FormSelect
+      label={label}
+      options={options}
+      value={selectedValue}
       onValueChange={handleValueChange}
-      className={className}
-    >
-      <SelectTrigger variant="outline" size="md">
-        <SelectInput placeholder={placeholder} />
-        <SelectIcon className="mr-3" as={ChevronDownIcon} />
-      </SelectTrigger>
-      <SelectPortal>
-        <SelectBackdrop />
-        <SelectContent>
-          <SelectDragIndicatorWrapper>
-            <SelectDragIndicator />
-          </SelectDragIndicatorWrapper>
-          {loading ? (
-            <View className="p-4 items-center justify-center">
-              <Spinner />
-            </View>
-          ) : (
-            filtered.map((currency) => (
-              <SelectItem
-                key={currency.code}
-                value={currency.code}
-                label={`${currency.code} - ${currency.name} ${currency.symbol}`}
-              />
-            ))
-          )}
-        </SelectContent>
-      </SelectPortal>
-    </Select>
+      placeholder={placeholder}
+      required={required}
+      error={error}
+      containerClassName={containerClassName}
+    />
   )
 }
 

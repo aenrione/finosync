@@ -1,9 +1,9 @@
-import { ScrollView, Alert } from "react-native"
-import { Picker } from "@react-native-picker/picker"
+import { ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native"
 import { useTranslation } from "@/locale/app/add-account.text"
 import React, { useState } from "react"
 import { useRouter } from "expo-router"
 import { View } from "react-native"
+import { Wallet, Key, ShieldCheck, Mail, Link2 } from "lucide-react-native"
 
 import { getAvailableAccountTypes, getAccountTypeConfig } from "@/constants/accountTypes"
 import FintocWidgetModal from "@/components/screens/accounts/FintocWidgetModal"
@@ -11,9 +11,12 @@ import CurrenciesSelect from "@/components/search-selects/currencies"
 import { AccountType, AccountFormData } from "@/types/account"
 import { Button, ButtonText } from "@/components/ui/button"
 import { useAccounts } from "@/context/accounts.context"
+import { FormField } from "@/components/ui/form-field"
+import { FormSelect } from "@/components/ui/form-select"
+import { FormSection } from "@/components/ui/form-section"
 import BackHeader from "@/components/back-header"
-import { Input } from "@/components/ui/input"
 import { Text } from "@/components/ui/text"
+import Icon from "@/components/ui/icon"
 
 const AVAILABLE_TYPES = getAvailableAccountTypes()
 
@@ -69,6 +72,11 @@ const AddAccount = () => {
     handleSave(linkToken)
   }
 
+  const typeOptions = AVAILABLE_TYPES.map((type) => ({
+    value: type.type,
+    label: text.types[type.type as keyof typeof text.types],
+  }))
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
@@ -80,162 +88,169 @@ const AddAccount = () => {
   return (
     <View className="flex-1 bg-background">
       <BackHeader title={text.title} />
-      <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
-        {/* Account Type Section */}
-        <View className="mb-6">
-          <Text className="text-sm font-medium text-muted-foreground mb-1.5">
-            {text.accountType}
-          </Text>
-          <View className="bg-muted rounded-xl overflow-hidden border border-border">
-            <Picker
-              selectedValue={selectedType}
-              onValueChange={(value: AccountType) => {
-                setSelectedType(value)
+
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          className="flex-1 px-5"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="pt-2" />
+
+          {/* Account Type */}
+          <FormSection title="Account Type">
+            <FormSelect
+              label={text.accountType}
+              options={typeOptions}
+              value={selectedType}
+              onValueChange={(value) => {
+                setSelectedType(value as AccountType)
                 setPrimaryKey("")
               }}
-            >
-              {AVAILABLE_TYPES.map((type) => (
-                <Picker.Item
-                  key={type.type}
-                  label={text.types[type.type as keyof typeof text.types]}
-                  value={type.type}
-                />
-              ))}
-            </Picker>
-          </View>
-        </View>
+              required
+              icon={Wallet}
+              containerClassName="mb-0"
+            />
+          </FormSection>
 
-        {/* Account Name Section */}
-        <View className="mb-6">
-          <Text className="text-sm font-medium text-muted-foreground mb-1.5">
-            {text.accountName}
-            <Text className="text-destructive ml-1">*</Text>
-          </Text>
-          <Input
-            value={accountName}
-            placeholder={text.namePlaceholder}
-            onChangeText={setAccountName}
-            className="w-full rounded-xl px-4 py-4 text-base font-medium min-h-[56px]"
-          />
-        </View>
+          {/* Basic Info */}
+          <FormSection title="Basic Info">
+            <FormField
+              label={text.accountName}
+              value={accountName}
+              placeholder={text.namePlaceholder}
+              onChangeText={setAccountName}
+              icon={Wallet}
+              required
+            />
 
-        {/* Currency Section - Only for editable accounts */}
-        {accountConfig.editable && (
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-muted-foreground mb-1.5">
-              {text.currency}
-            </Text>
-            <View className="bg-muted rounded-xl overflow-hidden border border-border">
+            {/* Currency - Only for editable accounts */}
+            {accountConfig.editable && (
               <CurrenciesSelect
                 value={currency}
                 onChange={(selected) => setCurrency(selected)}
                 placeholder={text.selectCurrency}
-                className="mt-2"
+                label={text.currency}
               />
-            </View>
-          </View>
-        )}
-
-        {/* Email Section - For Fintual accounts */}
-        {accountConfig.requiresEmail && (
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-muted-foreground mb-1.5">
-              {text.email}
-              <Text className="text-destructive ml-1">*</Text>
-            </Text>
-            <Input
-              inputMode="email"
-              value={email}
-              placeholder={text.emailPlaceholder}
-              onChangeText={setEmail}
-              className="w-full rounded-xl px-4 py-4 text-base font-medium min-h-[56px]"
-            />
-          </View>
-        )}
-
-        {/* Link Token Section - For Fintoc accounts */}
-        {accountConfig.requiresLink && (
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-muted-foreground mb-1.5">
-              {text.linkToken}
-              <Text className="text-destructive ml-1">*</Text>
-            </Text>
-            <Input
-              value={primaryKey}
-              placeholder={text.linkTokenPlaceholder}
-              onChangeText={setPrimaryKey}
-              className="w-full rounded-xl px-4 py-4 text-base font-medium min-h-[56px]"
-            />
-          </View>
-        )}
-
-        {/* API Key Section - For Buda accounts */}
-        {!accountConfig.requiresLink && accountConfig.requiresCredentials && (
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-muted-foreground mb-1.5">
-              {text.apiKey}
-              <Text className="text-destructive ml-1">*</Text>
-            </Text>
-            <Input
-              value={primaryKey}
-              placeholder={text.apiKeyPlaceholder}
-              onChangeText={setPrimaryKey}
-              className="w-full rounded-xl px-4 py-4 text-base font-medium min-h-[56px]"
-            />
-          </View>
-        )}
-
-        {/* Secret Section - For accounts requiring credentials */}
-        {accountConfig.requiresCredentials && (
-          <View className="mb-6">
-            <Text className="text-sm font-medium text-muted-foreground mb-1.5">
-              {text.secret}
-              <Text className="text-destructive ml-1">*</Text>
-            </Text>
-            <Input
-              value={secret}
-              placeholder={text.secretPlaceholder}
-              secureTextEntry
-              onChangeText={setSecret}
-              className="w-full rounded-xl px-4 py-4 text-base font-medium min-h-[56px]"
-            />
-          </View>
-        )}
-
-        {/* Fintoc widget — opens after bank type is selected */}
-        {accountConfig.usesWidget && (
-          <View className="mb-6">
-            {primaryKey ? (
-              <View className="bg-muted border border-border rounded-xl p-4 flex-row items-center gap-3">
-                <Text className="text-sm font-semibold text-foreground flex-1">{text.bank.connected}</Text>
-                <Button variant="ghost" onPress={() => { setPrimaryKey(""); setShowWidget(true) }}>
-                  <ButtonText variant="ghost" className="text-sm">{text.bank.reconnect}</ButtonText>
-                </Button>
-              </View>
-            ) : (
-              <Button onPress={() => setShowWidget(true)} className="rounded-xl py-4">
-                <ButtonText>{text.bank.connect}</ButtonText>
-              </Button>
             )}
-          </View>
-        )}
+          </FormSection>
 
-        <FintocWidgetModal
-          visible={showWidget}
-          onSuccess={handleWidgetSuccess}
-          onExit={() => setShowWidget(false)}
-        />
-      </ScrollView>
+          {/* Credentials - Only for accounts that need them */}
+          {(accountConfig.requiresCredentials || accountConfig.requiresLink) && (
+            <FormSection
+              title="Credentials"
+              description="These are securely stored and encrypted at rest."
+            >
+              {/* Email - Fintual */}
+              {accountConfig.requiresEmail && (
+                <FormField
+                  label={text.email}
+                  value={email}
+                  placeholder={text.emailPlaceholder}
+                  onChangeText={setEmail}
+                  inputMode="email"
+                  autoCapitalize="none"
+                  icon={Mail}
+                  required
+                />
+              )}
 
-      {/* Save Button — hidden for widget accounts (save happens automatically on widget success) */}
+              {/* Link Token - Fintoc */}
+              {accountConfig.requiresLink && (
+                <FormField
+                  label={text.linkToken}
+                  value={primaryKey}
+                  placeholder={text.linkTokenPlaceholder}
+                  onChangeText={setPrimaryKey}
+                  icon={Link2}
+                  required
+                />
+              )}
+
+              {/* API Key - Buda */}
+              {!accountConfig.requiresLink && accountConfig.requiresCredentials && (
+                <FormField
+                  label={text.apiKey}
+                  value={primaryKey}
+                  placeholder={text.apiKeyPlaceholder}
+                  onChangeText={setPrimaryKey}
+                  icon={Key}
+                  required
+                />
+              )}
+
+              {/* Secret */}
+              {accountConfig.requiresCredentials && (
+                <FormField
+                  label={text.secret}
+                  value={secret}
+                  placeholder={text.secretPlaceholder}
+                  secureTextEntry
+                  onChangeText={setSecret}
+                  icon={ShieldCheck}
+                  required
+                  containerClassName="mb-0"
+                />
+              )}
+            </FormSection>
+          )}
+
+          {/* Bank Connection (Fintoc widget) */}
+          {accountConfig.usesWidget && (
+            <FormSection title="Bank Connection">
+              {primaryKey ? (
+                <View className="flex-row items-center gap-3 p-3 rounded-lg bg-success-light border border-success/20">
+                  <Icon name="CircleCheck" className="text-success" size={20} />
+                  <Text className="text-sm font-semibold text-foreground flex-1">
+                    {text.bank.connected}
+                  </Text>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onPress={() => { setPrimaryKey(""); setShowWidget(true) }}
+                  >
+                    <ButtonText variant="ghost" className="text-sm">
+                      {text.bank.reconnect}
+                    </ButtonText>
+                  </Button>
+                </View>
+              ) : (
+                <Button
+                  onPress={() => setShowWidget(true)}
+                  className="w-full"
+                  size="lg"
+                >
+                  <ButtonText size="lg">{text.bank.connect}</ButtonText>
+                </Button>
+              )}
+            </FormSection>
+          )}
+
+          <FintocWidgetModal
+            visible={showWidget}
+            onSuccess={handleWidgetSuccess}
+            onExit={() => setShowWidget(false)}
+          />
+
+          <View className="h-6" />
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* Save Button — hidden for widget accounts */}
       {!accountConfig.usesWidget && (
-        <View className="p-6 bg-background border-t border-border">
+        <View className="px-5 py-4 bg-background border-t border-border">
           <Button
             disabled={!isValid() || loading}
             onPress={() => handleSave()}
-            className="w-full rounded-xl py-4"
+            className="w-full"
+            size="lg"
           >
-            <ButtonText>{loading ? text.creating : text.save}</ButtonText>
+            <ButtonText size="lg">
+              {loading ? text.creating : text.save}
+            </ButtonText>
           </Button>
         </View>
       )}

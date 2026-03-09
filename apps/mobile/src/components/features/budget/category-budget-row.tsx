@@ -3,6 +3,7 @@ import { TouchableOpacity, View } from "react-native";
 
 import Icon from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { IconName } from "@/types/icon";
 import { BudgetAllocation } from "@/types/budget-period";
 import { showAmount } from "@/utils/currency";
 import { useStore } from "@/utils/store";
@@ -92,7 +93,7 @@ export default function CategoryBudgetRow({ allocation, onPress }: Props) {
       <View className="flex-row items-start">
         <View className="mt-0.5 mr-3 h-7 w-7 rounded-full bg-muted/70 items-center justify-center">
           <Icon
-            name={category_icon as any}
+            name={category_icon as IconName}
             size={14}
             className="text-muted-foreground"
           />

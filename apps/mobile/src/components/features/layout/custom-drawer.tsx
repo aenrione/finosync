@@ -8,6 +8,7 @@ import { Text } from "@/components/ui/text";
 import { appName } from "@/constants/config";
 import { useStore } from "@/utils/store";
 import Icon from "@/components/ui/icon";
+import { IconName } from "@/types/icon";
 import { Divider } from "@/components/ui/card";
 import { colors } from "@/lib/colors";
 
@@ -15,7 +16,7 @@ import { useTranslation } from "./_texts/text";
 
 type DrawerItem = {
   label: string;
-  icon: string;
+  icon: IconName;
   route: string;
 };
 
@@ -55,7 +56,7 @@ function DrawerMenuItem({
         }`}
       >
         <Icon
-          name={item.icon as any}
+          name={item.icon}
           size={18}
           color={isActive ? colors.primary : colors.mutedForeground}
         />

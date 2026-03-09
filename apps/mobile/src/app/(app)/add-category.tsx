@@ -1,16 +1,19 @@
-import { View, ScrollView, TouchableOpacity, Alert } from "react-native"
+import { View, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "@/locale/app/add-category.text"
+import { ChevronRight } from "lucide-react-native"
 
 import { useCategories } from "@/context/categories.context"
 import { Button, ButtonText } from "@/components/ui/button"
+import { FormField } from "@/components/ui/form-field"
+import { FormSection } from "@/components/ui/form-section"
 import BackHeader from "@/components/back-header"
 import IconPicker from "@/components/features/categories/icon-picker"
-import { Input } from "@/components/ui/input"
 import { Text } from "@/components/ui/text"
 import Icon from "@/components/ui/icon"
 import { IconName } from "@/types/icon"
+import { colors } from "@/lib/colors"
 
 const AddCategory = () => {
   const [name, setName] = useState("")
@@ -56,7 +59,6 @@ const AddCategory = () => {
         await createCategory(formData)
       }
 
-      // Navigate back to categories page explicitly
       router.push("/(app)/(drawer)/categories")
     } catch (error) {
       Alert.alert(
@@ -69,97 +71,87 @@ const AddCategory = () => {
   }
 
   const handleBack = () => {
-    // Navigate back to categories page explicitly
     router.push("/(app)/(drawer)/categories")
   }
 
   return (
     <View className="flex-1 bg-background">
-      <View className="p-5 flex-row items-center justify-between bg-card border-b border-border">
-        <TouchableOpacity
-          activeOpacity={0.8}
-          className="p-1 items-start"
-          onPress={handleBack}
+      <BackHeader title={isEditing ? text.titleEdit : text.titleNew} />
+
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          className="flex-1 px-5"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Icon name="ChevronLeft" className="text-foreground" size={20} />
-        </TouchableOpacity>
+          <View className="pt-2" />
 
-        <Text className="text-foreground text-lg font-semibold">
-          {isEditing ? text.titleEdit : text.titleNew}
-        </Text>
-
-        {/* Placeholder right icon for layout symmetry */}
-        <Icon name="ChevronRight" className="text-transparent" size={25} />
-      </View>
-
-      <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
-        {/* Icon Picker Section */}
-        <View className="mb-6">
-          <Text className="text-muted-foreground font-semibold text-sm mb-3">
-            {text.icon}
-            <Text className="text-destructive ml-1">*</Text>
-          </Text>
-          <TouchableOpacity
-            onPress={toggleModal}
-            className="bg-muted border border-border rounded-xl p-4 flex-row items-center justify-between min-h-[56px]"
-          >
-            <View className="flex-row items-center">
-              <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mr-3">
-                <Icon name={selectedIcon} />
+          <FormSection title="Category Details">
+            {/* Icon Picker */}
+            <View className="mb-5">
+              <View className="flex-row items-center mb-2">
+                <Text className="text-sm font-medium text-muted-foreground">
+                  {text.icon}
+                </Text>
+                <Text className="text-error ml-0.5 text-sm">*</Text>
               </View>
-              <Text className="text-foreground text-base font-medium">
-                {selectedIcon === "Plus" ? text.iconPlaceholder : selectedIcon}
-              </Text>
+              <TouchableOpacity
+                onPress={toggleModal}
+                className="flex-row items-center rounded-lg bg-surface border-[1.5px] border-border p-3.5"
+              >
+                <View className="w-10 h-10 rounded-lg bg-primary/10 items-center justify-center mr-3">
+                  <Icon name={selectedIcon} size={20} />
+                </View>
+                <Text className="flex-1 text-base text-foreground font-medium">
+                  {selectedIcon === "Plus" ? text.iconPlaceholder : selectedIcon}
+                </Text>
+                <ChevronRight size={18} color={colors.mutedForeground} />
+              </TouchableOpacity>
+
+              <IconPicker
+                isVisible={isModalVisible}
+                onSelectIcon={setSelectedIcon}
+                onClose={toggleModal}
+              />
             </View>
-            <Icon name="ChevronRight" />
-          </TouchableOpacity>
 
-          <IconPicker
-            isVisible={isModalVisible}
-            onSelectIcon={setSelectedIcon}
-            onClose={toggleModal}
-          />
-        </View>
+            {/* Name */}
+            <FormField
+              label={text.name}
+              placeholder={text.namePlaceholder}
+              value={name}
+              onChangeText={setName}
+              required
+            />
 
-        {/* Name Input Section */}
-        <View className="mb-6">
-          <Text className="text-muted-foreground font-semibold text-sm mb-3">
-            {text.name}
-            <Text className="text-destructive ml-1">*</Text>
-          </Text>
-          <Input
-            className="w-full rounded-xl px-4 py-4 text-base font-medium min-h-[56px]"
-            placeholder={text.namePlaceholder}
-            value={name}
-            onChangeText={setName}
-          />
-        </View>
+            {/* Description */}
+            <FormField
+              label={text.desc}
+              placeholder={text.descPlaceholder}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={3}
+              containerClassName="mb-0"
+            />
+          </FormSection>
 
-        {/* Description Input Section */}
-        <View className="mb-6">
-          <Text className="text-muted-foreground font-semibold text-sm mb-3">
-            {text.desc}
-          </Text>
-          <Input
-            className="w-full rounded-xl px-4 py-4 text-base font-medium min-h-[80px]"
-            placeholder={text.descPlaceholder}
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-          />
-        </View>
-      </ScrollView>
+          <View className="h-6" />
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Save Button */}
-      <View className="p-6 bg-background border-t border-border">
+      <View className="px-5 py-4 bg-background border-t border-border">
         <Button
           onPress={handleSave}
           disabled={!isValid() || loading}
-          className="rounded-xl py-4"
+          className="w-full"
+          size="lg"
         >
-          <ButtonText>
+          <ButtonText size="lg">
             {loading ? (isEditing ? text.updating : text.creating) : text.save}
           </ButtonText>
         </Button>
