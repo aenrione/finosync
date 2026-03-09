@@ -1,21 +1,43 @@
-import { useTranslation as useI18nTranslation } from "react-i18next"
+import { useTranslationFactory } from "@/shared/locale/translation"
 
-const texts = {
-  logout: {
-    en: "Logout",
-    es: "Cerrar sesión",
-  },
-} as const
-
-type TextKey = keyof typeof texts
-
-export function useTranslation() {
-  const { i18n } = useI18nTranslation()
-  const lang = (i18n.language?.startsWith("es") ? "es" : "en") as "en" | "es"
-
-  const result: Record<TextKey, string> = {} as any
-  for (const key of Object.keys(texts) as TextKey[]) {
-    result[key] = texts[key][lang]
-  }
-  return result
-}
+export const useTranslation = () =>
+  useTranslationFactory({
+    en: {
+      tagline: "Your personal finance companion",
+      guest: "Guest",
+      logout: "Logout",
+      sections: {
+        main: "Main",
+        setup: "Financial Setup",
+        system: "System",
+      },
+      items: {
+        home: "Home",
+        crypto: "Crypto Markets",
+        categories: "Categories",
+        tags: "Tags",
+        recurring: "Recurring",
+        settings: "Settings",
+        about: "About",
+      },
+    },
+    es: {
+      tagline: "Tu compañero de finanzas personales",
+      guest: "Invitado",
+      logout: "Cerrar Sesión",
+      sections: {
+        main: "Principal",
+        setup: "Configuración Financiera",
+        system: "Sistema",
+      },
+      items: {
+        home: "Inicio",
+        crypto: "Mercados Cripto",
+        categories: "Categorías",
+        tags: "Etiquetas",
+        recurring: "Recurrentes",
+        settings: "Ajustes",
+        about: "Acerca de",
+      },
+    },
+  })

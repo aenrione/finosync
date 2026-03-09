@@ -24,4 +24,5 @@ export type Transaction = {
   };
   icon?: IconName
   editable?: boolean;
+  tags?: { id: number; name: string; color?: string }[];
 };
