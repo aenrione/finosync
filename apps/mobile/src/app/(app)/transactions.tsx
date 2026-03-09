@@ -3,22 +3,33 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import React, { useCallback, useState } from "react";
-import { router } from "expo-router";
+  TextInput,
+} from "react-native"
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+  runOnJS,
+} from "react-native-reanimated"
+import { Directions, Gesture, GestureDetector } from "react-native-gesture-handler"
+import { SafeAreaView } from "react-native-safe-area-context"
+import React, { useCallback, useMemo, useRef, useState } from "react"
+import { router } from "expo-router"
 
-import TransactionFilters from "@/components/transaction-filters";
-import { useTransactions } from "@/context/transactions.context";
-import { filterTransactions } from "@/utils/transactionFilters";
-import { useCategories } from "@/context/categories.context";
-import TransactionList from "@/components/transaction-list";
-import { useAccounts } from "@/context/accounts.context";
-import ScreenHeader from "@/components/screen-header";
-import { showAmount } from "@/utils/currency";
-import { Input } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-import Icon from "@/components/ui/icon";
+import TransactionFilters from "@/components/transaction-filters"
+import { useTransactions } from "@/context/transactions.context"
+import { filterTransactions } from "@/utils/transactionFilters"
+import MonthPicker, { isSameMonth, formatMonthLabel } from "@/components/month-carousel"
+import { useCategories } from "@/context/categories.context"
+import TransactionList from "@/components/transaction-list"
+import { useAccounts } from "@/context/accounts.context"
+import ScreenHeader from "@/components/screen-header"
+import { showAmount, getCurrencyMeta } from "@/utils/currency"
+import { colors } from "@/lib/colors"
+import { useStore } from "@/utils/store"
+import { Text } from "@/components/ui/text"
+import Icon from "@/components/ui/icon"
 
 export default function TransactionsScreen() {
   const {
@@ -27,72 +38,196 @@ export default function TransactionsScreen() {
     hasMore,
     loadMore,
     refreshData,
-  } = useTransactions();
-  const { categoriesData: categories } = useCategories();
-  const { accountsData: accounts } = useAccounts();
+  } = useTransactions()
+  const { categoriesData: categories } = useCategories()
+  const { accountsData: accounts } = useAccounts()
+  const baseCurrency = useStore((s) => s.baseCurrency)
+  const sym = getCurrencyMeta(baseCurrency).symbol
 
-  const [selectedFilter, setSelectedFilter] = useState("all");
-  const [showFilters, setShowFilters] = useState(false);
-  const [searchVisible, setSearchVisible] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("all")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date())
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false)
+
+  const isCurrentMonth = isSameMonth(selectedMonth, new Date())
 
   const onRefresh = useCallback(async () => {
-    await refreshData();
-  }, [refreshData]);
+    await refreshData()
+  }, [refreshData])
 
-  // Filter transactions based on selected filter
+  const goToToday = useCallback(() => {
+    setSelectedMonth(new Date())
+  }, [])
+
+  // Swipe toast feedback
+  const toastOpacity = useSharedValue(0)
+  const [toastLabel, setToastLabel] = useState("")
+  const [toastDirection, setToastDirection] = useState<"left" | "right">("left")
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  const toastAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: toastOpacity.value,
+  }))
+
+  const showSwipeToast = useCallback(
+    (direction: 1 | -1) => {
+      setSelectedMonth((prev) => {
+        const next = new Date(prev.getFullYear(), prev.getMonth() + direction, 1)
+        setToastLabel(formatMonthLabel(next))
+        return next
+      })
+      setToastDirection(direction === 1 ? "left" : "right")
+
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
+      toastOpacity.value = withSequence(
+        withTiming(1, { duration: 150 }),
+        withTiming(1, { duration: 600 }),
+        withTiming(0, { duration: 300 }),
+      )
+    },
+    [toastOpacity],
+  )
+
+  const swipeLeft = Gesture.Fling()
+    .direction(Directions.LEFT)
+    .onEnd(() => {
+      runOnJS(showSwipeToast)(1)
+    })
+
+  const swipeRight = Gesture.Fling()
+    .direction(Directions.RIGHT)
+    .onEnd(() => {
+      runOnJS(showSwipeToast)(-1)
+    })
+
+  const swipeGesture = Gesture.Race(swipeLeft, swipeRight)
+
+  // Filter by selected month
+  const monthTransactions = useMemo(
+    () =>
+      transactions.filter((tx) => {
+        const dateStr = tx.transaction_date || tx.post_date
+        if (!dateStr) return false
+        return isSameMonth(new Date(dateStr), selectedMonth)
+      }),
+    [transactions, selectedMonth],
+  )
+
+  // Filter by type / category / account
   const filteredTransactions = filterTransactions(
-    transactions,
+    monthTransactions,
     selectedFilter,
     categories,
     accounts,
-  );
+  )
 
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase()
 
-  const visibleTransactions = filteredTransactions.filter((transaction) => {
-    if (!normalizedSearchTerm) {
-      return true;
+  const visibleTransactions = filteredTransactions.filter((tx) => {
+    if (!normalizedSearchTerm) return true
+    return [
+      tx.description,
+      tx.comment,
+      tx.category?.name,
+      tx.account_name,
+      tx.holder_name,
+      tx.holder_institution,
+    ].some((v) => v?.toLowerCase().includes(normalizedSearchTerm))
+  })
+
+  // Stats for the whole month (regardless of filter)
+  const incomeTotal = monthTransactions
+    .filter((tx) => tx.transaction_type === "credit" || tx.amount > 0)
+    .reduce((s, t) => s + t.amount, 0)
+  const expenseTotal = monthTransactions
+    .filter((tx) => tx.transaction_type === "debit" || tx.amount < 0)
+    .reduce((s, t) => s + Math.abs(t.amount), 0)
+
+  const isEmpty = visibleTransactions.length === 0
+
+  // Build a single context line based on filter
+  const contextLine = useMemo(() => {
+    const filter = selectedFilter.toLowerCase()
+    const count = visibleTransactions.length
+
+    if (isEmpty) return null
+
+    if (filter === "all") {
+      const moved = incomeTotal + expenseTotal
+      return `${count} transactions · ${sym} ${showAmount(moved)} moved`
+    }
+    if (filter === "income") {
+      return `${count} transactions · ${sym} ${showAmount(incomeTotal)} received`
+    }
+    if (filter === "expenses") {
+      return `${count} transactions · ${sym} ${showAmount(expenseTotal)} spent`
     }
 
-    return [
-      transaction.description,
-      transaction.comment,
-      transaction.category?.name,
-      transaction.account_name,
-      transaction.holder_name,
-      transaction.holder_institution,
-      transaction.currency,
-    ].some((value) => value?.toLowerCase().includes(normalizedSearchTerm));
-  });
+    // Category or account
+    const total = visibleTransactions.reduce(
+      (s, t) => s + Math.abs(t.amount),
+      0,
+    )
+    return `${count} transaction${count !== 1 ? "s" : ""} · ${sym} ${showAmount(total)}`
+  }, [
+    selectedFilter,
+    visibleTransactions,
+    incomeTotal,
+    expenseTotal,
+    isEmpty,
+    sym,
+  ])
 
-  const totalAmount = visibleTransactions.reduce(
-    (sum, transaction) => sum + transaction.amount,
-    0,
-  );
+  // Secondary chips — only shown when there are transactions
+  const chips = useMemo(() => {
+    if (isEmpty) return []
 
-  const filterStats = {
-    count: visibleTransactions.length,
-    totalAmount,
-    averageAmount:
-      visibleTransactions.length > 0
-        ? totalAmount / visibleTransactions.length
-        : 0,
-  };
+    const filter = selectedFilter.toLowerCase()
+    const net = incomeTotal - expenseTotal
 
-  const handleFilterChange = (filter: string) => {
-    setSelectedFilter(filter);
-  };
-
-  const toggleSearch = () => {
-    setSearchVisible((current) => {
-      if (current) {
-        setSearchTerm("");
+    if (filter === "all") {
+      return [
+        `Net ${net >= 0 ? "+" : ""}${sym} ${showAmount(net)}`,
+      ]
+    }
+    if (filter === "expenses") {
+      const catCounts: Record<string, number> = {}
+      for (const tx of visibleTransactions) {
+        const cat = tx.category?.name || "Other"
+        catCounts[cat] = (catCounts[cat] || 0) + Math.abs(tx.amount)
       }
+      const top = Object.entries(catCounts).sort(([, a], [, b]) => b - a)[0]
+      return top ? [`Top: ${top[0]}`] : []
+    }
+    if (filter === "income") {
+      const largest = visibleTransactions.reduce(
+        (max, tx) => (tx.amount > (max?.amount ?? 0) ? tx : max),
+        visibleTransactions[0] as (typeof visibleTransactions)[0] | undefined,
+      )
+      return largest?.description ? [`Largest: ${largest.description}`] : []
+    }
 
-      return !current;
-    });
-  };
+    // Category — show % of spending
+    const isCategory = categories.some((c) => c.name === selectedFilter)
+    if (isCategory && expenseTotal > 0) {
+      const catTotal = visibleTransactions.reduce(
+        (s, t) => s + Math.abs(t.amount),
+        0,
+      )
+      const pct = Math.round((catTotal / expenseTotal) * 100)
+      return [`${pct}% of spending`]
+    }
+
+    return []
+  }, [
+    selectedFilter,
+    visibleTransactions,
+    incomeTotal,
+    expenseTotal,
+    isEmpty,
+    categories,
+    sym,
+  ])
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -100,8 +235,10 @@ export default function TransactionsScreen() {
         variant="drawer"
         title="Transactions"
         rightActions={[
-          { icon: "ListFilter", onPress: () => setShowFilters(!showFilters) },
-          { icon: "Search", onPress: toggleSearch },
+          {
+            icon: "CalendarDays",
+            onPress: () => setMonthPickerOpen(true),
+          },
           {
             icon: "Plus",
             onPress: () => router.push("/(app)/add-transaction"),
@@ -109,113 +246,124 @@ export default function TransactionsScreen() {
         ]}
       />
 
-      {searchVisible && (
-        <View className="px-5 pt-4">
-          <View className="flex-row items-center bg-muted rounded-xl px-4 py-3">
-            <Icon
-              name="Search"
-              className="text-muted-foreground mr-3"
-              size={20}
-            />
-            <Input
-              className="flex-1 border-0"
-              placeholder="Search transactions..."
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-              autoFocus
-            />
-            {searchTerm.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchTerm("")}>
-                <Icon name="X" className="text-muted-foreground" size={20} />
+      {/* Month picker modal */}
+      <MonthPicker
+        selectedDate={selectedMonth}
+        onMonthChange={setSelectedMonth}
+        isOpen={monthPickerOpen}
+        onOpenChange={setMonthPickerOpen}
+      />
+
+      {/* Layer 1: Search */}
+      <View className="px-5 pt-3">
+        <View className="flex-row items-center bg-card rounded-2xl px-4 h-12 border border-border">
+          <Icon name="Search" className="text-muted-foreground mr-3" size={18} />
+          <TextInput
+            className="flex-1 text-foreground text-base"
+            placeholder="Search transactions..."
+            placeholderTextColor={colors.mutedForeground}
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+          />
+          {searchTerm.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchTerm("")}>
+              <Icon name="X" className="text-muted-foreground" size={18} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* Layer 2: Filter pills */}
+      <View className="px-5 pt-3">
+        <TransactionFilters
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+          showTypeFilters={true}
+          showCategoryFilters={true}
+          showAccountFilters={true}
+        />
+      </View>
+
+      {/* Layer 3: Context — month label + summary line */}
+      <View className="px-5 pb-2">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <Text className="text-sm font-extrabold text-foreground">
+              {formatMonthLabel(selectedMonth)}
+            </Text>
+            {!isCurrentMonth && (
+              <TouchableOpacity
+                onPress={goToToday}
+                className="ml-2 bg-primary/10 rounded-full px-2.5 py-0.5"
+              >
+                <Text className="text-xs font-bold text-primary">Today</Text>
               </TouchableOpacity>
             )}
           </View>
-        </View>
-      )}
-
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={onRefresh} />
-        }
-      >
-        {/* Filter Stats */}
-        {selectedFilter.toLowerCase() !== "all" && (
-          <View className="px-5 pt-4">
-            <View className="bg-card rounded-xl p-4 mb-4 border border-border">
-              <Text className="text-sm font-semibold text-foreground mb-2">
-                {selectedFilter} Summary
-              </Text>
-              <View className="flex-row justify-between">
-                <View>
-                  <Text className="text-xs text-muted-foreground">Count</Text>
-                  <Text className="text-lg font-mono font-semibold text-foreground">
-                    {filterStats.count}
+          {chips.length > 0 && (
+            <View className="flex-row gap-2">
+              {chips.map((chip) => (
+                <View
+                  key={chip}
+                  className="bg-muted rounded-full px-2.5 py-1 border border-border"
+                >
+                  <Text className="text-xs font-bold text-muted-foreground">
+                    {chip}
                   </Text>
                 </View>
-                <View>
-                  <Text className="text-xs text-muted-foreground">Total</Text>
-                  <Text
-                    className={`text-lg font-mono font-semibold ${
-                      filterStats.totalAmount >= 0
-                        ? "text-income"
-                        : "text-expense"
-                    }`}
-                  >
-                    {showAmount(Math.abs(filterStats.totalAmount))}
-                  </Text>
-                </View>
-                <View>
-                  <Text className="text-xs text-muted-foreground">Average</Text>
-                  <Text
-                    className={`text-lg font-mono font-semibold ${
-                      filterStats.averageAmount >= 0
-                        ? "text-income"
-                        : "text-expense"
-                    }`}
-                  >
-                    {showAmount(Math.abs(filterStats.averageAmount))}
-                  </Text>
-                </View>
-              </View>
+              ))}
             </View>
-          </View>
+          )}
+        </View>
+        {contextLine && (
+          <Text className="text-sm text-muted-foreground mt-1">
+            {contextLine}
+          </Text>
         )}
+      </View>
 
-        {/* Filters */}
-        {showFilters && (
-          <View className="px-5">
-            <TransactionFilters
-              selectedFilter={selectedFilter}
-              onFilterChange={handleFilterChange}
-              showTypeFilters={true}
-              showCategoryFilters={true}
-              showAccountFilters={true}
-              customFilters={["Food", "Transport", "Shopping"]}
+      {/* Content — swipe left/right to change month */}
+      <GestureDetector gesture={swipeGesture}>
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={onRefresh} />
+          }
+        >
+          <View className="px-5 pb-4">
+            <TransactionList
+              transactions={visibleTransactions}
+              loading={loading}
+              hasMore={hasMore}
+              loadMore={loadMore}
+              refreshData={refreshData}
+              showLoadMore={true}
+              groupByDate={false}
+              emptyMessage={
+                normalizedSearchTerm
+                  ? "No transactions match your search"
+                  : "Try another month or add a transaction"
+              }
             />
           </View>
-        )}
+        </ScrollView>
+      </GestureDetector>
 
-        {/* Transactions List */}
-        <View className="px-5 py-4">
-          <TransactionList
-            transactions={visibleTransactions}
-            loading={loading}
-            hasMore={hasMore}
-            loadMore={loadMore}
-            refreshData={refreshData}
-            showLoadMore={true}
-            emptyMessage={
-              normalizedSearchTerm
-                ? "No transactions match your search"
-                : selectedFilter.toLowerCase() === "all"
-                  ? "No transactions found"
-                  : `No ${selectedFilter.toLowerCase()} transactions found`
-            }
-          />
-        </View>
-      </ScrollView>
+      {/* Swipe month toast */}
+      <Animated.View
+        pointerEvents="none"
+        style={toastAnimatedStyle}
+        className="absolute self-center bottom-24 bg-foreground/80 rounded-full px-5 py-2.5 flex-row items-center"
+      >
+        {toastDirection === "right" && (
+          <Icon name="ChevronLeft" size={16} className="text-background mr-1.5" />
+        )}
+        <Text className="text-background text-sm font-bold">{toastLabel}</Text>
+        {toastDirection === "left" && (
+          <Icon name="ChevronRight" size={16} className="text-background ml-1.5" />
+        )}
+      </Animated.View>
     </SafeAreaView>
-  );
+  )
 }

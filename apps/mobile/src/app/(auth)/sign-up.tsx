@@ -1,4 +1,5 @@
 import { View, ScrollView, KeyboardAvoidingView, Platform, Alert } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import React, { useState } from "react"
 import { useRouter } from "expo-router"
 import { User, Mail, Lock, ShieldCheck } from "lucide-react-native"
@@ -46,8 +47,9 @@ export default function SignUpScreen() {
   }
 
   return (
+    <SafeAreaView className="flex-1 bg-background">
     <KeyboardAvoidingView
-      className="flex-1 bg-background"
+      className="flex-1"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -149,5 +151,6 @@ export default function SignUpScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }

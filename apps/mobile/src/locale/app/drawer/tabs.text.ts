@@ -4,20 +4,20 @@ export const useTranslation = () =>
   useTranslationFactory({
     en: {
       navigation: {
-        dashboard: "Dashboard",
+        dashboard: "Home",
         accounts: "Accounts",
-        transactions: "Transactions",
-        "cash-flow": "Cash Flow",
+        transactions: "Activity",
+        "cash-flow": "Cashflow",
         budget: "Budget",
       } as Record<string, string>,
     },
     es: {
       navigation: {
-        dashboard: "Panel",
+        dashboard: "Inicio",
         accounts: "Cuentas",
-        transactions: "Movimientos",
+        transactions: "Actividad",
         "cash-flow": "Flujo",
-        budget: "Presupuesto",
+        budget: "Presup.",
       } as Record<string, string>,
     },
   });

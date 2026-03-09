@@ -4,7 +4,7 @@ import { TouchableOpacity, View } from "react-native";
 import Icon from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { BudgetGroupSummary } from "@/types/budget-period";
-import { showAmount } from "@/utils/currency";
+import { getCurrencyMeta, showAmount } from "@/utils/currency";
 import { useStore } from "@/utils/store";
 
 import CategoryBudgetRow from "./category-budget-row";
@@ -18,8 +18,10 @@ export default function CategoryGroupSection({
   group,
   onAllocationPress,
 }: Props) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const isVisible = useStore((s) => s.isVisible);
+  const baseCurrency = useStore((s) => s.baseCurrency);
+  const sym = getCurrencyMeta(baseCurrency).symbol;
 
   const {
     group: groupInfo,
@@ -58,7 +60,7 @@ export default function CategoryGroupSection({
               Planned
             </Text>
             <Text className="mt-1 text-center text-xs font-mono font-semibold text-foreground">
-              {showAmount(group_total_planned, isVisible)}
+              {showAmount(group_total_planned, isVisible, sym)}
             </Text>
           </View>
           <View
@@ -72,7 +74,7 @@ export default function CategoryGroupSection({
             <Text
               className={`mt-1 text-center text-xs font-mono font-semibold ${group_total_remaining < 0 ? "text-expense" : "text-income"}`}
             >
-              {showAmount(group_total_remaining, isVisible)}
+              {showAmount(group_total_remaining, isVisible, sym)}
             </Text>
           </View>
         </View>

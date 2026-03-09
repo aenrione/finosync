@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
+import { Text } from "react-native";
 
 import { tabScreens } from "@/utils/screen-config";
 import Icon from "@/components/ui/icon";
@@ -37,6 +38,7 @@ export default function Navitagion() {
           fontSize: 11,
           fontWeight: "600",
         },
+        tabBarAllowFontScaling: false,
       })}
     >
       {tabScreens.map((screen) => (
@@ -46,7 +48,20 @@ export default function Navitagion() {
           options={{
             title: text.navigation[screen.name],
             headerShown: screen.headerShown == true,
-            // tabBarLabel: screen.title,
+            tabBarLabel: ({ focused }) => (
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                style={{
+                  fontSize: 11,
+                  fontWeight: "600",
+                  color: focused ? colors.primary : colors.mutedForeground,
+                  textAlign: "center",
+                }}
+              >
+                {text.navigation[screen.name]}
+              </Text>
+            ),
           }}
         />
       ))}

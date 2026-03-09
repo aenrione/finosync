@@ -3,7 +3,7 @@ import { View } from "react-native";
 
 import Icon from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { showAmount } from "@/utils/currency";
+import { getCurrencyMeta, showAmount } from "@/utils/currency";
 import { useStore } from "@/utils/store";
 
 type Props = {
@@ -20,6 +20,8 @@ export default function BudgetSummaryCard({
   totalActual,
 }: Props) {
   const isVisible = useStore((s) => s.isVisible);
+  const baseCurrency = useStore((s) => s.baseCurrency);
+  const sym = getCurrencyMeta(baseCurrency).symbol;
   const isPositive = leftToBudget >= 0;
 
   return (
@@ -30,7 +32,7 @@ export default function BudgetSummaryCard({
         <Text
           className={`text-3xl font-bold font-mono ${isPositive ? "text-income" : "text-expense"}`}
         >
-          {showAmount(leftToBudget, isVisible)}
+          {showAmount(leftToBudget, isVisible, sym)}
         </Text>
       </View>
 
@@ -42,7 +44,7 @@ export default function BudgetSummaryCard({
             <Text className="text-xs text-muted-foreground">Income</Text>
           </View>
           <Text className="text-sm font-semibold font-mono text-foreground">
-            {showAmount(totalIncome, isVisible)}
+            {showAmount(totalIncome, isVisible, sym)}
           </Text>
         </View>
 
@@ -52,7 +54,7 @@ export default function BudgetSummaryCard({
             <Text className="text-xs text-muted-foreground">Planned</Text>
           </View>
           <Text className="text-sm font-semibold font-mono text-foreground">
-            {showAmount(totalPlanned, isVisible)}
+            {showAmount(totalPlanned, isVisible, sym)}
           </Text>
         </View>
 
@@ -62,7 +64,7 @@ export default function BudgetSummaryCard({
             <Text className="text-xs text-muted-foreground">Spent</Text>
           </View>
           <Text className="text-sm font-semibold font-mono text-foreground">
-            {showAmount(totalActual, isVisible)}
+            {showAmount(totalActual, isVisible, sym)}
           </Text>
         </View>
       </View>

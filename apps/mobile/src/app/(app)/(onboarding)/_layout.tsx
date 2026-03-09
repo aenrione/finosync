@@ -1,4 +1,5 @@
 import { View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { Stack, usePathname, useRouter } from "expo-router"
 import type { Href } from "expo-router"
 import { Pressable } from "react-native"
@@ -36,7 +37,8 @@ export default function OnboardingLayout() {
   return (
     <View className="flex-1 bg-background">
       {/* Header with progress */}
-      <View className="px-4 pt-14 pb-2">
+      <SafeAreaView edges={["top"]} className="bg-background">
+      <View className="px-4 pt-2 pb-2">
         <View className="flex-row items-center justify-between mb-3">
           {/* Back button */}
           <View style={{ width: 60 }}>
@@ -70,6 +72,7 @@ export default function OnboardingLayout() {
           />
         </View>
       </View>
+      </SafeAreaView>
 
       <Stack
         screenOptions={{

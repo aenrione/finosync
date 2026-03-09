@@ -1,5 +1,6 @@
 import React from "react"
 import { Modal, ActivityIndicator, TouchableOpacity, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { WebView, WebViewNavigation } from "react-native-webview"
 import { Text } from "@/components/ui/text"
 
@@ -34,7 +35,7 @@ const FintocWidgetModal = ({ visible, onSuccess, onExit }: Props) => {
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onExit}>
-      <View className="flex-1">
+      <SafeAreaView className="flex-1" edges={["top"]}>
         <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
           <Text className="text-base font-semibold text-foreground">Connect your bank</Text>
           <TouchableOpacity onPress={onExit} className="p-2">
@@ -66,7 +67,7 @@ const FintocWidgetModal = ({ visible, onSuccess, onExit }: Props) => {
           )}
           className="flex-1"
         />
-      </View>
+      </SafeAreaView>
     </Modal>
   )
 }

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button, ButtonText } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
-import { View } from "react-native"
 import { Heading } from "@/components/ui/heading"
 
 type DeleteAlertProps = {
@@ -55,44 +54,42 @@ const DeleteAlert = ({
   const text = useTranslation()
 
   return (
-    <View className="flex-1 bg-background">
-      <AlertDialog
-        isOpen={isOpen}
-        onClose={onClose}
-        size="md"
-      >
-        <AlertDialogBackdrop />
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <Heading className="text-foreground font-semibold text-lg">
-              {title || text.confirmTitle}
-            </Heading>
-          </AlertDialogHeader>
-          <AlertDialogBody className="mt-3 mb-4">
-            <Text className="text-sm">
-              {errorMessage || text.confirmMessage}
-            </Text>
-          </AlertDialogBody>
-          <AlertDialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              onPress={onClose}
-              className="mr-3"
-            >
-              <ButtonText>{text.cancel}</ButtonText>
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onPress={() => { onDelete(); onClose() }}
-            >
-              <ButtonText>{text.delete}</ButtonText>
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </View>
+    <AlertDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      size="md"
+    >
+      <AlertDialogBackdrop />
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <Heading className="text-foreground font-semibold text-lg">
+            {title || text.confirmTitle}
+          </Heading>
+        </AlertDialogHeader>
+        <AlertDialogBody className="mt-3 mb-4">
+          <Text className="text-sm">
+            {errorMessage || text.confirmMessage}
+          </Text>
+        </AlertDialogBody>
+        <AlertDialogFooter>
+          <Button
+            variant="outline"
+            size="sm"
+            onPress={onClose}
+            className="mr-3"
+          >
+            <ButtonText>{text.cancel}</ButtonText>
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onPress={() => { onDelete(); onClose() }}
+          >
+            <ButtonText>{text.delete}</ButtonText>
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 

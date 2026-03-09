@@ -9,6 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import { useTranslation } from "@/locale/app/account/detail.text";
 
+import ScreenHeader from "@/components/screen-header";
 import RouteErrorState from "@/components/errors/route-error-state";
 import StaleDataBanner from "@/components/errors/stale-data-banner";
 import AccountBalanceChart from "@/components/features/charts/account-balance-chart";
@@ -27,16 +28,8 @@ import { useStore } from "@/utils/store";
 import Icon from "@/components/ui/icon";
 
 type AccountDetailData = {
-  insights?: {
-    total_income: number;
-    total_expenses: number;
-    transaction_count: number;
-    average_transaction: number;
-    top_category_name: string;
-    top_category_amount: number;
-  };
   chart?: {
-    balance?: { label: string; balance?: number; net?: number }[];
+    balance?: { label: string; balance?: number; income?: number; expenses?: number; net?: number }[];
     avgIncome?: number;
     avgExpenses?: number;
     avgSavings?: number;
@@ -70,7 +63,6 @@ export default function AccountDetailsScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const [selectedPeriod, setSelectedPeriod] = useState("30D");
   const [accountData, setAccountData] = useState<AccountDetailData | null>(null);
   const [loadingAccount, setLoadingAccount] = useState(true);
   const [accountError, setAccountError] = useState<string | null>(null);
@@ -79,7 +71,7 @@ export default function AccountDetailsScreen() {
     null,
   );
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-  const accountCacheKey = `account:${id}:${selectedPeriod}`;
+  const accountCacheKey = `account:${id}:6M`;
 
   useEffect(() => {
     if (!id) return;
@@ -106,7 +98,7 @@ export default function AccountDetailsScreen() {
         }
 
         const data = await fetchJsonWithAuth<AccountDetailData>(
-          `/accounts/${id}?time_range=${selectedPeriod}`,
+          `/accounts/${id}?time_range=6M`,
         );
 
         if (!active) return;
@@ -135,7 +127,7 @@ export default function AccountDetailsScreen() {
     return () => {
       active = false;
     };
-  }, [accountCacheKey, id, selectedPeriod]);
+  }, [accountCacheKey, id]);
 
   const handleDeleteAccount = useCallback(async () => {
     if (!id) return;
@@ -168,7 +160,7 @@ export default function AccountDetailsScreen() {
       await Promise.all([
         refreshData(),
         fetchJsonWithAuth<AccountDetailData>(
-          `/accounts/${id}?time_range=${selectedPeriod}`,
+          `/accounts/${id}?time_range=6M`,
         ).then(async (data) => {
           setAccountData(data);
           setAccountError(null);
@@ -183,7 +175,7 @@ export default function AccountDetailsScreen() {
     } finally {
       setRefreshing(false);
     }
-  }, [accountCacheKey, accountData, id, refreshData, selectedPeriod]);
+  }, [accountCacheKey, accountData, id, refreshData]);
 
   if (!account) {
     return (
@@ -198,30 +190,17 @@ export default function AccountDetailsScreen() {
   if (accountError && !accountData) {
     return (
       <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-row items-center justify-between px-5 py-4 bg-background">
-          <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-muted justify-center items-center"
-            onPress={() => router.back()}
-          >
-            <Icon name="ArrowLeft" className="text-foreground" size={24} />
-          </TouchableOpacity>
-          <View className="flex-1 items-center">
-            <Text className="text-lg font-bold text-foreground">
-              {account.account_name}
-            </Text>
-            <Text className="text-sm text-muted-foreground">
-              {account.account_type}
-            </Text>
-          </View>
-          <View className="w-8" />
-        </View>
+        <ScreenHeader
+          title={account.account_name}
+          variant="back"
+        />
 
         <RouteErrorState
           error={accountError}
           title="Couldn't load account details"
           onRetry={async () => {
             const data = await fetchJsonWithAuth<AccountDetailData>(
-              `/accounts/${id}?time_range=${selectedPeriod}`,
+              `/accounts/${id}?time_range=6M`,
             );
             setAccountData(data);
             setAccountError(null);
@@ -235,44 +214,15 @@ export default function AccountDetailsScreen() {
     );
   }
 
-  // Use insights from backend response
-  const insights = accountData?.insights || {
-    total_income: 0,
-    total_expenses: 0,
-    transaction_count: 0,
-    average_transaction: 0,
-    top_category_name: "None",
-    top_category_amount: 0,
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-background">
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 bg-background">
-        <TouchableOpacity
-          className="w-10 h-10 rounded-full bg-muted justify-center items-center"
-          onPress={() => router.back()}
-        >
-          <Icon name="ArrowLeft" className="text-foreground" size={24} />
-        </TouchableOpacity>
-        <View className="flex-1 items-center">
-          <Text className="text-lg font-bold text-foreground">
-            {account.account_name}
-          </Text>
-          <Text className="text-sm text-muted-foreground">
-            {account.account_type}
-          </Text>
-        </View>
-        <TouchableOpacity
-          className="w-8 h-8 rounded-full bg-muted justify-center items-center"
-          onPress={() => {
-            console.log("Delete icon pressed");
-            setShowDeleteAlert(true);
-          }}
-        >
-          <Icon name="Trash2" className="text-muted-foreground" size={18} />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title={account.account_name}
+        variant="back"
+        rightActions={[
+          { icon: "Trash2", onPress: () => setShowDeleteAlert(true) },
+        ]}
+      />
       {/* Always render the component, even if not open */}
       <DeleteAlertWrapper
         isOpen={showDeleteAlert}
@@ -372,108 +322,14 @@ export default function AccountDetailsScreen() {
         {/* Balance Chart */}
         <View className="px-5 mt-6">
           <AccountBalanceChart
-            balanceHistory={
-              accountData?.chart?.balance?.map((item: { label: string; balance?: number; net?: number }) => ({
-                date: item.label,
-                balance: Number(item.balance ?? item.net ?? 0),
-              })) || []
-            }
+            balanceData={accountData?.chart?.balance || []}
             currency={account.currency}
-            selectedPeriod={selectedPeriod}
-            onPeriodChange={setSelectedPeriod}
             avgIncome={accountData?.chart?.avgIncome}
             avgExpenses={accountData?.chart?.avgExpenses}
             avgSavings={accountData?.chart?.avgSavings}
             avgBalance={accountData?.chart?.avgBalance}
             loading={loadingAccount}
           />
-        </View>
-
-        {/* Monthly Insights */}
-        <View className="px-5 mt-6">
-          <Text className="text-xl font-bold text-foreground mb-4">
-            This Month's Insights
-          </Text>
-
-          <View className="flex-row flex-wrap -mx-3 mb-4">
-            <View className="w-1/2 px-3 mb-4">
-              <View className="bg-card rounded-xl p-4 shadow-sm items-center">
-                <View className="w-10 h-10 rounded-full bg-income/10 justify-center items-center mb-3">
-                  <Icon name="TrendingUp" className="text-income" size={20} />
-                </View>
-                <Text className="font-mono text-lg font-bold text-foreground mb-1">
-                  {showAmount(insights.total_income)}
-                </Text>
-                <Text className="text-sm text-muted-foreground text-center">
-                  Total Income
-                </Text>
-              </View>
-            </View>
-
-            <View className="w-1/2 px-3 mb-4">
-              <View className="bg-card rounded-xl p-4 shadow-sm items-center">
-                <View className="w-10 h-10 rounded-full bg-expense/10 justify-center items-center mb-3">
-                  <Icon
-                    name="TrendingDown"
-                    className="text-expense"
-                    size={20}
-                  />
-                </View>
-                <Text className="font-mono text-lg font-bold text-foreground mb-1">
-                  {showAmount(insights.total_expenses)}
-                </Text>
-                <Text className="text-sm text-muted-foreground text-center">
-                  Total Expenses
-                </Text>
-              </View>
-            </View>
-
-            <View className="w-1/2 px-3 mb-4">
-              <View className="bg-card rounded-xl p-4 shadow-sm items-center">
-                <View className="w-10 h-10 rounded-full bg-investment/10 justify-center items-center mb-3">
-                  <Icon name="Calendar" className="text-investment" size={20} />
-                </View>
-                <Text className="font-mono text-lg font-bold text-foreground mb-1">
-                  {insights.transaction_count}
-                </Text>
-                <Text className="text-sm text-muted-foreground text-center">
-                  Transactions
-                </Text>
-              </View>
-            </View>
-
-            <View className="w-1/2 px-3 mb-4">
-              <View className="bg-card rounded-xl p-4 shadow-sm items-center">
-                <View className="w-10 h-10 rounded-full bg-warning/10 justify-center items-center mb-3">
-                  <Icon name="DollarSign" className="text-warning" size={20} />
-                </View>
-                <Text className="font-mono text-lg font-bold text-foreground mb-1">
-                  {showAmount(insights.average_transaction)}
-                </Text>
-                <Text className="text-sm text-muted-foreground text-center">
-                  Avg Transaction
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {insights.top_category_name &&
-          insights.top_category_name !== "None" &&
-          insights.top_category_amount > 0 ? (
-            <View className="bg-card rounded-xl p-4 shadow-sm">
-              <Text className="text-base font-semibold text-foreground mb-3">
-                Top Spending Category
-              </Text>
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted-foreground">
-                  {insights.top_category_name}
-                </Text>
-                <Text className="font-mono text-lg font-bold text-expense">
-                  {showAmount(insights.top_category_amount)}
-                </Text>
-              </View>
-            </View>
-          ) : null}
         </View>
 
         {/* Transaction Filters */}
@@ -513,7 +369,6 @@ export default function AccountDetailsScreen() {
             showTypeFilters={true}
             showCategoryFilters={true}
             showAccountFilters={false}
-            customFilters={["Food", "Transport", "Shopping"]}
           />
         </View>
 

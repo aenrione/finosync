@@ -1,4 +1,5 @@
 import { View, ScrollView, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
 import { router } from "expo-router";
 
@@ -52,7 +53,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background">
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -70,6 +71,6 @@ export default function DashboardScreen() {
         <BudgetProgressCards />
         <UpcomingRecurringCard />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

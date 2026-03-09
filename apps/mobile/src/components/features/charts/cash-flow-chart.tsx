@@ -1,17 +1,61 @@
-import { View, Text, useWindowDimensions } from "react-native";
-import React, { useMemo, useState } from "react";
+import { View, Text, useWindowDimensions, Pressable } from "react-native";
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { BarChart } from "react-native-gifted-charts";
 
 import { useCharts } from "@/context/charts.context";
 import { colors } from "@/lib/colors";
-import { getCurrencyMeta, showAmount } from "@/utils/currency";
 import Icon from "@/components/ui/icon";
 
+const GREY_INCOME = "#B0BEC5";
+const GREY_EXPENSE = "#78909C";
+
 export default function CashFlowChart() {
-  const { balanceData, avgIncome, avgExpenses, avgSavings, baseCurrency } =
+  const { balanceData, baseCurrency, timeRange, setSelectedPeriods } =
     useCharts();
   const { width: screenWidth } = useWindowDimensions();
   const [containerWidth, setContainerWidth] = useState(screenWidth - 40);
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  const initializedRef = useRef(false);
+
+  // Reset default selection when time range changes
+  useEffect(() => {
+    initializedRef.current = false;
+    setSelectedIndices(new Set());
+  }, [timeRange]);
+
+  // Auto-select the current month (last bar) when data loads
+  useEffect(() => {
+    if (balanceData.length > 0 && !initializedRef.current) {
+      initializedRef.current = true;
+      const lastIndex = balanceData.length - 1;
+      setSelectedIndices(new Set([lastIndex]));
+      const period = balanceData[lastIndex]?.week ?? balanceData[lastIndex]?.month ?? "";
+      if (period) setSelectedPeriods([period]);
+    }
+  }, [balanceData, setSelectedPeriods]);
+
+  const hasSelection = selectedIndices.size > 0;
+
+  const handleBarPress = useCallback((index: number) => {
+    setSelectedIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      const periods = [...next]
+        .map((i) => balanceData[i]?.week ?? balanceData[i]?.month ?? "")
+        .filter(Boolean);
+      setSelectedPeriods(periods);
+      return next;
+    });
+  }, [balanceData, setSelectedPeriods]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIndices(new Set());
+    setSelectedPeriods([]);
+  }, [setSelectedPeriods]);
 
   const { stackData, lineData, chartMaxValue, chartMostNegativeValue } =
     useMemo(() => {
@@ -24,29 +68,35 @@ export default function CashFlowChart() {
         };
       }
 
-      const stacks = balanceData.map((item) => {
+      const stacks = balanceData.map((item, index) => {
         const label = item.week ?? item.month ?? "";
         const income = Number(item.income) || 0;
         const expenseMagnitude = Math.abs(Number(item.expenses) || 0);
         const expenses = -expenseMagnitude;
 
+        const isSelected = !hasSelection || selectedIndices.has(index);
+        const incomeColor = isSelected ? colors.income : GREY_INCOME;
+        const expenseColor = isSelected ? colors.expense : GREY_EXPENSE;
+
         return {
           stacks: [
             {
               value: income,
-              color: colors.income,
+              color: incomeColor,
               borderTopLeftRadius: 4,
               borderTopRightRadius: 4,
               borderBottomLeftRadius: 0,
               borderBottomRightRadius: 0,
+              onPress: () => handleBarPress(index),
             },
             {
               value: expenses,
-              color: colors.expense,
+              color: expenseColor,
               borderTopLeftRadius: 0,
               borderTopRightRadius: 0,
               borderBottomLeftRadius: 4,
               borderBottomRightRadius: 4,
+              onPress: () => handleBarPress(index),
             },
           ],
           label,
@@ -77,12 +127,11 @@ export default function CashFlowChart() {
         chartMaxValue: positiveMax * 1.08,
         chartMostNegativeValue: negativeMax * 1.18,
       };
-    }, [balanceData]);
+    }, [balanceData, hasSelection, selectedIndices, handleBarPress]);
 
   if (stackData.length === 0) return null;
 
   const chartWidth = Math.max(220, containerWidth - 64);
-  const amountSymbol = getCurrencyMeta(baseCurrency).symbol;
   const barWidth = Math.max(
     18,
     Math.min(32, chartWidth / Math.max(stackData.length, 1) - 18),
@@ -146,6 +195,28 @@ export default function CashFlowChart() {
           </View>
         </View>
 
+        {hasSelection && (() => {
+          const indices = [...selectedIndices].sort((a, b) => a - b);
+          const labels = indices
+            .map((i) => balanceData[i]?.week ?? balanceData[i]?.month)
+            .filter(Boolean);
+
+          return (
+            <Pressable
+              onPress={clearSelection}
+              className="mb-3 flex-row items-center justify-between rounded-xl border border-primary/20 bg-primary/5 px-3 py-2"
+            >
+              <View className="flex-row items-center gap-2 flex-1">
+                <Icon name="ListFilter" className="text-primary" size={14} />
+                <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
+                  {labels.join(", ")}
+                </Text>
+              </View>
+              <Icon name="X" className="text-muted-foreground" size={14} />
+            </Pressable>
+          );
+        })()}
+
         <BarChart
           stackData={stackData}
           width={chartWidth}
@@ -178,12 +249,12 @@ export default function CashFlowChart() {
           showLine
           lineData={lineData}
           lineConfig={{
-            color: colors.foreground,
+            color: hasSelection ? colors.border : colors.foreground,
             thickness: 3.5,
             curved: true,
             curvature: 0.12,
             hideDataPoints: false,
-            dataPointsColor: colors.foreground,
+            dataPointsColor: hasSelection ? colors.border : colors.foreground,
             dataPointsRadius: 4,
           }}
           disableScroll
@@ -225,38 +296,6 @@ export default function CashFlowChart() {
         </View>
       </View>
 
-      {/* Avg Stats Row */}
-      <View className="flex-row gap-3 mt-3">
-        <View className="flex-1 bg-card rounded-xl p-4 border border-border items-center">
-          <Icon name="DollarSign" className="text-success mb-2" size={20} />
-          <Text className="text-xs text-muted-foreground mb-1">Avg Income</Text>
-          <Text className="text-base font-mono font-bold text-foreground">
-            {showAmount(avgIncome, true, amountSymbol)}
-          </Text>
-        </View>
-        <View className="flex-1 bg-card rounded-xl p-4 border border-border items-center">
-          <Icon
-            name="TrendingDown"
-            className="text-destructive mb-2"
-            size={20}
-          />
-          <Text className="text-xs text-muted-foreground mb-1">
-            Avg Expenses
-          </Text>
-          <Text className="text-base font-mono font-bold text-foreground">
-            {showAmount(avgExpenses, true, amountSymbol)}
-          </Text>
-        </View>
-        <View className="flex-1 bg-card rounded-xl p-4 border border-border items-center">
-          <Icon name="TrendingUp" className="text-primary mb-2" size={20} />
-          <Text className="text-xs text-muted-foreground mb-1">
-            Avg Savings
-          </Text>
-          <Text className="text-base font-mono font-bold text-foreground">
-            {showAmount(avgSavings, true, amountSymbol)}
-          </Text>
-        </View>
-      </View>
     </View>
   );
 }

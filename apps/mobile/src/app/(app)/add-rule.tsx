@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
@@ -202,7 +203,7 @@ const AddRuleScreen = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1 bg-background">
         <ScreenHeader
           title={isEditing ? "Edit Rule" : "New Rule"}
           variant="back"
@@ -217,12 +218,12 @@ const AddRuleScreen = () => {
             Loading builder...
           </Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background">
       <ScreenHeader
         title={isEditing ? "Edit Rule" : "New Rule"}
         variant="back"
@@ -380,7 +381,7 @@ const AddRuleScreen = () => {
           </ButtonText>
         </Button>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

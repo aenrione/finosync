@@ -1,4 +1,5 @@
 import { View, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "@/locale/app/add-category.text"
@@ -8,7 +9,7 @@ import { useCategories } from "@/context/categories.context"
 import { Button, ButtonText } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { FormSection } from "@/components/ui/form-section"
-import BackHeader from "@/components/back-header"
+import ScreenHeader from "@/components/screen-header"
 import IconPicker from "@/components/features/categories/icon-picker"
 import { Text } from "@/components/ui/text"
 import Icon from "@/components/ui/icon"
@@ -75,8 +76,8 @@ const AddCategory = () => {
   }
 
   return (
-    <View className="flex-1 bg-background">
-      <BackHeader title={isEditing ? text.titleEdit : text.titleNew} />
+    <SafeAreaView className="flex-1 bg-background">
+      <ScreenHeader title={isEditing ? text.titleEdit : text.titleNew} variant="back" />
 
       <KeyboardAvoidingView
         className="flex-1"
@@ -156,7 +157,7 @@ const AddCategory = () => {
           </ButtonText>
         </Button>
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

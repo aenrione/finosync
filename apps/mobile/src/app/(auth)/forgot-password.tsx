@@ -1,4 +1,5 @@
 import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import React, { useState } from "react"
 import { useRouter } from "expo-router"
 import { Mail, Lock } from "lucide-react-native"
@@ -19,8 +20,9 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
+    <SafeAreaView className="flex-1 bg-background">
     <KeyboardAvoidingView
-      className="flex-1 bg-background"
+      className="flex-1"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -88,5 +90,6 @@ export default function ForgotPasswordScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }

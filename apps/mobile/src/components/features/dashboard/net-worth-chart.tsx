@@ -1,6 +1,6 @@
 import { View, Text, useWindowDimensions } from "react-native"
 import { BarChart } from "react-native-gifted-charts"
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useState, useCallback } from "react"
 
 import {
   getCurrencyMeta,
@@ -19,6 +19,13 @@ const TYPE_CONFIG: Record<string, { label: string; color: string }> = {
   buda: { label: "Crypto", color: colors.crypto },
 }
 
+const DIMMED_COLORS: Record<string, string> = {
+  [colors.income]: "#10B98140",
+  [colors.accountFintoc]: "#06B6D440",
+  [colors.investment]: "#8B5CF640",
+  [colors.crypto]: "#F59E0B40",
+}
+
 type BalanceItem = {
   currency: string;
   label?: string;
@@ -35,7 +42,17 @@ export default function NetWorthChart({
   const { accountBalances, baseCurrency, loading, timeRange } = useCharts()
   const { width: screenWidth } = useWindowDimensions()
   const [containerWidth, setContainerWidth] = useState(screenWidth - 40)
+  const lastBarIndex = (accountBalances?.[0]?.labels?.length ?? 1) - 1
+  const [selectedIndex, setSelectedIndex] = useState(lastBarIndex)
   const isVisible = useStore((state) => state.isVisible)
+  const isCurrentMonth = selectedIndex === lastBarIndex
+
+  const handleBarPress = useCallback(
+    (index: number) => {
+      setSelectedIndex(index)
+    },
+    [],
+  )
 
   const {
     stackData,
@@ -44,8 +61,10 @@ export default function NetWorthChart({
     maxValue,
     minValue,
     totals,
+    labels,
     breakdown,
     latestLabel,
+    displayIndex,
   } = useMemo(() => {
     if (!accountBalances || accountBalances.length === 0) {
       return {
@@ -55,8 +74,10 @@ export default function NetWorthChart({
         maxValue: 0,
         minValue: 0,
         totals: [],
+        labels: [],
         breakdown: [],
         latestLabel: "",
+        displayIndex: 0,
       }
     }
 
@@ -69,8 +90,10 @@ export default function NetWorthChart({
         maxValue: 0,
         minValue: 0,
         totals: [],
+        labels: [],
         breakdown: [],
         latestLabel: "",
+        displayIndex: 0,
       }
     }
 
@@ -99,16 +122,25 @@ export default function NetWorthChart({
         maxValue: 0,
         minValue: 0,
         totals: [],
+        labels: [],
         breakdown: [],
         latestLabel: "",
+        displayIndex: 0,
       }
     }
 
     const stacks = refLabels.map((label, i) => ({
-      stacks: keys.map((type) => ({
-        value: grouped[type][i],
-        color: TYPE_CONFIG[type].color,
-      })),
+      stacks: keys.map((type, typeIdx) => {
+        const baseColor = TYPE_CONFIG[type].color
+        const isDimmed = selectedIndex !== i
+        const isLast = typeIdx === keys.length - 1
+        return {
+          value: grouped[type][i],
+          color: isDimmed ? (DIMMED_COLORS[baseColor] ?? baseColor) : baseColor,
+          onPress: () => handleBarPress(i),
+          ...(isLast ? { borderTopLeftRadius: 4, borderTopRightRadius: 4 } : {}),
+        }
+      }),
       label,
     }))
 
@@ -120,14 +152,19 @@ export default function NetWorthChart({
 
     const values = [...totals, ...keys.flatMap((type) => grouped[type])]
     const lastIndex = refLabels.length - 1
-    const latestBreakdown = keys
-      .map((type) => ({
-        key: type,
-        label: TYPE_CONFIG[type].label,
-        color: TYPE_CONFIG[type].color,
-        value: grouped[type][lastIndex] ?? 0,
-      }))
-      .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
+
+    const breakdownForIndex = (idx: number) =>
+      keys
+        .map((type) => ({
+          key: type,
+          label: TYPE_CONFIG[type].label,
+          color: TYPE_CONFIG[type].color,
+          value: grouped[type][idx] ?? 0,
+        }))
+        .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
+
+    const displayIndex = selectedIndex
+    const latestBreakdown = breakdownForIndex(displayIndex)
 
     return {
       stackData: stacks,
@@ -136,43 +173,45 @@ export default function NetWorthChart({
       maxValue: Math.max(0, ...values),
       minValue: Math.min(0, ...values),
       totals,
+      labels: refLabels,
       breakdown: latestBreakdown,
       latestLabel: refLabels[lastIndex] ?? "",
+      displayIndex,
     }
-  }, [accountBalances])
+  }, [accountBalances, selectedIndex, handleBarPress])
 
   if (loading || stackData.length === 0) return null
 
   const balance = balances?.[0]
-  const latestTotal = totals[totals.length - 1] ?? 0
-  const previousTotal = totals.length > 1 ? totals[totals.length - 2] : null
-  const parsedBalance = parseNumericAmount(balance?.balance)
   const currencyCode = balance?.currency || baseCurrency
   const currencyMeta = getCurrencyMeta(currencyCode)
   const currencySymbol = balance?.symbol || currencyMeta.symbol
-  const currentTotal = latestTotal || parsedBalance || 0
-  const changeAmount =
-    previousTotal === null ? null : currentTotal - previousTotal
+
+  const displayTotal = totals[displayIndex] ?? 0
+  const prevTotal = displayIndex > 0 ? totals[displayIndex - 1] : null
+  const parsedBalance = parseNumericAmount(balance?.balance)
+  const currentTotal = isCurrentMonth
+    ? displayTotal || parsedBalance || 0
+    : displayTotal
+  const changeAmount = prevTotal === null ? null : currentTotal - prevTotal
   const fallbackChangePct = (() => {
-    if (
-      changeAmount === null ||
-      previousTotal === null ||
-      previousTotal === 0
-    ) {
+    if (changeAmount === null || prevTotal === null || prevTotal === 0) {
       return null
     }
-
-    return (changeAmount / previousTotal) * 100
+    return (changeAmount / prevTotal) * 100
   })()
-  const changePct = balance?.changePct ?? fallbackChangePct
+  const changePct = isCurrentMonth
+    ? (balance?.changePct ?? fallbackChangePct)
+    : fallbackChangePct
   const hasChange = changeAmount !== null && changePct !== null
   const isPositive = (changeAmount ?? 0) >= 0
-  const trendLabel = timeRange === "1M" ? "vs prior week" : "vs last month"
+  const trendLabel = timeRange === "1M" ? "vs prior week" : "vs prior period"
   const formattedTotal = showAmount(currentTotal, isVisible, currencySymbol)
   const formattedChange =
     changeAmount === null
       ? null
       : showAmount(Math.abs(changeAmount), isVisible, currencySymbol)
+  const displayPeriodLabel = labels?.[displayIndex] ?? ""
 
   const chartWidth = Math.max(220, containerWidth - 64)
   const barWidth = Math.max(
@@ -187,13 +226,13 @@ export default function NetWorthChart({
   return (
     <View className="px-5 mt-6 mb-2">
       <View
-        className="bg-card rounded-3xl border border-border p-5"
+        className="bg-card rounded-2xl border border-border p-5"
         onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
       >
         <View className="flex-row items-start justify-between gap-3">
           <View className="flex-1">
             <View className="flex-row items-center gap-2">
-              <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary/10">
+              <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <Icon name="TrendingUp" className="text-primary" size={18} />
               </View>
               <View className="flex-1">
@@ -247,7 +286,7 @@ export default function NetWorthChart({
             {breakdown.map((item) => (
               <View
                 key={item.key}
-                className="mb-3 rounded-2xl border border-border bg-background px-3 py-3"
+                className="mb-3 rounded-xl border border-border bg-background px-3 py-3"
                 style={{ width: "48%" }}
               >
                 <View className="flex-row items-center">
@@ -280,7 +319,7 @@ export default function NetWorthChart({
           </View>
           {latestLabel ? (
             <Text className="text-xs font-medium text-muted-foreground">
-              Latest {latestLabel}
+              {isCurrentMonth ? `Latest ${latestLabel}` : displayPeriodLabel}
             </Text>
           ) : null}
         </View>

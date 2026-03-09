@@ -1,8 +1,8 @@
-import { ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native"
+import { ScrollView, Alert, KeyboardAvoidingView, Platform, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "@/locale/app/add-account.text"
 import React, { useState } from "react"
 import { useRouter } from "expo-router"
-import { View } from "react-native"
 import { Wallet, Key, ShieldCheck, Mail, Link2 } from "lucide-react-native"
 
 import { getAvailableAccountTypes, getAccountTypeConfig } from "@/constants/accountTypes"
@@ -14,7 +14,7 @@ import { useAccounts } from "@/context/accounts.context"
 import { FormField } from "@/components/ui/form-field"
 import { FormSelect } from "@/components/ui/form-select"
 import { FormSection } from "@/components/ui/form-section"
-import BackHeader from "@/components/back-header"
+import ScreenHeader from "@/components/screen-header"
 import { Text } from "@/components/ui/text"
 import Icon from "@/components/ui/icon"
 
@@ -86,8 +86,8 @@ const AddAccount = () => {
   }
 
   return (
-    <View className="flex-1 bg-background">
-      <BackHeader title={text.title} />
+    <SafeAreaView className="flex-1 bg-background">
+      <ScreenHeader title={text.title} variant="back" />
 
       <KeyboardAvoidingView
         className="flex-1"
@@ -254,7 +254,7 @@ const AddAccount = () => {
           </Button>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   )
 }
 

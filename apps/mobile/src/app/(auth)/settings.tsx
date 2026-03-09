@@ -1,4 +1,5 @@
 import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import React, { useState, useEffect } from "react"
 import { Server } from "lucide-react-native"
 
@@ -20,8 +21,9 @@ export default function SettingScreen() {
   const isValid = currentUrl.trim().length > 0 && currentUrl !== "https://"
 
   return (
+    <SafeAreaView className="flex-1 bg-background">
     <KeyboardAvoidingView
-      className="flex-1 bg-background"
+      className="flex-1"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -74,5 +76,6 @@ export default function SettingScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }

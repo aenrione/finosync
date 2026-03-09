@@ -1,4 +1,5 @@
 import { View, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "@/locale/app/add-transaction.text"
@@ -18,7 +19,7 @@ import { FormSelect } from "@/components/ui/form-select"
 import { FormDatePicker } from "@/components/ui/form-date-picker"
 import { FormToggle } from "@/components/ui/form-toggle"
 import { FormSection } from "@/components/ui/form-section"
-import BackHeader from "@/components/back-header"
+import ScreenHeader from "@/components/screen-header"
 import { Button, ButtonText } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 import { useStore } from "@/utils/store"
@@ -131,8 +132,8 @@ const AddTransaction = () => {
 
   if (localAccounts.length === 0) {
     return (
-      <View className="flex-1 bg-background">
-        <BackHeader title={transaction ? text.titleEdit : text.titleNew} />
+      <SafeAreaView className="flex-1 bg-background">
+        <ScreenHeader title={transaction ? text.titleEdit : text.titleNew} variant="back" />
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-foreground text-lg text-center mb-4">
             You need to create a local account first to add manual transactions.
@@ -141,7 +142,7 @@ const AddTransaction = () => {
             <ButtonText>Create Local Account</ButtonText>
           </Button>
         </View>
-      </View>
+      </SafeAreaView>
     )
   }
 
@@ -159,8 +160,8 @@ const AddTransaction = () => {
   ]
 
   return (
-    <View className="flex-1 bg-background">
-      <BackHeader title={transaction ? text.titleEdit : text.titleNew} />
+    <SafeAreaView className="flex-1 bg-background">
+      <ScreenHeader title={transaction ? text.titleEdit : text.titleNew} variant="back" />
 
       <KeyboardAvoidingView
         className="flex-1"
@@ -275,7 +276,7 @@ const AddTransaction = () => {
           </ButtonText>
         </Button>
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

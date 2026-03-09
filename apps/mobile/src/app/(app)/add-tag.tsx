@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { Tag } from "lucide-react-native"
 
 import ScreenHeader from "@/components/screen-header"
@@ -73,7 +74,7 @@ const AddTag = () => {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background">
       <ScreenHeader title={isEditing ? "Edit Tag" : "New Tag"} variant="back" />
 
       <KeyboardAvoidingView
@@ -159,7 +160,7 @@ const AddTag = () => {
           </Button>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

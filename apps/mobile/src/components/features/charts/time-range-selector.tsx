@@ -10,8 +10,7 @@ export default function TimeRangeSelector() {
 
   return (
     <View className="mt-6">
-      <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-xl font-semibold text-foreground">View</Text>
+      <View className="flex-row justify-end items-center mb-4">
         <View className="flex-row gap-2 rounded-full bg-card border border-border p-1">
           {timeRanges.map((range) => (
             <TouchableOpacity

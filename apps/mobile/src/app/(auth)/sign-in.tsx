@@ -1,4 +1,5 @@
 import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import React, { useState, useEffect } from "react"
 import { useTranslation } from "@/locale/auth/sign-in.text"
 import { useRouter } from "expo-router"
@@ -70,8 +71,9 @@ export function SignInScreen() {
   }
 
   return (
+    <SafeAreaView className="flex-1 bg-background">
     <KeyboardAvoidingView
-      className="flex-1 bg-background"
+      className="flex-1"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -167,6 +169,7 @@ export function SignInScreen() {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
 

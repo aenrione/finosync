@@ -225,7 +225,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
+    <SafeAreaView className="flex-1 bg-background">
       <ScreenHeader title={text.title} variant="back" />
       <ScrollView
         contentContainerClassName="px-5 pb-12"

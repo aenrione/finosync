@@ -67,9 +67,11 @@ type ChartsContextType = {
   selectedAccount: number;
   timeRange: string;
   showIncome: boolean;
+  selectedPeriods: string[];
   setSelectedAccount: (accountId: number) => void;
   setTimeRange: (range: string) => void;
   setShowIncome: (show: boolean) => void;
+  setSelectedPeriods: (periods: string[]) => void;
   refreshData: () => Promise<void>;
   fetchChartData: (params?: {
     currency?: string;
@@ -142,8 +144,14 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const baseCurrency = useStore((s) => s.baseCurrency);
   const [selectedAccount, setSelectedAccount] = useState<number>(0);
-  const [timeRange, setTimeRange] = useState<string>("6M");
+  const [timeRange, setTimeRangeRaw] = useState<string>("6M");
   const [showIncome, setShowIncome] = useState<boolean>(false);
+  const [selectedPeriods, setSelectedPeriods] = useState<string[]>([]);
+
+  const setTimeRange = useCallback((range: string) => {
+    setSelectedPeriods([]);
+    setTimeRangeRaw(range);
+  }, []);
   const [avgIncome, setAvgIncome] = useState<number>(0);
   const [avgExpenses, setAvgExpenses] = useState<number>(0);
   const [avgSavings, setAvgSavings] = useState<number>(0);
@@ -453,9 +461,11 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
       selectedAccount,
       timeRange,
       showIncome,
+      selectedPeriods,
       setSelectedAccount,
       setTimeRange,
       setShowIncome,
+      setSelectedPeriods,
       refreshData,
       fetchChartData,
       avgIncome,
@@ -477,6 +487,7 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
       selectedAccount,
       timeRange,
       showIncome,
+      selectedPeriods,
       refreshData,
       fetchChartData,
       avgIncome,

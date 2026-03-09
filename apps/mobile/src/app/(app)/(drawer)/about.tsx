@@ -78,7 +78,7 @@ export default function AboutScreen() {
   const year = new Date().getFullYear()
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
+    <SafeAreaView className="flex-1 bg-background">
       <ScreenHeader variant="drawer" title={text.title} />
       <ScrollView
         contentContainerClassName="px-5 pb-12"

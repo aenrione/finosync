@@ -12,7 +12,7 @@ import { MoneyInput } from "@/components/ui/money-input";
 import { Text } from "@/components/ui/text";
 import { IconName } from "@/types/icon";
 import { BudgetAllocation } from "@/types/budget-period";
-import { showAmount } from "@/utils/currency";
+import { getCurrencyMeta, showAmount } from "@/utils/currency";
 import { useStore } from "@/utils/store";
 
 type Props = {
@@ -32,6 +32,8 @@ export default function EditAllocationModal({
 }: Props) {
   const [amount, setAmount] = useState("");
   const isVisible = useStore((s) => s.isVisible);
+  const baseCurrency = useStore((s) => s.baseCurrency);
+  const sym = getCurrencyMeta(baseCurrency).symbol;
   const isEditingExistingAllocation = allocation?.id !== null;
 
   React.useEffect(() => {
@@ -98,7 +100,7 @@ export default function EditAllocationModal({
               Spent this month
             </Text>
             <Text className="text-lg font-mono font-bold text-foreground">
-              {showAmount(allocation.actual_spend, isVisible)}
+              {showAmount(allocation.actual_spend, isVisible, sym)}
             </Text>
           </View>
 

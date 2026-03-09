@@ -8,7 +8,8 @@ import {
   View,
 } from "react-native"
 
-import BackHeader from "@/components/back-header"
+import { SafeAreaView } from "react-native-safe-area-context"
+import ScreenHeader from "@/components/screen-header"
 import { Button, ButtonText } from "@/components/ui/button"
 import { Text } from "@/components/ui/text"
 import Icon from "@/components/ui/icon"
@@ -86,31 +87,31 @@ const RecurringDetail = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-background">
-        <BackHeader title="Recurring" />
+      <SafeAreaView className="flex-1 bg-background">
+        <ScreenHeader title="Recurring" variant="back" />
         <View className="flex-1 justify-center items-center">
           <Icon name="RefreshCw" className="text-muted-foreground" size={32} />
         </View>
-      </View>
+      </SafeAreaView>
     )
   }
 
   if (!item) {
     return (
-      <View className="flex-1 bg-background">
-        <BackHeader title="Recurring" />
+      <SafeAreaView className="flex-1 bg-background">
+        <ScreenHeader title="Recurring" variant="back" />
         <View className="flex-1 justify-center items-center">
           <Text className="text-muted-foreground">Not found</Text>
         </View>
-      </View>
+      </SafeAreaView>
     )
   }
 
   const isExpense = item.transaction_type === "expense"
 
   return (
-    <View className="flex-1 bg-background">
-      <BackHeader title={item.name} />
+    <SafeAreaView className="flex-1 bg-background">
+      <ScreenHeader title={item.name} variant="back" />
 
       <ScrollView
         className="flex-1"
@@ -186,7 +187,7 @@ const RecurringDetail = () => {
           </Button>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }
 

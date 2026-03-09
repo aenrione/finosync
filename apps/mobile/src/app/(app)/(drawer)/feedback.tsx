@@ -2,7 +2,6 @@ import { useState } from "react"
 import { Alert, Platform, KeyboardAvoidingView, ScrollView, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import Constants from "expo-constants"
-import * as Device from "expo-device"
 
 import ScreenHeader from "@/components/screen-header"
 import { FormField } from "@/components/ui/form-field"
@@ -21,12 +20,7 @@ export default function FeedbackScreen() {
   const isValid = content.trim().length >= MIN_LENGTH
 
   const getDeviceInfo = (): string => {
-    const parts = [
-      Platform.OS,
-      Platform.Version,
-      Device.modelName,
-    ].filter(Boolean)
-    return parts.join(", ")
+    return `${Platform.OS} ${Platform.Version}`
   }
 
   const handleSend = async () => {
@@ -51,7 +45,7 @@ export default function FeedbackScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
       <ScreenHeader variant="drawer" title={text.title} />
       <KeyboardAvoidingView
         className="flex-1"

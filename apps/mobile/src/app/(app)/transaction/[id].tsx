@@ -3,34 +3,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import React, { useState } from "react";
 
+import ScreenHeader from "@/components/screen-header";
 import { useTransactions } from "@/context/transactions.context";
 import { useCategories } from "@/context/categories.context";
 import { useAccounts } from "@/context/accounts.context";
-import { getCurrencyMeta, showAmount } from "@/utils/currency";
+import { showAmount, getCurrencyMeta } from "@/utils/currency";
 import { Text } from "@/components/ui/text";
 import { useStore } from "@/utils/store";
 import Icon from "@/components/ui/icon";
-import { IconName } from "@/types/icon";
-
-// Status configurations
-const statusConfig = {
-  completed: {
-    icon: "CircleCheck",
-    label: "Completed",
-  },
-  pending: {
-    icon: "Clock",
-    label: "Pending",
-  },
-  failed: {
-    icon: "XCircle",
-    label: "Failed",
-  },
-  cancelled: {
-    icon: "AlertCircle",
-    label: "Cancelled",
-  },
-};
 
 export default function TransactionDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -79,18 +59,30 @@ export default function TransactionDetailsScreen() {
     );
   }
 
-  const formatAmount = (amount: number, currency: string) => {
-    const config = getCurrencyMeta(currency);
-    return `${config?.symbol}${showAmount(Math.abs(amount))}`;
+  const config = getCurrencyMeta(account?.currency || transaction.currency);
+  const isIncome = transaction.amount > 0;
+  const isIgnored = transaction.ignore;
+
+  const formatAmount = (amount: number) => {
+    return `${config.symbol} ${showAmount(Math.abs(amount))}`;
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
+      weekday: "short",
+      month: "short",
       day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -105,7 +97,7 @@ export default function TransactionDetailsScreen() {
 
   const handleShare = async () => {
     try {
-      const message = `Transaction Details\n\n${transaction.description || "Transaction"}\nAmount: ${transaction.amount > 0 ? "+" : ""}${formatAmount(transaction.amount, account?.currency || "USD")}\nDate: ${formatDateShort(transaction.transaction_date)}\nAccount: ${account?.account_name || "Unknown"}`;
+      const message = `Transaction Details\n\n${transaction.description || "Transaction"}\nAmount: ${transaction.amount > 0 ? "+" : ""}${formatAmount(transaction.amount)}\nDate: ${formatDateShort(transaction.transaction_date)}\nAccount: ${account?.account_name || "Unknown"}`;
 
       await Share.share({
         message,
@@ -114,13 +106,6 @@ export default function TransactionDetailsScreen() {
     } catch (error) {
       console.error("Error sharing:", error);
     }
-  };
-
-  const handleDownloadReceipt = () => {
-    Alert.alert(
-      "Download Receipt",
-      "Receipt download functionality would be implemented here.",
-    );
   };
 
   const handleEditTransaction = () => {
@@ -164,307 +149,337 @@ export default function TransactionDetailsScreen() {
 
   const handleToggleIgnore = () => {
     Alert.alert(
-      "Ignore Transaction",
-      "This transaction will be ignored in your spending calculations.",
+      isIgnored ? "Include Transaction" : "Exclude Transaction",
+      isIgnored
+        ? "This transaction will be included in your spending calculations again."
+        : "This transaction will be excluded from your spending calculations.",
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Confirm",
           onPress: () => {
-            // Toggle ignore logic would go here
+            // Toggle ignore logic
           },
         },
       ],
     );
   };
 
-  const config = getCurrencyMeta(account?.currency || transaction.currency);
-  const statusInfo = statusConfig.completed; // Default to completed for now
-  const isIncome = transaction.amount > 0;
-  const transactionAmount = isVisible ? transaction.amount : "------";
+  const handleViewAccount = () => {
+    if (account) {
+      router.push(`/(app)/account/${account.id}`);
+    }
+  };
+
+  const displayAmount = isVisible
+    ? `${isIncome ? "+" : "-"}${formatAmount(transaction.amount)}`
+    : "------";
+
+  const accountTypeLabel = account?.account_type
+    ? account.account_type.charAt(0).toUpperCase() + account.account_type.slice(1)
+    : "Unknown";
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 bg-background border-b border-border">
-        <TouchableOpacity
-          className="w-10 h-10 rounded-full bg-muted justify-center items-center"
-          onPress={() => router.back()}
-        >
-          <Icon name="ArrowLeft" className="text-foreground" size={24} />
-        </TouchableOpacity>
-        <View className="flex-1 items-center">
-          <Text className="text-lg font-bold text-foreground">
-            Transaction Details
-          </Text>
-        </View>
-        <View className="flex-row gap-2">
-          <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-muted justify-center items-center"
-            onPress={handleShare}
-          >
-            <Icon name="Share2" className="text-muted-foreground" size={20} />
-          </TouchableOpacity>
-          <TouchableOpacity className="w-10 h-10 rounded-full bg-muted justify-center items-center">
-            <Icon name="Ellipsis" className="text-muted-foreground" size={20} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <ScreenHeader
+        title="Transaction"
+        variant="back"
+        rightActions={[{ icon: "Share2", onPress: handleShare }]}
+      />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Main Transaction Card */}
-        <View className="px-5 mt-6">
-          <View
-            className={`bg-background border border-border rounded-2xl p-6 shadow-sm border-l-4 ${
-              isIncome ? "border-l-income" : "border-l-expense"
-            }`}
-          >
-            <View className="flex-row justify-between items-start mb-5">
-              <View className="flex-row items-start flex-1">
+        {/* Hero Card */}
+        <View className="px-5 mt-4">
+          <View className="bg-card rounded-2xl p-5 shadow-sm border border-border">
+            {/* Top: Icon + Name + Amount */}
+            <View className="flex-row justify-between items-start mb-4">
+              <View className="flex-row items-start flex-1 mr-3">
                 <View
-                  className={`w-14 h-14 rounded-full justify-center items-center mr-4 ${
+                  className={`w-12 h-12 rounded-2xl justify-center items-center mr-3 ${
                     isIncome ? "bg-income/10" : "bg-expense/10"
                   }`}
                 >
                   <Icon
-                    name={isIncome ? "TrendingUp" : "TrendingDown"}
-                    className={isIncome ? "text-income" : "text-destructive"}
-                    size={28}
+                    name={isIncome ? "ArrowDownLeft" : "ArrowUpRight"}
+                    className={isIncome ? "text-income" : "text-expense"}
+                    size={22}
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xl font-bold text-foreground mb-2">
+                  <Text
+                    className="text-lg font-bold text-foreground mb-1"
+                    numberOfLines={2}
+                  >
                     {transaction.description || "Transaction"}
                   </Text>
-                  <Text className="text-base text-muted-foreground">
+                  <Text className="text-sm text-muted-foreground" numberOfLines={1}>
                     {category?.name || "Uncategorized"}
+                    {account ? ` · ${account.account_name}` : ""}
                   </Text>
                 </View>
               </View>
-              <View className="items-end">
-                <Text
-                  className={`text-3xl font-bold mb-2 ${
-                    isIncome ? "text-income" : "text-destructive"
-                  }`}
-                >
-                  {isIncome ? "+" : ""}
-                  {transactionAmount}
-                </Text>
-                <View className="flex-row items-center bg-muted rounded-xl px-3 py-2">
-                  <Text className="text-base mr-2">{config.flag}</Text>
-                  <Text className="text-sm font-semibold text-foreground">
-                    {account?.currency || transaction.currency || "USD"}
-                  </Text>
-                </View>
-              </View>
-            </View>
 
-            {/* Status and Date */}
-            <View className="flex-row justify-between items-center mb-4">
-              <View className="flex-row items-center rounded-full px-3 py-2 bg-income/10">
-                <Icon
-                  name={statusInfo.icon as IconName}
-                  className="text-income"
-                  size={16}
-                />
-                <Text className="text-sm font-semibold ml-2 text-income">
-                  {statusInfo.label}
-                </Text>
-              </View>
-              <Text className="text-sm text-muted-foreground">
-                {formatDate(transaction.transaction_date)}
+              <Text
+                className={`font-mono text-2xl font-bold ${
+                  isIncome ? "text-income" : "text-expense"
+                }`}
+              >
+                {displayAmount}
               </Text>
             </View>
 
-            {/* Description */}
+            {/* Status + Date Row */}
+            <View className="flex-row justify-between items-center">
+              <View className="flex-row items-center gap-2">
+                <View className="flex-row items-center bg-income/10 rounded-full px-2.5 py-1">
+                  <Icon name="CircleCheck" className="text-income" size={13} />
+                  <Text className="text-xs font-bold ml-1.5 text-income">
+                    Completed
+                  </Text>
+                </View>
+                {isIgnored && (
+                  <View className="flex-row items-center bg-warning/10 rounded-full px-2.5 py-1">
+                    <Icon name="EyeOff" className="text-warning" size={13} />
+                    <Text className="text-xs font-bold ml-1.5 text-warning">
+                      Excluded
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Text className="text-xs text-muted-foreground font-medium">
+                {formatDate(transaction.transaction_date)}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Quick Facts */}
+        <View className="px-5 mt-4">
+          <View className="bg-card rounded-2xl p-4 shadow-sm border border-border">
+            <Text className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-3">
+              Quick Facts
+            </Text>
+            <View className="gap-3">
+              <View className="flex-row justify-between items-center">
+                <Text className="text-sm text-muted-foreground">Category</Text>
+                <Text className="text-sm font-bold text-foreground" numberOfLines={1}>
+                  {category?.name || "Uncategorized"}
+                </Text>
+              </View>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-sm text-muted-foreground">Account</Text>
+                <Text className="text-sm font-bold text-foreground" numberOfLines={1}>
+                  {account?.account_name || "Unknown"}
+                </Text>
+              </View>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-sm text-muted-foreground">Type</Text>
+                <Text className="text-sm font-bold text-foreground">
+                  {isIncome ? "Income" : "Expense"}
+                </Text>
+              </View>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-sm text-muted-foreground">Source</Text>
+                <Text className="text-sm font-bold text-foreground" numberOfLines={1}>
+                  {accountTypeLabel}
+                </Text>
+              </View>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-sm text-muted-foreground">Currency</Text>
+                <Text className="text-sm font-bold text-foreground">
+                  {account?.currency || transaction.currency || "USD"}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Manage Section */}
+        <View className="px-5 mt-4">
+          <View className="bg-card rounded-2xl p-4 shadow-sm border border-border">
+            <Text className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-3">
+              Manage
+            </Text>
+
+            {/* Category Row */}
+            <TouchableOpacity
+              className="flex-row items-center justify-between py-3 border-b border-border"
+              onPress={handleEditTransaction}
+            >
+              <View className="flex-1 mr-3">
+                <Text className="text-xs text-muted-foreground mb-0.5">
+                  Category
+                </Text>
+                <Text className="text-sm font-bold text-foreground" numberOfLines={1}>
+                  {category?.name || "Uncategorized"}
+                </Text>
+              </View>
+              {account?.editable && (
+                <View className="bg-primary/10 rounded-full px-3 py-1.5">
+                  <Text className="text-xs font-bold text-primary">Change</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Account Row */}
+            <TouchableOpacity
+              className="flex-row items-center justify-between py-3 border-b border-border"
+              onPress={handleViewAccount}
+            >
+              <View className="flex-1 mr-3">
+                <Text className="text-xs text-muted-foreground mb-0.5">
+                  Account
+                </Text>
+                <Text className="text-sm font-bold text-foreground" numberOfLines={1}>
+                  {account?.account_name || "Unknown"}
+                </Text>
+              </View>
+              <View className="bg-primary/10 rounded-full px-3 py-1.5">
+                <Text className="text-xs font-bold text-primary">View</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Tags Row */}
+            {transaction.tags && transaction.tags.length > 0 && (
+              <View className="py-3 border-b border-border">
+                <Text className="text-xs text-muted-foreground mb-2">Tags</Text>
+                <View className="flex-row flex-wrap gap-1.5">
+                  {transaction.tags.map((tag) => (
+                    <View
+                      key={tag.id}
+                      className="rounded-full bg-muted px-2.5 py-1"
+                      style={
+                        tag.color
+                          ? { backgroundColor: `${tag.color}20` }
+                          : undefined
+                      }
+                    >
+                      <Text
+                        className="text-xs font-semibold text-foreground"
+                        style={tag.color ? { color: tag.color } : undefined}
+                      >
+                        {tag.name}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Description / Note */}
             {transaction.description && (
-              <View className="border-t border-border pt-4">
-                <Text className="text-sm font-semibold text-foreground mb-2">
+              <TouchableOpacity
+                className="pt-3"
+                onPress={() => setShowFullDescription(!showFullDescription)}
+                activeOpacity={0.7}
+              >
+                <Text className="text-xs text-muted-foreground mb-0.5">
                   Description
                 </Text>
-                <TouchableOpacity
-                  onPress={() => setShowFullDescription(!showFullDescription)}
+                <Text
+                  className="text-sm text-foreground leading-5"
+                  numberOfLines={showFullDescription ? undefined : 2}
                 >
-                  <Text
-                    className="text-base text-muted-foreground leading-6"
-                    numberOfLines={showFullDescription ? undefined : 2}
-                  >
-                    {transaction.description}
+                  {transaction.description}
+                </Text>
+                {transaction.description.length > 80 && (
+                  <Text className="text-xs text-primary font-bold mt-1.5">
+                    {showFullDescription ? "Show less" : "Show more"}
                   </Text>
-                  {transaction.description.length > 100 && (
-                    <Text className="text-sm text-primary font-semibold mt-2">
-                      {showFullDescription ? "Show less" : "Show more"}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
+                )}
+              </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Quick Actions */}
-        <View className="px-5 mt-6">
-          <View className="flex-row justify-between">
+        {/* Action Buttons */}
+        <View className="px-5 mt-4">
+          <View className="flex-row gap-2.5">
             <TouchableOpacity
-              className="items-center flex-1"
+              className="flex-1 bg-card border border-border rounded-2xl py-3.5 px-3 items-center shadow-sm"
               onPress={handleEditTransaction}
             >
-              <View className="w-14 h-14 rounded-full bg-primary/10 justify-center items-center mb-2">
-                <Icon name="Pencil" className="text-primary" size={20} />
+              <View className="w-10 h-10 rounded-xl bg-primary/10 justify-center items-center mb-2">
+                <Icon name="Pencil" className="text-primary" size={18} />
               </View>
-              <Text className="text-sm font-semibold text-foreground text-center">
-                Edit
-              </Text>
+              <Text className="text-sm font-bold text-foreground">Edit</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="items-center flex-1"
-              onPress={handleDownloadReceipt}
-            >
-              <View className="w-14 h-14 rounded-full bg-income/10 justify-center items-center mb-2">
-                <Icon name="Receipt" className="text-income" size={20} />
-              </View>
-              <Text className="text-sm font-semibold text-foreground text-center">
-                Receipt
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="items-center flex-1"
+              className="flex-1 bg-card border border-border rounded-2xl py-3.5 px-3 items-center shadow-sm"
               onPress={handleToggleIgnore}
             >
-              <View className="w-14 h-14 rounded-full bg-warning/10 justify-center items-center mb-2">
-                <Icon name="Eye" className="text-warning" size={20} />
+              <View className="w-10 h-10 rounded-xl bg-warning/10 justify-center items-center mb-2">
+                <Icon
+                  name={isIgnored ? "Eye" : "EyeOff"}
+                  className="text-warning"
+                  size={18}
+                />
               </View>
-              <Text className="text-sm font-semibold text-foreground text-center">
-                Ignore
+              <Text className="text-sm font-bold text-foreground">
+                {isIgnored ? "Include" : "Exclude"}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="items-center flex-1"
+              className="flex-1 bg-card border border-border rounded-2xl py-3.5 px-3 items-center shadow-sm"
               onPress={handleDeleteTransaction}
             >
-              <View className="w-14 h-14 rounded-full bg-expense/10 justify-center items-center mb-2">
-                <Icon name="Trash2" className="text-destructive" size={20} />
+              <View className="w-10 h-10 rounded-xl bg-expense/10 justify-center items-center mb-2">
+                <Icon name="Trash2" className="text-destructive" size={18} />
               </View>
-              <Text className="text-sm font-semibold text-foreground text-center">
-                Delete
-              </Text>
+              <Text className="text-sm font-bold text-foreground">Delete</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Transaction Details */}
-        <View className="px-5 mt-6">
-          <Text className="text-xl font-bold text-foreground mb-4">
-            Transaction Information
-          </Text>
-          <View className="bg-background border border-border rounded-2xl p-5">
-            <View className="flex-row items-center py-3 border-b border-border">
-              <View className="w-8 h-8 rounded-full bg-muted justify-center items-center mr-4">
-                <Icon name="Hash" className="text-muted-foreground" size={16} />
-              </View>
+        {/* Activity Timeline */}
+        <View className="px-5 mt-4 mb-8">
+          <View className="bg-card rounded-2xl p-4 shadow-sm border border-border">
+            <Text className="text-xs uppercase tracking-widest font-bold text-muted-foreground mb-3">
+              Activity
+            </Text>
+
+            {/* Transaction Date */}
+            <View className="flex-row items-start mb-3">
+              <View className="w-2.5 h-2.5 rounded-full bg-income mt-1.5 mr-3" />
               <View className="flex-1">
-                <Text className="text-sm text-muted-foreground mb-1">
-                  Transaction ID
+                <Text className="text-sm font-bold text-foreground mb-0.5">
+                  Transaction posted
                 </Text>
-                <Text className="text-base font-semibold text-foreground">
-                  {transaction.id}
+                <Text className="text-xs text-muted-foreground leading-4">
+                  {formatDate(transaction.transaction_date)}
+                  {" · "}
+                  {formatTime(transaction.transaction_date)}
                 </Text>
               </View>
             </View>
 
-            <View className="flex-row items-center py-3 border-b border-border">
-              <View className="w-8 h-8 rounded-full bg-muted justify-center items-center mr-4">
-                <Icon
-                  name="FileText"
-                  className="text-muted-foreground"
-                  size={16}
-                />
+            {/* Category assignment */}
+            {category && (
+              <View className="flex-row items-start mb-3">
+                <View className="w-2.5 h-2.5 rounded-full bg-primary mt-1.5 mr-3" />
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-foreground mb-0.5">
+                    Categorized as {category.name}
+                  </Text>
+                  <Text className="text-xs text-muted-foreground leading-4">
+                    Assigned to category
+                  </Text>
+                </View>
               </View>
-              <View className="flex-1">
-                <Text className="text-sm text-muted-foreground mb-1">
-                  Transaction Type
-                </Text>
-                <Text className="text-base font-semibold text-foreground">
-                  {isIncome ? "Income" : "Expense"}
-                </Text>
-              </View>
-            </View>
+            )}
 
-            <View className="flex-row items-center py-3 border-b border-border">
-              <View className="w-8 h-8 rounded-full bg-muted justify-center items-center mr-4">
-                <Icon
-                  name="Calendar"
-                  className="text-muted-foreground"
-                  size={16}
-                />
-              </View>
+            {/* Reference */}
+            <View className="flex-row items-start">
+              <View className="w-2.5 h-2.5 rounded-full bg-border mt-1.5 mr-3" />
               <View className="flex-1">
-                <Text className="text-sm text-muted-foreground mb-1">
-                  Transaction Date
+                <Text className="text-sm font-bold text-foreground mb-0.5">
+                  Reference
                 </Text>
-                <Text className="text-base font-semibold text-foreground">
-                  {formatDateShort(transaction.transaction_date)}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Account Information */}
-        <View className="px-5 mt-6">
-          <Text className="text-xl font-bold text-foreground mb-4">
-            Account Information
-          </Text>
-          <View className="bg-background border border-border rounded-2xl p-5">
-            <View className="flex-row items-center py-3 border-b border-border">
-              <View className="w-8 h-8 rounded-full bg-muted justify-center items-center mr-4">
-                <Icon
-                  name="CreditCard"
-                  className="text-muted-foreground"
-                  size={16}
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm text-muted-foreground mb-1">
-                  Account Name
-                </Text>
-                <Text className="text-base font-semibold text-foreground">
-                  {account?.account_name || "Unknown Account"}
-                </Text>
-              </View>
-            </View>
-
-            <View className="flex-row items-center py-3 border-b border-border">
-              <View className="w-8 h-8 rounded-full bg-muted justify-center items-center mr-4">
-                <Icon name="Hash" className="text-muted-foreground" size={16} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm text-muted-foreground mb-1">
-                  Account Number
-                </Text>
-                <Text className="text-base font-semibold text-foreground">
-                  ****{account?.id.toString().slice(-4) || "****"}
-                </Text>
-              </View>
-            </View>
-
-            <View className="flex-row items-center py-3">
-              <View className="w-8 h-8 rounded-full bg-muted justify-center items-center mr-4">
-                <Icon
-                  name="Building"
-                  className="text-muted-foreground"
-                  size={16}
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm text-muted-foreground mb-1">
-                  Account Type
-                </Text>
-                <Text className="text-base font-semibold text-foreground capitalize">
-                  {account?.account_type || "Unknown"}
+                <Text className="text-xs text-muted-foreground leading-4">
+                  Transaction ID {transaction.id}
+                  {account ? ` · Synced from ${accountTypeLabel}` : ""}
                 </Text>
               </View>
             </View>

@@ -1,4 +1,5 @@
 import { View, FlatList } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import React, { useState } from "react"
 import { useQuery } from "react-query"
 import axios from "axios"
@@ -32,7 +33,7 @@ const Crypto = () => {
   const { data: coins, status, refetch } = useQuery<CoinMarket[]>("crypto-market", loadData)
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background">
       <ScreenHeader variant="drawer" title="Crypto Markets" />
       <View className="flex-row px-5 justify-end mb-2.5">
         <Input
@@ -64,7 +65,7 @@ const Crypto = () => {
           }}
         />
       )}
-    </View>
+    </SafeAreaView>
   )
 }
 

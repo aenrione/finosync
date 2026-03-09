@@ -5,7 +5,7 @@ import Icon from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { IconName } from "@/types/icon";
 import { BudgetAllocation } from "@/types/budget-period";
-import { showAmount } from "@/utils/currency";
+import { getCurrencyMeta, showAmount } from "@/utils/currency";
 import { useStore } from "@/utils/store";
 
 type Props = {
@@ -70,6 +70,8 @@ function getProgressWidth(planned: number, actual: number): number {
 
 export default function CategoryBudgetRow({ allocation, onPress }: Props) {
   const isVisible = useStore((s) => s.isVisible);
+  const baseCurrency = useStore((s) => s.baseCurrency);
+  const sym = getCurrencyMeta(baseCurrency).symbol;
   const {
     planned_amount,
     actual_spend,
@@ -109,8 +111,8 @@ export default function CategoryBudgetRow({ allocation, onPress }: Props) {
                 {category_name}
               </Text>
               <Text className="mt-1 text-xs text-muted-foreground">
-                {showAmount(actual_spend, isVisible)} of{" "}
-                {showAmount(planned_amount, isVisible)} spent
+                {showAmount(actual_spend, isVisible, sym)} of{" "}
+                {showAmount(planned_amount, isVisible, sym)} spent
               </Text>
             </View>
 
@@ -121,7 +123,7 @@ export default function CategoryBudgetRow({ allocation, onPress }: Props) {
               <Text
                 className={`mt-1 text-base font-mono font-bold ${remainingTextColor}`}
               >
-                {showAmount(remaining, isVisible)}
+                {showAmount(remaining, isVisible, sym)}
               </Text>
             </View>
           </View>

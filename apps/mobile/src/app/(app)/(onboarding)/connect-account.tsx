@@ -7,6 +7,7 @@ import { saveOnboardingPreferences } from "@/services/onboarding.service"
 import { checkSession } from "@/services/auth.service"
 import { useTranslation } from "@/locale/onboarding/connect-account.text"
 import { getAvailableAccountTypes } from "@/constants/accountTypes"
+import FintocWidgetModal from "@/components/screens/accounts/FintocWidgetModal"
 import { Button, ButtonText } from "@/components/ui/button"
 import { fetchWithAuth } from "@/utils/api"
 import { FormField } from "@/components/ui/form-field"
@@ -35,6 +36,7 @@ export default function ConnectAccountScreen() {
   const { onboardingData, resetOnboarding } = useStore()
   const [selectedType, setSelectedType] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [showWidget, setShowWidget] = useState(false)
 
   // Form state for inline account creation
   const [accountName, setAccountName] = useState("")
@@ -127,6 +129,30 @@ export default function ConnectAccountScreen() {
 
   const config = selectedType ? accountTypes.find((a) => a.type === selectedType) : null
 
+  const handleWidgetSuccess = async (linkToken: string) => {
+    setShowWidget(false)
+    setSubmitting(true)
+    try {
+      const response = await fetchWithAuth("/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          account_name: "Bank Account",
+          account_type: "fintoc",
+          primary_key: linkToken,
+        }),
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to create account")
+      }
+      await completeOnboarding()
+    } catch (error: unknown) {
+      Alert.alert("Error", error instanceof Error ? error.message : "Failed to connect bank")
+      setSubmitting(false)
+    }
+  }
+
   return (
     <ScrollView
       className="flex-1 bg-background"
@@ -145,7 +171,13 @@ export default function ConnectAccountScreen() {
               return (
                 <Pressable
                   key={type.type}
-                  onPress={() => setSelectedType(type.type)}
+                  onPress={() => {
+                    if (type.usesWidget) {
+                      setShowWidget(true)
+                    } else {
+                      setSelectedType(type.type)
+                    }
+                  }}
                   className="flex-row items-center gap-4 p-4 rounded-xl border-2 border-border bg-card"
                 >
                   <View className="h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
@@ -251,6 +283,12 @@ export default function ConnectAccountScreen() {
           </View>
         </>
       )}
+
+      <FintocWidgetModal
+        visible={showWidget}
+        onSuccess={handleWidgetSuccess}
+        onExit={() => setShowWidget(false)}
+      />
     </ScrollView>
   )
 }

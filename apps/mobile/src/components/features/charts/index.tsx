@@ -1,4 +1,5 @@
 import { ScrollView, RefreshControl, View, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
 import { router } from "expo-router";
 
@@ -8,10 +9,9 @@ import ScreenHeader from "@/components/screen-header";
 import { Spinner } from "@/components/ui/spinner";
 import { useCharts } from "@/context/charts.context";
 import { colors } from "@/lib/colors";
-import { getCurrencyMeta, showAmount } from "@/utils/currency";
-import Icon from "@/components/ui/icon";
+import { getCurrencyFormat, getCurrencyMeta, showAmount } from "@/utils/currency";
+import StatCard from "@/components/ui/stat-card";
 
-import TimeRangeSelector from "./time-range-selector";
 import CategoryBreakdown from "./category-breakdown";
 import CashFlowChart from "./cash-flow-chart";
 
@@ -30,8 +30,33 @@ export default function ChartsScreen() {
     avgExpenses,
     avgSavings,
     baseCurrency,
+    selectedPeriods,
   } = useCharts();
   const amountSymbol = getCurrencyMeta(baseCurrency).symbol;
+
+  const hasSelection = selectedPeriods.length > 0;
+  const selectedItems = hasSelection
+    ? balanceData.filter((b) => selectedPeriods.includes(b.week ?? b.month ?? ""))
+    : [];
+  const displayIncome = hasSelection
+    ? selectedItems.reduce((sum, b) => sum + (Number(b.income) || 0), 0)
+    : avgIncome;
+  const displayExpenses = hasSelection
+    ? selectedItems.reduce((sum, b) => sum + Math.abs(Number(b.expenses) || 0), 0)
+    : avgExpenses;
+  const displaySavings = hasSelection
+    ? displayIncome - displayExpenses
+    : avgSavings;
+  const showAvg = selectedItems.length > 1;
+  const { maxDecimals } = getCurrencyFormat(baseCurrency);
+  const roundForCurrency = (v: number) => {
+    const factor = 10 ** maxDecimals;
+    return Math.round(v * factor) / factor;
+  };
+  const avgDisplayIncome = showAvg ? roundForCurrency(displayIncome / selectedItems.length) : 0;
+  const avgDisplayExpenses = showAvg ? roundForCurrency(displayExpenses / selectedItems.length) : 0;
+  const avgDisplaySavings = showAvg ? roundForCurrency(displaySavings / selectedItems.length) : 0;
+  const summaryLabel = hasSelection ? selectedPeriods.join(", ") : null;
 
   const handleRefresh = async () => {
     await refreshData();
@@ -47,10 +72,10 @@ export default function ChartsScreen() {
 
   if (loading && !refreshing && !hasChartData) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
+      <SafeAreaView className="flex-1 bg-background items-center justify-center">
         <Spinner size="small" />
         <Text className="text-muted-foreground mt-4">Loading charts...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -69,8 +94,9 @@ export default function ChartsScreen() {
   }
 
   return (
+    <SafeAreaView className="flex-1 bg-background">
     <ScrollView
-      className="flex-1 bg-background"
+      className="flex-1"
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
@@ -96,53 +122,40 @@ export default function ChartsScreen() {
           </View>
         ) : null}
 
-        <TimeRangeSelector />
-
-        {/* Net Savings Hero */}
-        <View className="bg-card rounded-2xl border border-border p-5 mt-2 mb-2 items-center">
-          <Text className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-            Net Savings
-          </Text>
-          <Text
-            className={`text-3xl font-mono font-bold ${avgSavings >= 0 ? "text-income" : "text-expense"}`}
-          >
-            {showAmount(avgSavings, true, amountSymbol)}
-          </Text>
-        </View>
-
-        <View className="flex-row gap-3 mt-2">
-          <View className="flex-1 bg-card rounded-2xl p-4 border border-border">
-            <Icon name="TrendingUp" className="text-income mb-3" size={18} />
-            <Text className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-              Income
-            </Text>
-            <Text className="text-xl font-bold text-foreground">
-              {showAmount(avgIncome, true, amountSymbol)}
-            </Text>
-          </View>
-          <View className="flex-1 bg-card rounded-2xl p-4 border border-border">
-            <Icon name="TrendingDown" className="text-expense mb-3" size={18} />
-            <Text className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-              Expenses
-            </Text>
-            <Text className="text-xl font-bold text-foreground">
-              {showAmount(avgExpenses, true, amountSymbol)}
-            </Text>
-          </View>
-          <View className="flex-1 bg-card rounded-2xl p-4 border border-border">
-            <Icon name="PiggyBank" className="text-primary mb-3" size={18} />
-            <Text className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-              Savings
-            </Text>
-            <Text className="text-xl font-bold text-foreground">
-              {showAmount(avgSavings, true, amountSymbol)}
-            </Text>
-          </View>
-        </View>
-
         <CashFlowChart />
+
+        {summaryLabel ? (
+          <Text className="text-xs text-muted-foreground mt-4 mb-1 ml-1">
+            Showing {summaryLabel}
+          </Text>
+        ) : null}
+        <View className={`flex-row gap-3 ${summaryLabel ? "mt-1" : "mt-4"}`}>
+          <StatCard
+            iconName="DollarSign"
+            iconClass="text-success"
+            label="Income"
+            value={showAmount(displayIncome, true, amountSymbol)}
+            subValue={showAvg ? `≈ ${showAmount(avgDisplayIncome, true, amountSymbol)}` : undefined}
+          />
+          <StatCard
+            iconName="TrendingDown"
+            iconClass="text-destructive"
+            label="Expenses"
+            value={showAmount(displayExpenses, true, amountSymbol)}
+            subValue={showAvg ? `≈ ${showAmount(avgDisplayExpenses, true, amountSymbol)}` : undefined}
+          />
+          <StatCard
+            iconName="TrendingUp"
+            iconClass="text-primary"
+            label="Savings"
+            value={showAmount(displaySavings, true, amountSymbol)}
+            subValue={showAvg ? `≈ ${showAmount(avgDisplaySavings, true, amountSymbol)}` : undefined}
+          />
+        </View>
+
         <CategoryBreakdown />
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
