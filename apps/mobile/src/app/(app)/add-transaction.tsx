@@ -21,6 +21,8 @@ import { Transaction } from "@/types/transaction"
 import { Input } from "@/components/ui/input"
 import { Text } from "@/components/ui/text"
 import { useStore } from "@/utils/store"
+import { TagSelector } from "@/components/features/tags/tag-selector"
+import { tagService } from "@/services/tag.service"
 
 const AddTransaction = () => {
   const { t } = useTranslation()
@@ -41,6 +43,7 @@ const AddTransaction = () => {
   const [date, setDate] = useState(new Date())
   const [amount, setAmount] = useState("")
   const [comment, setComment] = useState("")
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
   const [loading, setLoading] = useState(false)
 
   // Filter accounts to only show local accounts for manual transactions
@@ -68,6 +71,7 @@ const AddTransaction = () => {
       setIsIncome(transaction.amount >= 0)
       setDate(new Date(transaction.transaction_date))
       setComment(transaction.comment || "")
+      setSelectedTagIds(transaction.tags?.map((t) => t.id) || [])
     } else {
       // Creating new transaction
       if (accountId && localAccounts.length > 0) {
@@ -109,10 +113,16 @@ const AddTransaction = () => {
       if (transaction) {
         // Update existing transaction
         await updateTransaction(transaction.id, transactionData)
+        if (selectedTagIds.length > 0) {
+          await tagService.setTransactionTags(transaction.id, selectedTagIds)
+        }
         Alert.alert("Success", "Transaction updated successfully")
       } else {
         // Create new transaction
-        await createTransaction(transactionData)
+        const created = await createTransaction(transactionData)
+        if (selectedTagIds.length > 0 && created?.id) {
+          await tagService.setTransactionTags(created.id, selectedTagIds)
+        }
         Alert.alert("Success", "Transaction created successfully")
       }
 
@@ -239,6 +249,15 @@ const AddTransaction = () => {
               ))}
             </Picker>
           </View>
+        </View>
+
+        {/* Tags */}
+        <View className="mb-6">
+          <Text className="text-sm text-muted-foreground mb-2">Tags (Optional)</Text>
+          <TagSelector
+            selectedTagIds={selectedTagIds}
+            onSelectionChange={setSelectedTagIds}
+          />
         </View>
 
         {/* Transaction Type Switch */}

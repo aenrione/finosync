@@ -1,6 +1,9 @@
 class Transaction < ApplicationRecord
   belongs_to :account
   belongs_to :transaction_category, optional: true
+  has_many :transaction_tags, dependent: :destroy
+  has_many :tags, through: :transaction_tags
+  has_many :recurring_transaction_links, dependent: :destroy
   monetize :amount, as: "transaction_amount"
 end
 

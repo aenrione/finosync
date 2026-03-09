@@ -25,7 +25,17 @@ Rails.application.routes.draw do
   resources :transactions, only: [ :index, :show, :create, :update, :destroy ]
   post "/transactions/:id/add_category/:category_id", to: "transactions#add_to_category"
   post "/transactions/:id/remove_category/:category_id", to: "transactions#remove_category"
+  post "/transactions/:id/tags", to: "transactions#set_tags"
   resources :transaction_categories, only: [ :index, :create, :update, :destroy ]
+
+  resources :tags, only: [ :index, :create, :update, :destroy ]
+
+  resources :recurring_transactions do
+    member do
+      post :link_transaction
+      delete "unlink_transaction/:transaction_id", action: :unlink_transaction
+    end
+  end
 
   resources :budget_lists, only: [ :index, :show, :create, :destroy ]
 

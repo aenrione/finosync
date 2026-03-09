@@ -6,13 +6,17 @@ import { createAccountSlice, AccountSlice } from "./account.store"
 import { createRouterSlice, RouterSlice } from "./router.store"
 import { createConfigSlice, ConfigSlice } from "./config.store"
 import { createUserSlice, UserSlice } from "./user.store"
+import { createTagSlice, TagSlice } from "./tag.store"
+import { createRecurringTransactionSlice, RecurringTransactionSlice } from "./recurring-transaction.store"
 
-export const useStore = create<RouterSlice & UserSlice & AccountSlice & TransactionSlice & CategorySlice & ConfigSlice>()((...a) => ({
+export const useStore = create<RouterSlice & UserSlice & AccountSlice & TransactionSlice & CategorySlice & ConfigSlice & TagSlice & RecurringTransactionSlice>()((...a) => ({
   ...createRouterSlice(...a),
   ...createUserSlice(...a),
   ...createTransactionSlice(...a),
   ...createCategorySlice(...a),
   ...createAccountSlice(...a),
   ...createConfigSlice(...a),
+  ...createTagSlice(...a),
+  ...createRecurringTransactionSlice(...a),
 }))
 

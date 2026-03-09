@@ -89,6 +89,15 @@ class TransactionsController < ApplicationController
     render_jsonapi @transaction
   end
 
+  def set_tags
+    @transaction = current_user.transactions.find_by(id: params[:id])
+    return head(:not_found) unless @transaction
+
+    tags = current_user.tags.where(id: params[:tag_ids])
+    @transaction.tags = tags
+    render_jsonapi @transaction
+  end
+
   def remove_category
     @transaction = current_user.transactions.find_by(id: params[:id])
     return head(:bad_request) if @transaction.blank? || @transaction.transaction_category.blank?

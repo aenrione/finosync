@@ -32,6 +32,14 @@ export const drawerScreens: ScreenConfig[] = [
     icon: "Copy",
   },
   {
+    name: "tags",
+    icon: "Tag",
+  },
+  {
+    name: "recurring",
+    icon: "Repeat",
+  },
+  {
     name: "crypto",
     icon: "Bitcoin",
   },

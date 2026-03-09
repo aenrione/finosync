@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_08_160243) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_09_000004) do
   create_table "account_assets", force: :cascade do |t|
     t.string "name", null: false
     t.date "creation_date"
@@ -88,6 +88,38 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_08_160243) do
     t.index ["user_id"], name: "index_budget_lists_on_user_id"
   end
 
+  create_table "recurring_transaction_links", force: :cascade do |t|
+    t.integer "recurring_transaction_id", null: false
+    t.integer "transaction_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recurring_transaction_id", "transaction_id"], name: "idx_recurring_tx_links_unique", unique: true
+    t.index ["recurring_transaction_id"], name: "index_recurring_transaction_links_on_recurring_transaction_id"
+    t.index ["transaction_id"], name: "index_recurring_transaction_links_on_transaction_id"
+  end
+
+  create_table "recurring_transactions", force: :cascade do |t|
+    t.string "name", null: false
+    t.decimal "amount", precision: 14, scale: 2, null: false
+    t.string "currency", default: "CLP", null: false
+    t.integer "frequency", default: 0, null: false
+    t.date "start_date", null: false
+    t.date "end_date"
+    t.date "next_due_date", null: false
+    t.boolean "is_active", default: true, null: false
+    t.integer "transaction_type", default: 0, null: false
+    t.boolean "auto_create", default: false, null: false
+    t.string "notes"
+    t.integer "user_id", null: false
+    t.integer "transaction_category_id"
+    t.integer "account_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_recurring_transactions_on_account_id"
+    t.index ["transaction_category_id"], name: "index_recurring_transactions_on_transaction_category_id"
+    t.index ["user_id"], name: "index_recurring_transactions_on_user_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "ip_address"
@@ -98,6 +130,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_08_160243) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "tags", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "color"
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "name"], name: "index_tags_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_tags_on_user_id"
+  end
+
   create_table "transaction_categories", force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -106,6 +148,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_08_160243) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_transaction_categories_on_user_id"
+  end
+
+  create_table "transaction_tags", force: :cascade do |t|
+    t.integer "transaction_id", null: false
+    t.integer "tag_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tag_id"], name: "index_transaction_tags_on_tag_id"
+    t.index ["transaction_id", "tag_id"], name: "index_transaction_tags_on_transaction_id_and_tag_id", unique: true
+    t.index ["transaction_id"], name: "index_transaction_tags_on_transaction_id"
   end
 
   create_table "transactions", force: :cascade do |t|
@@ -159,8 +211,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_08_160243) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "budget_items", "budget_lists"
   add_foreign_key "budget_lists", "users"
+  add_foreign_key "recurring_transaction_links", "recurring_transactions"
+  add_foreign_key "recurring_transaction_links", "transactions"
+  add_foreign_key "recurring_transactions", "accounts"
+  add_foreign_key "recurring_transactions", "transaction_categories"
+  add_foreign_key "recurring_transactions", "users"
   add_foreign_key "sessions", "users"
+  add_foreign_key "tags", "users"
   add_foreign_key "transaction_categories", "users"
+  add_foreign_key "transaction_tags", "tags"
+  add_foreign_key "transaction_tags", "transactions"
   add_foreign_key "transactions", "accounts"
   add_foreign_key "transactions", "transaction_categories"
 end
