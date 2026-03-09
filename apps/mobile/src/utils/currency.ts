@@ -131,3 +131,96 @@ export const getCurrencyMeta = (currency?: string) => {
     }
   )
 }
+
+// ─── Currency input formatting utilities ──────────────────────
+
+export type CurrencyFormat = {
+  thousandsSep: string
+  decimalSep: string
+  maxDecimals: number
+}
+
+const currencyFormatOverrides: Record<string, CurrencyFormat> = {
+  CLP: { thousandsSep: ".", decimalSep: ",", maxDecimals: 0 },
+  JPY: { thousandsSep: ",", decimalSep: ".", maxDecimals: 0 },
+  BTC: { thousandsSep: ",", decimalSep: ".", maxDecimals: 8 },
+}
+
+/**
+ * Resolve formatting rules for a currency code.
+ * Checks hardcoded overrides first, then probes Intl.NumberFormat.
+ */
+export const getCurrencyFormat = (currency: string): CurrencyFormat => {
+  const upper = currency.toUpperCase()
+  if (currencyFormatOverrides[upper]) return currencyFormatOverrides[upper]
+
+  // Probe Intl to detect separators
+  const locale = upper === "EUR" ? "de-DE" : "en-US"
+  const parts = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).formatToParts(1234567.89)
+
+  let thousandsSep = ","
+  let decimalSep = "."
+  for (const p of parts) {
+    if (p.type === "group") thousandsSep = p.value
+    if (p.type === "decimal") decimalSep = p.value
+  }
+
+  return { thousandsSep, decimalSep, maxDecimals: 2 }
+}
+
+/**
+ * Format a raw numeric string (e.g. "1234.56") into locale-formatted
+ * display text (e.g. "1,234.56" for USD or "1.234" for CLP).
+ */
+export const formatMoneyInput = (raw: string, currency: string): string => {
+  if (!raw) return ""
+
+  const fmt = getCurrencyFormat(currency)
+  const parts = raw.split(".")
+  const intPart = parts[0] ?? ""
+  const decPart = parts.length > 1 ? parts[1] : undefined
+
+  // Add thousands separators to integer part
+  let formattedInt = ""
+  const digits = intPart.replace(/^-/, "")
+  const isNegative = intPart.startsWith("-")
+  for (let i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 === 0) {
+      formattedInt += fmt.thousandsSep
+    }
+    formattedInt += digits[i]
+  }
+  if (isNegative) formattedInt = "-" + formattedInt
+
+  if (decPart === undefined || fmt.maxDecimals === 0) {
+    return formattedInt
+  }
+
+  const clampedDec = decPart.slice(0, fmt.maxDecimals)
+  return formattedInt + fmt.decimalSep + clampedDec
+}
+
+/**
+ * Strip formatting back to a raw numeric string (digits + single ".").
+ */
+export const unformatMoneyInput = (
+  formatted: string,
+  currency: string,
+): string => {
+  if (!formatted) return ""
+
+  const fmt = getCurrencyFormat(currency)
+
+  // Remove thousands separators
+  let raw = formatted.split(fmt.thousandsSep).join("")
+
+  // Normalize decimal separator to canonical "."
+  if (fmt.decimalSep !== ".") {
+    raw = raw.replace(fmt.decimalSep, ".")
+  }
+
+  return raw
+}
