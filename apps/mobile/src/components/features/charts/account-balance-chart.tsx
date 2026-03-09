@@ -70,17 +70,17 @@ export default function AccountBalanceChart({
     <View className="mt-6">
       <View className="flex-row justify-between items-center mb-4">
         <View className="flex-row items-center">
-          <Icon name="TrendingUp" className="text-blue-600 mr-2" size={20} />
+          <Icon name="TrendingUp" className="text-primary mr-2" size={20} />
           <Text className="text-xl font-semibold text-foreground">Balance History</Text>
         </View>
-        <View className="flex-row bg-muted rounded-lg p-1">
+        <View className="flex-row gap-2">
           {periods.map((period) => (
             <TouchableOpacity
               key={period}
-              className={`px-3 py-1.5 rounded-md ${selectedPeriod === period ? "bg-background shadow-sm" : ""}`}
+              className={`px-4 py-1.5 rounded-full ${selectedPeriod === period ? "bg-primary" : "bg-card"}`}
               onPress={() => onPeriodChange(period)}
             >
-              <Text className={`text-sm font-medium ${selectedPeriod === period ? "text-foreground" : "text-muted-foreground"}`}>
+              <Text className={`text-sm font-medium ${selectedPeriod === period ? "text-white" : "text-muted-foreground"}`}>
                 {period}
               </Text>
             </TouchableOpacity>
@@ -88,7 +88,7 @@ export default function AccountBalanceChart({
         </View>
       </View>
 
-      <View className="bg-background border border-border rounded-2xl p-5 mb-3">
+      <View className="bg-card rounded-2xl p-5 shadow-sm mb-3">
         <View className="flex-row justify-between items-end h-36">
           {balanceHistory.map((item: { date: string; balance: number }, index: number) => {
             const height = getBalanceHeight(item.balance)
@@ -97,9 +97,9 @@ export default function AccountBalanceChart({
             return (
               <View key={index} className="items-center flex-1">
                 <View className="h-32 w-6 justify-end items-center relative mb-2">
-                  <View 
-                    className={`w-4 rounded-t-sm absolute bottom-0 ${isLatest ? "bg-blue-600" : "bg-blue-400"}`} 
-                    style={{ height }} 
+                  <View
+                    className={`w-4 rounded-t-sm absolute bottom-0 ${isLatest ? "bg-primary" : "bg-primary/60"}`}
+                    style={{ height }}
                   />
                 </View>
                 <Text className="text-xs text-muted-foreground font-medium mb-1">
@@ -107,13 +107,13 @@ export default function AccountBalanceChart({
                 </Text>
                 <View className="flex-row items-center">
                   {isLatest && (
-                    <Icon 
-                      name={isPositive ? "TrendingUp" : "TrendingDown"} 
-                      className={`mr-1 ${isPositive ? "text-green-600" : "text-red-500"}`} 
-                      size={12} 
+                    <Icon
+                      name={isPositive ? "TrendingUp" : "TrendingDown"}
+                      className={`mr-1 ${isPositive ? "text-success" : "text-destructive"}`}
+                      size={12}
                     />
                   )}
-                  <Text className={`text-xs font-semibold ${isLatest ? "text-foreground" : "text-muted-foreground"}`}>
+                  <Text className={`text-xs font-mono font-semibold ${isLatest ? "text-foreground" : "text-muted-foreground"}`}>
                     {showAmount(item.balance)}
                   </Text>
                 </View>
@@ -123,33 +123,33 @@ export default function AccountBalanceChart({
         </View>
       </View>
 
-      <View className="flex-row justify-center items-center gap-4 bg-background border border-border rounded-xl p-3 mb-4">
+      <View className="flex-row justify-center items-center gap-4 bg-card rounded-xl p-3 shadow-sm mb-4">
         <View className="flex-row items-center">
-          <View className="w-3 h-3 bg-blue-600 rounded-full mr-2" />
+          <View className="w-3 h-3 bg-primary rounded-full mr-2" />
           <Text className="text-sm text-foreground font-medium">Balance</Text>
         </View>
         <Text className="text-xs text-muted-foreground italic">in {currency}</Text>
       </View>
 
       <View className="flex-row gap-3">
-        <View className="flex-1 bg-background border border-border rounded-xl p-4 items-center">
-          <Icon name="DollarSign" className="text-blue-600 mb-2" size={20} />
+        <View className="flex-1 bg-card rounded-xl p-4 shadow-sm items-center">
+          <Icon name="DollarSign" className="text-primary mb-2" size={20} />
           <Text className="text-xs text-muted-foreground mb-1">Current Balance</Text>
-          <Text className="text-base font-bold text-foreground">
+          <Text className="text-base font-mono font-bold text-foreground">
             {currencyConfig[currency as keyof typeof currencyConfig]?.symbol}{showAmount(currentBalance)}
           </Text>
         </View>
-        <View className="flex-1 bg-background border border-border rounded-xl p-4 items-center">
-          <Icon name="TrendingUp" className="text-purple-600 mb-2" size={20} />
+        <View className="flex-1 bg-card rounded-xl p-4 shadow-sm items-center">
+          <Icon name="TrendingUp" className="text-primary mb-2" size={20} />
           <Text className="text-xs text-muted-foreground mb-1">Avg Balance</Text>
-          <Text className="text-base font-bold text-foreground">
+          <Text className="text-base font-mono font-bold text-foreground">
             {currencyConfig[currency as keyof typeof currencyConfig]?.symbol}{showAmount(avgBalance)}
           </Text>
         </View>
-        <View className="flex-1 bg-background border border-border rounded-xl p-4 items-center">
-          <Icon name={isPositive ? "TrendingUp" : "TrendingDown"} className={`mb-2 ${isPositive ? "text-green-600" : "text-red-500"}`} size={20} />
+        <View className="flex-1 bg-card rounded-xl p-4 shadow-sm items-center">
+          <Icon name={isPositive ? "TrendingUp" : "TrendingDown"} className={`mb-2 ${isPositive ? "text-success" : "text-destructive"}`} size={20} />
           <Text className="text-xs text-muted-foreground mb-1">Change</Text>
-          <Text className={`text-base font-bold ${isPositive ? "text-green-600" : "text-red-500"}`}>
+          <Text className={`text-base font-mono font-bold ${isPositive ? "text-success" : "text-destructive"}`}>
             {isPositive ? "+" : ""}{currencyConfig[currency as keyof typeof currencyConfig]?.symbol}{showAmount(Math.abs(balanceChange))}
           </Text>
         </View>
@@ -158,24 +158,24 @@ export default function AccountBalanceChart({
       {/* Show backend-provided averages if available */}
       {(avgIncome !== undefined || avgExpenses !== undefined || avgSavings !== undefined) && (
         <View className="flex-row gap-3 mt-4">
-          <View className="flex-1 bg-background border border-border rounded-xl p-4 items-center">
-            <Icon name="TrendingUp" className="text-green-600 mb-2" size={20} />
+          <View className="flex-1 bg-card rounded-xl p-4 shadow-sm items-center">
+            <Icon name="TrendingUp" className="text-success mb-2" size={20} />
             <Text className="text-xs text-muted-foreground mb-1">Avg Income</Text>
-            <Text className="text-base font-bold text-foreground">
+            <Text className="text-base font-mono font-bold text-foreground">
               {currencyConfig[currency as keyof typeof currencyConfig]?.symbol}{showAmount(avgIncome || 0)}
             </Text>
           </View>
-          <View className="flex-1 bg-background border border-border rounded-xl p-4 items-center">
-            <Icon name="TrendingDown" className="text-red-500 mb-2" size={20} />
+          <View className="flex-1 bg-card rounded-xl p-4 shadow-sm items-center">
+            <Icon name="TrendingDown" className="text-destructive mb-2" size={20} />
             <Text className="text-xs text-muted-foreground mb-1">Avg Expenses</Text>
-            <Text className="text-base font-bold text-foreground">
+            <Text className="text-base font-mono font-bold text-foreground">
               {currencyConfig[currency as keyof typeof currencyConfig]?.symbol}{showAmount(avgExpenses || 0)}
             </Text>
           </View>
-          <View className="flex-1 bg-background border border-border rounded-xl p-4 items-center">
-            <Icon name="TrendingUp" className="text-purple-600 mb-2" size={20} />
+          <View className="flex-1 bg-card rounded-xl p-4 shadow-sm items-center">
+            <Icon name="TrendingUp" className="text-primary mb-2" size={20} />
             <Text className="text-xs text-muted-foreground mb-1">Avg Savings</Text>
-            <Text className="text-base font-bold text-foreground">
+            <Text className="text-base font-mono font-bold text-foreground">
               {currencyConfig[currency as keyof typeof currencyConfig]?.symbol}{showAmount(avgSavings || 0)}
             </Text>
           </View>
