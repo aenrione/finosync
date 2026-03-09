@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Alert,
+  Linking,
   RefreshControl,
   ScrollView,
   TouchableOpacity,
@@ -21,14 +22,29 @@ import {
   updateShoppingItem,
 } from "@/services/shopping.service";
 import { ShoppingItem } from "@/types/shopping";
+import { showAmount, getCurrencyMeta } from "@/utils/currency";
+import { useStore } from "@/utils/store";
 
 export default function ShoppingListDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [linkingItem, setLinkingItem] = React.useState<ShoppingItem | null>(
-    null,
-  );
+  const baseCurrency = useStore((state) => state.baseCurrency);
+  const currencyMeta = getCurrencyMeta(baseCurrency);
+  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const [linkingItem, setLinkingItem] = useState<ShoppingItem | null>(null);
+
+  const toggleExpanded = (itemId: number) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  };
 
   const {
     data: shoppingList,
@@ -119,7 +135,10 @@ export default function ShoppingListDetailScreen() {
   const remainingBudget = shoppingList.total_budget - shoppingList.total;
   const progress =
     shoppingList.total_budget > 0
-      ? (shoppingList.total / shoppingList.total_budget) * 100
+      ? Math.min(
+          (shoppingList.total / shoppingList.total_budget) * 100,
+          100,
+        )
       : 0;
   const purchasedCount = shoppingList.items.filter(
     (item) => item.purchased,
@@ -149,98 +168,80 @@ export default function ShoppingListDetailScreen() {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
       >
-        <View className="px-5 py-5 gap-4">
-          {shoppingList.budget_allocation ? (
-            <View className="bg-card rounded-2xl border border-border p-5">
-              <Text className="text-xs font-semibold uppercase tracking-[2px] text-muted-foreground mb-2">
-                Linked Budget Allocation
-              </Text>
-              <Text className="text-lg font-semibold text-foreground">
-                {shoppingList.budget_allocation.category_name}
-              </Text>
-              <Text className="text-sm text-muted-foreground mt-1">
-                {`${shoppingList.budget_allocation.budget_period_month}/${shoppingList.budget_allocation.budget_period_year} - Planned $${shoppingList.budget_allocation.planned_amount.toFixed(2)}`}
-              </Text>
-            </View>
-          ) : null}
-
-          <View className="bg-card rounded-2xl border border-border p-5">
-            <View className="flex-row justify-between items-start mb-4">
-              <View>
-                <Text className="text-xs font-semibold uppercase tracking-[2px] text-muted-foreground mb-2">
-                  List health
+        <View className="px-5 py-4 gap-4">
+          {/* Compact summary strip */}
+          <View className="rounded-2xl bg-card border border-border p-5">
+            <View className="flex-row items-center justify-between mb-3">
+              <View className="flex-1">
+                <Text className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+                  Planned spend
                 </Text>
-                <Text className="text-3xl font-bold text-foreground">
-                  ${shoppingList.total_budget.toFixed(2)}
-                </Text>
-                <Text className="text-sm text-muted-foreground mt-1">
-                  {new Date(shoppingList.start_date).toLocaleDateString()} -{" "}
-                  {new Date(shoppingList.end_date).toLocaleDateString()}
+                <Text className="text-2xl font-bold text-foreground">
+                  {showAmount(shoppingList.total, true, currencyMeta.symbol)}
                 </Text>
               </View>
-              <View
-                className={`px-3 py-2 rounded-full ${isOverBudget ? "bg-expense/10" : "bg-primary/10"}`}
-              >
-                <Text
-                  className={`text-xs font-semibold uppercase ${isOverBudget ? "text-expense" : "text-primary"}`}
-                >
-                  {isOverBudget ? "Over cap" : "On plan"}
+              <View className="items-end">
+                <Text className="text-xs text-muted-foreground mb-1">Cap</Text>
+                <Text className="text-base font-semibold text-muted-foreground">
+                  {showAmount(
+                    shoppingList.total_budget,
+                    true,
+                    currencyMeta.symbol,
+                  )}
                 </Text>
               </View>
             </View>
 
-            <View className="h-3 bg-muted rounded-full overflow-hidden mb-3">
+            <View className="h-2 bg-muted rounded-full mb-3">
               <View
-                className={`h-full ${isOverBudget ? "bg-expense" : "bg-primary"}`}
-                style={{ width: `${Math.min(progress, 100)}%` }}
+                className={`h-2 rounded-full ${
+                  isOverBudget ? "bg-expense" : "bg-primary"
+                }`}
+                style={{ width: `${progress}%` }}
               />
             </View>
 
-            <View className="flex-row gap-3">
-              <View className="flex-1 rounded-2xl bg-background border border-border p-4">
-                <Text className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                  Spent
-                </Text>
-                <Text className="text-xl font-bold text-foreground">
-                  ${shoppingList.total.toFixed(2)}
-                </Text>
-              </View>
-              <View className="flex-1 rounded-2xl bg-background border border-border p-4">
-                <Text className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                  Remaining
-                </Text>
-                <Text
-                  className={`text-xl font-bold ${remainingBudget >= 0 ? "text-primary" : "text-expense"}`}
-                >
-                  ${Math.abs(remainingBudget).toFixed(2)}
-                </Text>
-              </View>
-              <View className="flex-1 rounded-2xl bg-background border border-border p-4">
-                <Text className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-                  Items
-                </Text>
-                <Text className="text-xl font-bold text-foreground">
-                  {purchasedCount}/{shoppingList.items.length}
-                </Text>
-              </View>
+            <View className="flex-row justify-between">
+              <Text
+                className={`text-xs ${
+                  isOverBudget ? "text-expense" : "text-muted-foreground"
+                }`}
+              >
+                {isOverBudget
+                  ? `${showAmount(Math.abs(remainingBudget), true, currencyMeta.symbol)} over cap`
+                  : `${showAmount(remainingBudget, true, currencyMeta.symbol)} remaining`}
+              </Text>
+              <Text className="text-xs text-muted-foreground">
+                {purchasedCount}/{shoppingList.items.length} purchased
+              </Text>
             </View>
+
+            {shoppingList.budget_allocation && (
+              <View className="mt-3 pt-3 border-t border-border flex-row items-center">
+                <Icon
+                  name="Link"
+                  size={14}
+                  className="text-muted-foreground mr-2"
+                />
+                <Text className="text-xs text-muted-foreground">
+                  Linked to{" "}
+                  <Text className="text-xs font-semibold text-foreground">
+                    {shoppingList.budget_allocation.category_name}
+                  </Text>
+                  {" budget"}
+                </Text>
+              </View>
+            )}
           </View>
 
-          <View className="bg-card rounded-2xl border border-border p-5">
-            <View className="flex-row items-center justify-between mb-4">
-              <View>
-                <Text className="text-xl font-semibold text-foreground">
-                  Shopping Items
-                </Text>
-                <Text className="text-sm text-muted-foreground">
-                  Purchased items stay visible so the list keeps its full plan
-                  context.
-                </Text>
-              </View>
-            </View>
+          {/* Items section */}
+          <View>
+            <Text className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              Items
+            </Text>
 
             {shoppingList.items.length === 0 ? (
-              <View className="rounded-2xl border border-dashed border-border px-5 py-10 items-center bg-background">
+              <View className="rounded-2xl border border-dashed border-border px-5 py-10 items-center bg-card">
                 <Icon
                   name="ReceiptText"
                   className="text-muted-foreground mb-3"
@@ -250,8 +251,7 @@ export default function ShoppingListDetailScreen() {
                   No items yet
                 </Text>
                 <Text className="text-sm text-muted-foreground text-center mb-4">
-                  Add planned purchases so this shopping list can track what
-                  still matters.
+                  Add planned purchases to track what you need.
                 </Text>
                 <TouchableOpacity
                   className="bg-primary rounded-xl px-5 py-3 flex-row items-center"
@@ -273,94 +273,183 @@ export default function ShoppingListDetailScreen() {
                 </TouchableOpacity>
               </View>
             ) : (
-              <View className="gap-3">
-                {shoppingList.items.map((item) => (
-                  <View
-                    key={item.id}
-                    className="rounded-2xl border border-border bg-background p-4"
-                  >
-                    <View className="flex-row items-start justify-between mb-3 gap-3">
-                      <View className="flex-1">
-                        <Text className="text-base font-semibold text-foreground mb-1">
+              <View className="rounded-2xl bg-card border border-border overflow-hidden">
+                {shoppingList.items.map((item, index) => {
+                  const isExpanded = expandedItems.has(item.id);
+                  const isLast = index === shoppingList.items.length - 1;
+
+                  return (
+                    <View key={item.id}>
+                      {/* Compact row */}
+                      <TouchableOpacity
+                        className={`flex-row items-center px-4 py-3.5 ${
+                          !isLast && !isExpanded ? "border-b border-border" : ""
+                        }`}
+                        onPress={() => toggleExpanded(item.id)}
+                        activeOpacity={0.7}
+                      >
+                        {/* Status indicator */}
+                        <View
+                          className={`w-6 h-6 rounded-full items-center justify-center mr-3 ${
+                            item.purchased
+                              ? "bg-primary"
+                              : "border-2 border-border"
+                          }`}
+                        >
+                          {item.purchased && (
+                            <Icon
+                              name="Check"
+                              size={14}
+                              className="text-white"
+                            />
+                          )}
+                        </View>
+
+                        {/* Title */}
+                        <Text
+                          className={`flex-1 text-sm font-medium ${
+                            item.purchased
+                              ? "text-muted-foreground line-through"
+                              : "text-foreground"
+                          }`}
+                          numberOfLines={1}
+                        >
                           {item.title}
                         </Text>
-                        {item.description ? (
-                          <Text className="text-sm text-muted-foreground mb-2">
-                            {item.description}
-                          </Text>
-                        ) : null}
-                        <Text className="text-lg font-bold text-foreground">
-                          ${item.price.toFixed(2)}
+
+                        {/* Price */}
+                        <Text className="text-sm font-semibold text-foreground ml-3">
+                          {showAmount(item.price, true, currencyMeta.symbol)}
                         </Text>
-                      </View>
-                      <TouchableOpacity
-                        className="w-9 h-9 rounded-full items-center justify-center bg-expense/10"
-                        onPress={() => handleDeleteItem(item.id)}
-                      >
+
+                        {/* Expand chevron */}
                         <Icon
-                          name="Trash2"
-                          className="text-expense"
+                          name={isExpanded ? "ChevronUp" : "ChevronDown"}
                           size={16}
+                          className="text-muted-foreground ml-2"
                         />
                       </TouchableOpacity>
-                    </View>
 
-                    <View className="flex-row items-center justify-between">
-                      <View
-                        className={`px-3 py-2 rounded-full ${item.purchased ? "bg-primary/10" : "bg-muted"}`}
-                      >
-                        <Text
-                          className={`text-xs font-semibold uppercase ${item.purchased ? "text-primary" : "text-muted-foreground"}`}
+                      {/* Expanded details */}
+                      {isExpanded && (
+                        <View
+                          className={`px-4 pb-4 bg-background ${
+                            !isLast ? "border-b border-border" : ""
+                          }`}
                         >
-                          {item.purchased ? "Purchased" : "Planned"}
-                        </Text>
-                      </View>
-                      <Text className="text-sm text-muted-foreground">
-                        {item.purchase_date
-                          ? new Date(item.purchase_date).toLocaleDateString()
-                          : "No date set"}
-                      </Text>
-                    </View>
+                          <View className="pl-9 gap-3">
+                            {item.description && (
+                              <Text className="text-sm text-muted-foreground">
+                                {item.description}
+                              </Text>
+                            )}
 
-                    {item.transaction ? (
-                      <View className="mt-4 rounded-2xl border border-border bg-card p-4">
-                        <Text className="text-xs font-semibold uppercase tracking-[2px] text-muted-foreground mb-2">
-                          Linked Transaction
-                        </Text>
-                        <Text className="text-sm font-semibold text-foreground">
-                          {item.transaction.description}
-                        </Text>
-                        <Text className="text-sm text-muted-foreground mt-1">
-                          {item.transaction.formatted_amount ||
-                            `$${Math.abs(item.transaction.amount).toFixed(2)}`}
-                          {" · "}
-                          {new Date(
-                            item.transaction.transaction_date,
-                          ).toLocaleDateString()}
-                        </Text>
-                        <TouchableOpacity
-                          className="mt-3 self-start rounded-xl bg-expense/10 px-4 py-2"
-                          onPress={() => handleUnlinkTransaction(item)}
-                          disabled={linkTransactionMutation.isLoading}
-                        >
-                          <Text className="font-semibold text-expense">
-                            Unlink transaction
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    ) : (
-                      <TouchableOpacity
-                        className="mt-4 rounded-xl bg-primary px-4 py-3 items-center"
-                        onPress={() => setLinkingItem(item)}
-                        disabled={linkTransactionMutation.isLoading}
-                      >
-                        <Text className="font-semibold text-primary-foreground">
-                          Link transaction to mark purchased
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                ))}
+                            {item.purchase_date && (
+                              <View className="flex-row items-center">
+                                <Icon
+                                  name="Calendar"
+                                  size={14}
+                                  className="text-muted-foreground mr-2"
+                                />
+                                <Text className="text-xs text-muted-foreground">
+                                  {new Date(
+                                    item.purchase_date,
+                                  ).toLocaleDateString()}
+                                </Text>
+                              </View>
+                            )}
+
+                            {item.source_href && (
+                              <TouchableOpacity
+                                className="flex-row items-center"
+                                onPress={() =>
+                                  Linking.openURL(item.source_href!)
+                                }
+                              >
+                                <Icon
+                                  name="ExternalLink"
+                                  size={14}
+                                  className="text-primary mr-2"
+                                />
+                                <Text
+                                  className="text-xs text-primary"
+                                  numberOfLines={1}
+                                >
+                                  {item.source_href}
+                                </Text>
+                              </TouchableOpacity>
+                            )}
+
+                            {/* Linked transaction */}
+                            {item.transaction ? (
+                              <View className="rounded-xl bg-card border border-border p-3">
+                                <View className="flex-row items-center justify-between">
+                                  <View className="flex-1">
+                                    <Text className="text-xs text-muted-foreground mb-0.5">
+                                      Linked transaction
+                                    </Text>
+                                    <Text
+                                      className="text-sm font-medium text-foreground"
+                                      numberOfLines={1}
+                                    >
+                                      {item.transaction.description}
+                                    </Text>
+                                  </View>
+                                  <TouchableOpacity
+                                    className="ml-3"
+                                    onPress={() =>
+                                      handleUnlinkTransaction(item)
+                                    }
+                                    disabled={
+                                      linkTransactionMutation.isLoading
+                                    }
+                                    hitSlop={8}
+                                  >
+                                    <Icon
+                                      name="Unlink"
+                                      size={16}
+                                      className="text-expense"
+                                    />
+                                  </TouchableOpacity>
+                                </View>
+                              </View>
+                            ) : (
+                              <TouchableOpacity
+                                className="flex-row items-center"
+                                onPress={() => setLinkingItem(item)}
+                                disabled={linkTransactionMutation.isLoading}
+                              >
+                                <Icon
+                                  name="Link"
+                                  size={14}
+                                  className="text-primary mr-2"
+                                />
+                                <Text className="text-xs font-medium text-primary">
+                                  Link transaction
+                                </Text>
+                              </TouchableOpacity>
+                            )}
+
+                            {/* Delete */}
+                            <TouchableOpacity
+                              className="flex-row items-center"
+                              onPress={() => handleDeleteItem(item.id)}
+                            >
+                              <Icon
+                                name="Trash2"
+                                size={14}
+                                className="text-expense mr-2"
+                              />
+                              <Text className="text-xs font-medium text-expense">
+                                Remove item
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
               </View>
             )}
           </View>

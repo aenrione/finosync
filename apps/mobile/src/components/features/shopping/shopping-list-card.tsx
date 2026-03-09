@@ -4,6 +4,8 @@ import React from "react";
 import { ShoppingList } from "@/types/shopping";
 import Icon from "@/components/ui/icon";
 import { Text as UIText } from "@/components/ui/text";
+import { showAmount, getCurrencyMeta } from "@/utils/currency";
+import { useStore } from "@/utils/store";
 
 interface ShoppingListCardProps {
   shoppingList: ShoppingList;
@@ -14,106 +16,71 @@ export function ShoppingListCard({
   shoppingList,
   onPress,
 }: ShoppingListCardProps) {
+  const baseCurrency = useStore((state) => state.baseCurrency);
+  const currencyMeta = getCurrencyMeta(baseCurrency);
   const isOverBudget = shoppingList.total > shoppingList.total_budget;
-  const remainingBudget = shoppingList.total_budget - shoppingList.total;
   const progress =
     shoppingList.total_budget > 0
-      ? (shoppingList.total / shoppingList.total_budget) * 100
+      ? Math.min((shoppingList.total / shoppingList.total_budget) * 100, 100)
       : 0;
   const isActive = new Date(shoppingList.end_date) >= new Date();
+  const purchasedCount = shoppingList.items.filter((i) => i.purchased).length;
 
   return (
     <TouchableOpacity
-      className="bg-card rounded-2xl p-5 mb-4 border border-border"
+      className="rounded-xl bg-background border border-border p-4 mb-3"
       onPress={onPress}
+      activeOpacity={0.7}
     >
-      <View className="mb-4">
-        <View className="flex-row justify-between items-center mb-2">
-          <UIText className="text-xl font-bold text-foreground flex-1">
-            {shoppingList.title}
-          </UIText>
+      <View className="flex-row items-center justify-between mb-2">
+        <View className="flex-row items-center flex-1 mr-3">
           <View
-            className={`px-3 py-1 rounded-full ${isActive ? "bg-primary/10" : "bg-expense/10"}`}
+            className={`w-9 h-9 rounded-full items-center justify-center mr-3 ${
+              isActive ? "bg-primary/10" : "bg-muted"
+            }`}
           >
+            <Icon
+              name="ShoppingCart"
+              size={18}
+              className={isActive ? "text-primary" : "text-muted-foreground"}
+            />
+          </View>
+          <View className="flex-1">
             <UIText
-              className={`text-xs font-semibold uppercase ${isActive ? "text-primary" : "text-expense"}`}
+              className="text-base font-semibold text-foreground"
+              numberOfLines={1}
             >
-              {isActive ? "Active" : "Inactive"}
+              {shoppingList.title}
+            </UIText>
+            <UIText className="text-xs text-muted-foreground mt-0.5">
+              {shoppingList.items.length} items
+              {purchasedCount > 0 ? ` · ${purchasedCount} purchased` : ""}
             </UIText>
           </View>
         </View>
-        {shoppingList.description && (
-          <UIText className="text-sm text-muted-foreground leading-5">
-            {shoppingList.description}
-          </UIText>
-        )}
-      </View>
 
-      <View className="flex-row items-center mb-4">
-        <Icon
-          name="Calendar"
-          className="text-muted-foreground mr-2"
-          size={16}
-        />
-        <UIText className="text-sm text-muted-foreground">
-          {new Date(shoppingList.start_date).toLocaleDateString()} -{" "}
-          {new Date(shoppingList.end_date).toLocaleDateString()}
-        </UIText>
-      </View>
-
-      <View className="flex-row justify-between mb-4">
-        <View className="items-center flex-1">
-          <Icon name="Wallet" className="text-primary mb-1" size={20} />
-          <UIText className="text-xs text-muted-foreground mb-1">Cap</UIText>
-          <UIText className="text-base font-bold text-foreground">
-            ${shoppingList.total_budget.toFixed(2)}
-          </UIText>
-        </View>
-        <View className="items-center flex-1">
-          <Icon name="TrendingDown" className="text-expense mb-1" size={20} />
-          <UIText className="text-xs text-muted-foreground mb-1">
-            Planned
-          </UIText>
-          <UIText className="text-base font-bold text-foreground">
-            ${shoppingList.total.toFixed(2)}
-          </UIText>
-        </View>
-        <View className="items-center flex-1">
-          {isOverBudget ? (
-            <Icon name="TrendingDown" className="text-expense mb-1" size={20} />
-          ) : (
-            <Icon name="TrendingUp" className="text-primary mb-1" size={20} />
-          )}
-          <UIText className="text-xs text-muted-foreground mb-1">
-            Remaining
-          </UIText>
+        <View className="items-end">
           <UIText
-            className={`text-base font-bold ${isOverBudget ? "text-expense" : "text-primary"}`}
+            className={`text-base font-bold ${
+              isOverBudget ? "text-expense" : "text-foreground"
+            }`}
           >
-            ${Math.abs(remainingBudget).toFixed(2)}
+            {showAmount(shoppingList.total, true, currencyMeta.symbol)}
+          </UIText>
+          <UIText className="text-xs text-muted-foreground mt-0.5">
+            of {showAmount(shoppingList.total_budget, true, currencyMeta.symbol)}
           </UIText>
         </View>
       </View>
 
-      <View className="mb-3">
-        <View className="h-2 bg-muted rounded-full">
-          <View
-            className={`h-2 rounded-full ${isOverBudget ? "bg-expense" : "bg-primary"}`}
-            style={{ width: `${Math.min(progress, 100)}%` }}
-          />
-        </View>
-        <UIText
-          className={`text-sm text-center mt-2 ${isOverBudget ? "text-expense" : "text-muted-foreground"}`}
-        >
-          {progress.toFixed(1)}% {isOverBudget ? "over cap" : "of cap used"}
-        </UIText>
-      </View>
-
-      <View className="border-t border-border pt-3">
-        <UIText className="text-sm text-muted-foreground text-center">
-          {shoppingList.items.length} items •{" "}
-          {shoppingList.items.filter((item) => item.purchased).length} purchased
-        </UIText>
+      {/* Thin progress bar */}
+      <View className="h-1.5 bg-muted rounded-full">
+        <View
+          className={`h-1.5 rounded-full ${
+            isOverBudget ? "bg-expense" : "bg-primary"
+          }`}
+          style={{ width: `${progress}%` }}
+        />
       </View>
     </TouchableOpacity>
   );

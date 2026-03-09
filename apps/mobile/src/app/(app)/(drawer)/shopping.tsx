@@ -9,11 +9,25 @@ import ScreenHeader from "@/components/screen-header";
 import Icon from "@/components/ui/icon";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
+import { fetchBudgetSummary } from "@/services/budget-period.service";
 import { fetchShoppingLists } from "@/services/shopping.service";
 import { ShoppingList } from "@/types/shopping";
+import { useStore } from "@/utils/store";
 
 export default function ShoppingDrawerScreen() {
   const router = useRouter();
+  const baseCurrency = useStore((state) => state.baseCurrency);
+  const today = new Date();
+
+  const { data: budgetSummary } = useQuery(
+    ["budget-summary", today.getFullYear(), today.getMonth() + 1, baseCurrency],
+    () =>
+      fetchBudgetSummary(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        baseCurrency,
+      ),
+  );
 
   const {
     data: shoppingLists,
@@ -90,6 +104,8 @@ export default function ShoppingDrawerScreen() {
         onRefresh={() => {
           refetch();
         }}
+        budgetRemaining={budgetSummary?.left_to_budget ?? null}
+        budgetTotal={budgetSummary?.total_income ?? null}
       />
     </SafeAreaView>
   );
