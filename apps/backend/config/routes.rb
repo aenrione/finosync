@@ -68,4 +68,6 @@ Rails.application.routes.draw do
   resources :category_groups, only: [ :index, :create, :update, :destroy ]
 
   get "/currencies", to: "currencies#index"
+
+  resources :feedbacks, only: [ :create ]
 end
