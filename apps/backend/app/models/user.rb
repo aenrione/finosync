@@ -36,6 +36,7 @@ class User < ApplicationRecord
   has_many :rules, dependent: :destroy
   has_many :category_groups, dependent: :destroy
   has_many :budget_periods, dependent: :destroy
+  has_many :feedbacks, dependent: :destroy
 
   monetize :balance, as: "balance_amount"
   monetize :income, as: "income_amount"

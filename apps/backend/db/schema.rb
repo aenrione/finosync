@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_09_154946) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_09_215740) do
   create_table "account_assets", force: :cascade do |t|
     t.string "name", null: false
     t.date "creation_date"
@@ -96,6 +96,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_09_154946) do
     t.datetime "updated_at", null: false
     t.index ["user_id", "name"], name: "index_category_groups_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_category_groups_on_user_id"
+  end
+
+  create_table "feedbacks", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.text "content"
+    t.string "app_version"
+    t.string "device_info"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_feedbacks_on_user_id"
   end
 
   create_table "recurring_transaction_links", force: :cascade do |t|
@@ -279,6 +289,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_09_154946) do
   add_foreign_key "budget_allocations", "transaction_categories"
   add_foreign_key "budget_periods", "users"
   add_foreign_key "category_groups", "users"
+  add_foreign_key "feedbacks", "users"
   add_foreign_key "recurring_transaction_links", "recurring_transactions"
   add_foreign_key "recurring_transaction_links", "transactions"
   add_foreign_key "recurring_transactions", "accounts"
