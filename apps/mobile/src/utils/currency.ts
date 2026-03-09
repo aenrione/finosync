@@ -149,24 +149,26 @@ const currencyFormatOverrides: Record<string, CurrencyFormat> = {
 /**
  * Resolve formatting rules for a currency code.
  * Checks hardcoded overrides first, then probes Intl.NumberFormat.
+ * Uses format() instead of formatToParts() for Hermes compatibility.
  */
 export const getCurrencyFormat = (currency: string): CurrencyFormat => {
   const upper = currency.toUpperCase()
   if (currencyFormatOverrides[upper]) return currencyFormatOverrides[upper]
 
-  // Probe Intl to detect separators
+  // Probe Intl to detect separators — format "1234.5" and inspect the string.
+  // Hermes (React Native) does not support formatToParts(), so we parse
+  // the formatted output directly. "1234.5" → e.g. "1,234.50" or "1.234,50"
   const locale = upper === "EUR" ? "de-DE" : "en-US"
-  const parts = new Intl.NumberFormat(locale, {
+  const formatted = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).formatToParts(1234567.89)
+  }).format(1234.5)
 
-  let thousandsSep = ","
-  let decimalSep = "."
-  for (const p of parts) {
-    if (p.type === "group") thousandsSep = p.value
-    if (p.type === "decimal") decimalSep = p.value
-  }
+  // Pattern: digits + thousandsSep + digits + decimalSep + digits
+  // e.g. "1,234.50" or "1.234,50"
+  const match = formatted.match(/\d(.)?\d{3}(.)?\d{2}$/)
+  const thousandsSep = match?.[1] ?? ","
+  const decimalSep = match?.[2] ?? "."
 
   return { thousandsSep, decimalSep, maxDecimals: 2 }
 }
