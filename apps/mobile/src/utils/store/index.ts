@@ -8,8 +8,9 @@ import { createConfigSlice, ConfigSlice } from "./config.store"
 import { createUserSlice, UserSlice } from "./user.store"
 import { createTagSlice, TagSlice } from "./tag.store"
 import { createRecurringTransactionSlice, RecurringTransactionSlice } from "./recurring-transaction.store"
+import { createOnboardingSlice, OnboardingSlice } from "./onboarding.store"
 
-export const useStore = create<RouterSlice & UserSlice & AccountSlice & TransactionSlice & CategorySlice & ConfigSlice & TagSlice & RecurringTransactionSlice>()((...a) => ({
+export const useStore = create<RouterSlice & UserSlice & AccountSlice & TransactionSlice & CategorySlice & ConfigSlice & TagSlice & RecurringTransactionSlice & OnboardingSlice>()((...a) => ({
   ...createRouterSlice(...a),
   ...createUserSlice(...a),
   ...createTransactionSlice(...a),
@@ -18,5 +19,6 @@ export const useStore = create<RouterSlice & UserSlice & AccountSlice & Transact
   ...createConfigSlice(...a),
   ...createTagSlice(...a),
   ...createRecurringTransactionSlice(...a),
+  ...createOnboardingSlice(...a),
 }))
 

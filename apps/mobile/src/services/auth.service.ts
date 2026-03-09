@@ -21,13 +21,17 @@ export async function login(email: string, password: string) {
     markLoginTimestamp();
     await setToken(data.token);
 
-    await checkSession();
-    router?.push("/(app)/(drawer)/(tabs)/dashboard");
+    const user = await checkSession();
+    if (user && !user.onboarding_completed) {
+      router?.replace("/(app)/(onboarding)/welcome");
+    } else {
+      router?.push("/(app)/(drawer)/(tabs)/dashboard");
+    }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Login error:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : "Login failed" };
   }
 }
 
@@ -46,6 +50,9 @@ export async function checkSession() {
 
     const data = await res.json();
     useStore.getState().setUser(data);
+    if (data.preferred_currency) {
+      useStore.getState().setBaseCurrency(data.preferred_currency);
+    }
     return data;
   } catch {
     return null;

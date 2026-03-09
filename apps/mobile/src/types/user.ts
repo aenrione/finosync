@@ -1,4 +1,4 @@
-export type User = { 
+export type User = {
 	name: string;
 	email: string;
 	balances: {
@@ -12,6 +12,10 @@ export type User = {
 	investments_return: number | string;
 	quota: number;
 	remaining: number | string;
+	preferred_currency?: string;
+	monthly_income?: number | string;
+	financial_goals?: string[];
+	onboarding_completed?: boolean;
 	created_at?: string;
 	updated_at?: string;
 } | null;

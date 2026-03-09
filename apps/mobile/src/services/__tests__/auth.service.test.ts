@@ -71,11 +71,13 @@ describe("login", () => {
 
 describe("checkSession", () => {
   const mockSetUser = jest.fn()
+  const mockSetBaseCurrency = jest.fn()
 
   beforeEach(() => {
     useStore.setState({
       url: "http://localhost:2999",
       setUser: mockSetUser,
+      setBaseCurrency: mockSetBaseCurrency,
     } as any)
     global.fetch = jest.fn()
   })
@@ -108,6 +110,32 @@ describe("checkSession", () => {
     )
     expect(mockSetUser).toHaveBeenCalledWith(mockUser)
     expect(result).toEqual(mockUser)
+  })
+
+  test("given user with preferred_currency, syncs to baseCurrency", async () => {
+    const mockUser = { id: 1, name: "Test User", preferred_currency: "USD" }
+    getToken.mockResolvedValue("valid-token")
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => mockUser,
+    })
+
+    await checkSession()
+
+    expect(mockSetBaseCurrency).toHaveBeenCalledWith("USD")
+  })
+
+  test("given user without preferred_currency, does not change baseCurrency", async () => {
+    const mockUser = { id: 1, name: "Test User" }
+    getToken.mockResolvedValue("valid-token")
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => mockUser,
+    })
+
+    await checkSession()
+
+    expect(mockSetBaseCurrency).not.toHaveBeenCalled()
   })
 
   test("given expired token (non-ok response), returns null", async () => {

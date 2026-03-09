@@ -16,6 +16,7 @@ import { GlobalProvider } from "@/context/global.context";
 import { useAccounts } from "@/context/accounts.context";
 import { checkSession } from "@/services/auth.service";
 import { getToken } from "@/utils/store/session-store";
+import { useStore } from "@/utils/store";
 import { useCharts } from "@/context/charts.context";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
@@ -126,11 +127,13 @@ function AppBootstrapShell() {
     <View className="flex-1" onLayout={() => setHasLaidOut(true)}>
       <Stack>
         <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+        <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
         <Stack.Screen name="add-category" options={{ headerShown: false }} />
         <Stack.Screen name="add-recurring" options={{ headerShown: false }} />
         <Stack.Screen name="add-rule" options={{ headerShown: false }} />
         <Stack.Screen name="add-transaction" options={{ headerShown: false }} />
         <Stack.Screen name="add-account" options={{ headerShown: false }} />
+        <Stack.Screen name="add-tag" options={{ headerShown: false }} />
         <Stack.Screen
           name="add-shopping-list"
           options={{ headerShown: false }}
@@ -161,7 +164,28 @@ function AppBootstrapShell() {
 
 export default function AppLayout() {
   const [ready, setReady] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const router = useRouter();
+  const user = useStore((s) => s.user);
+
+  const completedOnboarding = useRef(false);
+
+  // When onboarding completes (user store updates), transition to full app
+  useEffect(() => {
+    if (needsOnboarding && user?.onboarding_completed) {
+      completedOnboarding.current = true;
+      setNeedsOnboarding(false);
+      setReady(true);
+    }
+  }, [needsOnboarding, user?.onboarding_completed]);
+
+  // After GlobalProvider mounts, navigate to dashboard
+  useEffect(() => {
+    if (ready && completedOnboarding.current) {
+      completedOnboarding.current = false;
+      router.replace("/(app)/(drawer)/(tabs)/dashboard");
+    }
+  }, [ready, router]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -171,9 +195,14 @@ export default function AppLayout() {
         return;
       }
 
-      const user = await checkSession();
-      if (!user) {
+      const sessionUser = await checkSession();
+      if (!sessionUser) {
         router.replace("/(auth)/sign-in");
+        return;
+      }
+
+      if (!sessionUser.onboarding_completed) {
+        setNeedsOnboarding(true);
         return;
       }
 
@@ -181,6 +210,14 @@ export default function AppLayout() {
     };
     checkAuth();
   }, [router]);
+
+  if (needsOnboarding) {
+    return (
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(onboarding)" />
+      </Stack>
+    );
+  }
 
   if (!ready) {
     return (
