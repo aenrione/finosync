@@ -37,3 +37,4 @@ yarn-error.log*
 pnpm-debug.log*
 .claude/worktrees
 .worktrees/
+.playwright-mcp
