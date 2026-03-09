@@ -24,7 +24,12 @@ function AlertDialog({ isOpen, onClose, children }: AlertDialogProps) {
   );
 }
 
-function AlertDialogBackdrop() {
+function AlertDialogBackdrop({ onPress }: { onPress?: () => void }) {
+  if (onPress) {
+    return (
+      <Pressable className="absolute inset-0 bg-black/50" onPress={onPress} />
+    );
+  }
   return (
     <View className="absolute inset-0 bg-black/50" />
   );
