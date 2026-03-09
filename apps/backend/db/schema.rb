@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_09_000004) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_09_000007) do
   create_table "account_assets", force: :cascade do |t|
     t.string "name", null: false
     t.date "creation_date"
@@ -63,29 +63,39 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_09_000004) do
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
-  create_table "budget_items", force: :cascade do |t|
-    t.string "title"
-    t.string "description"
-    t.decimal "price", precision: 14, scale: 2
-    t.date "purchase_date"
-    t.boolean "purchased", default: false
-    t.string "source_href"
-    t.integer "budget_list_id", null: false
+  create_table "budget_allocations", force: :cascade do |t|
+    t.integer "budget_period_id", null: false
+    t.integer "transaction_category_id", null: false
+    t.decimal "planned_amount", precision: 14, scale: 2, default: "0.0", null: false
+    t.decimal "rollover_in", precision: 14, scale: 2, default: "0.0"
+    t.string "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["budget_list_id"], name: "index_budget_items_on_budget_list_id"
+    t.index ["budget_period_id", "transaction_category_id"], name: "idx_allocations_period_category", unique: true
+    t.index ["budget_period_id"], name: "index_budget_allocations_on_budget_period_id"
+    t.index ["transaction_category_id"], name: "index_budget_allocations_on_transaction_category_id"
   end
 
-  create_table "budget_lists", force: :cascade do |t|
-    t.string "title"
-    t.string "description"
-    t.decimal "total_budget", precision: 14, scale: 2, default: "0.0", null: false
-    t.date "start_date"
-    t.date "end_date"
+  create_table "budget_periods", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "year", null: false
+    t.integer "month", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "year", "month"], name: "index_budget_periods_on_user_id_and_year_and_month", unique: true
+    t.index ["user_id"], name: "index_budget_periods_on_user_id"
+  end
+
+  create_table "category_groups", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "display_order", default: 0, null: false
+    t.integer "group_type", default: 0, null: false
     t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_budget_lists_on_user_id"
+    t.index ["user_id", "name"], name: "index_category_groups_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_category_groups_on_user_id"
   end
 
   create_table "recurring_transaction_links", force: :cascade do |t|
@@ -120,6 +130,26 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_09_000004) do
     t.index ["user_id"], name: "index_recurring_transactions_on_user_id"
   end
 
+  create_table "rules", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.boolean "enabled", default: true, null: false
+    t.integer "priority", default: 0, null: false
+    t.json "conditions", default: {}, null: false
+    t.json "actions", default: [], null: false
+    t.string "overwrite_mode", default: "fill_blanks", null: false
+    t.datetime "last_run_at"
+    t.string "last_run_status"
+    t.integer "last_run_matched_count", default: 0, null: false
+    t.integer "last_run_updated_count", default: 0, null: false
+    t.text "last_error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "priority"], name: "index_rules_on_user_id_and_priority"
+    t.index ["user_id"], name: "index_rules_on_user_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "ip_address"
@@ -128,6 +158,35 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_09_000004) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "shopping_items", force: :cascade do |t|
+    t.string "title"
+    t.string "description"
+    t.decimal "price", precision: 14, scale: 2
+    t.date "purchase_date"
+    t.boolean "purchased", default: false
+    t.string "source_href"
+    t.integer "shopping_list_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "transaction_id"
+    t.index ["shopping_list_id"], name: "index_shopping_items_on_shopping_list_id"
+    t.index ["transaction_id"], name: "index_shopping_items_on_transaction_id"
+  end
+
+  create_table "shopping_lists", force: :cascade do |t|
+    t.string "title"
+    t.string "description"
+    t.decimal "total_budget", precision: 14, scale: 2, default: "0.0", null: false
+    t.date "start_date"
+    t.date "end_date"
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "budget_allocation_id"
+    t.index ["budget_allocation_id"], name: "index_shopping_lists_on_budget_allocation_id"
+    t.index ["user_id"], name: "index_shopping_lists_on_user_id"
   end
 
   create_table "tags", force: :cascade do |t|
@@ -147,6 +206,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_09_000004) do
     t.string "icon", default: "FileQuestion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "category_group_id"
+    t.boolean "is_income", default: false
+    t.index ["category_group_id"], name: "index_transaction_categories_on_category_group_id"
     t.index ["user_id"], name: "index_transaction_categories_on_user_id"
   end
 
@@ -209,15 +271,23 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_09_000004) do
   add_foreign_key "account_assets", "accounts"
   add_foreign_key "accounts", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "budget_items", "budget_lists"
-  add_foreign_key "budget_lists", "users"
+  add_foreign_key "budget_allocations", "budget_periods"
+  add_foreign_key "budget_allocations", "transaction_categories"
+  add_foreign_key "budget_periods", "users"
+  add_foreign_key "category_groups", "users"
   add_foreign_key "recurring_transaction_links", "recurring_transactions"
   add_foreign_key "recurring_transaction_links", "transactions"
   add_foreign_key "recurring_transactions", "accounts"
   add_foreign_key "recurring_transactions", "transaction_categories"
   add_foreign_key "recurring_transactions", "users"
+  add_foreign_key "rules", "users"
   add_foreign_key "sessions", "users"
+  add_foreign_key "shopping_items", "shopping_lists"
+  add_foreign_key "shopping_items", "transactions"
+  add_foreign_key "shopping_lists", "budget_allocations"
+  add_foreign_key "shopping_lists", "users"
   add_foreign_key "tags", "users"
+  add_foreign_key "transaction_categories", "category_groups"
   add_foreign_key "transaction_categories", "users"
   add_foreign_key "transaction_tags", "tags"
   add_foreign_key "transaction_tags", "transactions"

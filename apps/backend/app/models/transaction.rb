@@ -4,6 +4,7 @@ class Transaction < ApplicationRecord
   has_many :transaction_tags, dependent: :destroy
   has_many :tags, through: :transaction_tags
   has_many :recurring_transaction_links, dependent: :destroy
+  has_one :shopping_item, foreign_key: :transaction_id, dependent: :nullify
   monetize :amount, as: "transaction_amount"
 end
 

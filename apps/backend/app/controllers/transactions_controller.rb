@@ -45,6 +45,8 @@ class TransactionsController < ApplicationController
     @transaction.currency = @account.currency
 
     if @transaction.save
+      Rules::ApplyFirstMatchingRule.new(transaction: @transaction).call
+      @transaction.reload
       render_jsonapi @transaction, status: :created
     else
       render json: { error: @transaction.errors.full_messages.join(", ") }, status: :bad_request

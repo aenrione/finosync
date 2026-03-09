@@ -33,9 +33,15 @@
 class TransactionSerializer
   include JSONAPI::Serializer
   attributes :id, :description, :holder_id, :holder_name, :holder_institution,
-             :transaction_date, :currency, :comment, :account_id, :post_date
+             :transaction_date, :currency, :comment, :account_id, :post_date,
+             :transaction_category_id, :transaction_type, :ignore, :created_at,
+             :updated_at
 
   attribute :amount do |object|
+    object.amount.to_f
+  end
+
+  attribute :formatted_amount do |object|
     object.transaction_amount.format
   end
 

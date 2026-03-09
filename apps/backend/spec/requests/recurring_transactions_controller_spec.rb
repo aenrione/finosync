@@ -33,6 +33,17 @@ RSpec.describe "Recurring Transactions API", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.size).to eq(1)
     end
+
+    it "returns an empty array when filters match nothing" do
+      create(:recurring_transaction, user: user, is_active: false, next_due_date: 30.days.from_now)
+
+      get "/recurring_transactions",
+          headers: auth_headers,
+          params: { active: true, upcoming: 14 }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to eq([])
+    end
   end
 
   describe "POST /recurring_transactions" do

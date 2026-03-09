@@ -1,5 +1,8 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 ENV['RACK_ENV'] ||= 'test'
+ENV['ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'] ||= 'h' * 32
+ENV['ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY'] ||= 'i' * 32
+ENV['ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT'] ||= 'j' * 32
 require File.expand_path('../config/environment', __dir__)
 require 'rspec/rails'
 require 'spec_helper'
@@ -69,4 +72,3 @@ Shoulda::Matchers.configure do |config|
     with.library :rails
   end
 end
-

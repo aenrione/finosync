@@ -32,7 +32,8 @@ class UpdateFintocAccountInformation < PowerTypes::Command.new(:account)
       trans = Transaction.find_by(transaction_id: mov.id)
       next if trans.present?
 
-      Transaction.create!(transaction_to_db(mov))
+      transaction = Transaction.create!(transaction_to_db(mov))
+      Rules::ApplyFirstMatchingRule.new(transaction: transaction).call
     end
 
     # Update monthly indicators

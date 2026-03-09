@@ -44,5 +44,31 @@ FactoryBot.define do
     transaction_date { Faker::Date.between(from: 6.months.ago, to: Date.today) }
     transaction_type { ["deposit", "withdrawal", "transfer", "purchase", "sale"].sample }
     holder_name { Faker::Name.name }
+
+    trait :expense do
+      amount { -Faker::Number.between(from: 5_000, to: 150_000).round(2) }
+      transaction_type { "purchase" }
+      description do
+        [
+          "Uber Eats", "Starbucks", "Netflix", "Spotify", "Amazon", "Supermercado Lider",
+          "Farmacia Ahumada", "Copec", "Shell", "Falabella", "Rappi", "iFood",
+          "Electricity bill", "Water bill", "Internet Movistar", "Gym membership",
+          "Doctor visit", "Uber ride", "Metro card", "Restaurant dinner"
+        ].sample
+      end
+    end
+
+    trait :income do
+      amount { Faker::Number.between(from: 500_000, to: 3_000_000).round(2) }
+      transaction_type { "deposit" }
+      description do
+        ["Salary deposit", "Freelance payment", "Investment return", "Refund", "Transfer received"].sample
+      end
+    end
+
+    trait :recent do
+      transaction_date { Faker::Date.between(from: 1.month.ago, to: Date.today) }
+      post_date { transaction_date }
+    end
   end
 end

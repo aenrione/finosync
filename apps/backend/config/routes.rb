@@ -30,6 +30,17 @@ Rails.application.routes.draw do
 
   resources :tags, only: [ :index, :create, :update, :destroy ]
 
+  resources :rules, only: [ :index, :show, :create, :update, :destroy ] do
+    member do
+      post :run
+    end
+
+    collection do
+      post :run_all
+      post :reorder
+    end
+  end
+
   resources :recurring_transactions do
     member do
       post :link_transaction
@@ -37,12 +48,21 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :budget_lists, only: [ :index, :show, :create, :destroy ]
+  resources :shopping_lists, only: [ :index, :show, :create, :update, :destroy ]
 
-  post "/budget_lists/:id/item", to: "budget_items#create"
-  delete "/budget_lists/:id/item/:item_id", to: "budget_items#destroy"
+  post "/shopping_lists/:id/item", to: "shopping_items#create"
+  patch "/shopping_lists/:id/item/:item_id", to: "shopping_items#update"
+  delete "/shopping_lists/:id/item/:item_id", to: "shopping_items#destroy"
 
   get "/dashboard", to: "dashboard#show"
+
+  # Monthly budget system
+  get "/budget", to: "budget_periods#show"
+  post "/budget/copy_previous", to: "budget_periods#copy_previous"
+  post "/budget/:budget_period_id/allocations", to: "budget_allocations#upsert"
+  delete "/budget/:budget_period_id/allocations/:id", to: "budget_allocations#destroy"
+
+  resources :category_groups, only: [ :index, :create, :update, :destroy ]
 
   get "/currencies", to: "currencies#index"
 end

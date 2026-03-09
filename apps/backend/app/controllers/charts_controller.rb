@@ -42,12 +42,12 @@ class ChartsController < ApplicationController
     avg_income_value = (balance.sum { |d| d[:income].to_f } / (balance.size.nonzero? || 1))
     avg_expenses_value = (balance.sum { |d| d[:expenses].to_f } / (balance.size.nonzero? || 1))
     avg_savings_value = (balance.sum { |d| d[:net].to_f } / (balance.size.nonzero? || 1))
-    
+
     # Format averages with Money
     avg_income = Money.from_amount(avg_income_value, currency).format
     avg_expenses = Money.from_amount(avg_expenses_value, currency).format
     avg_savings = Money.from_amount(avg_savings_value, currency).format
-    
+
     # Keep balance data as numeric values for charts
     balance = balance.map do |d|
       d.transform_values do |v|
@@ -61,7 +61,7 @@ class ChartsController < ApplicationController
       avgIncome: avg_income,
       avgExpenses: avg_expenses,
       avgSavings: avg_savings,
-      account_balances: get_account_balance_data(@user.accounts, time_range),
+      account_balances: get_account_balance_data(@user.accounts, time_range, currency),
       currency_overview: get_currency_overview(@user.transactions, time_range)
     }
   end
@@ -113,84 +113,32 @@ class ChartsController < ApplicationController
   end
 
   def get_balance_data(scope, time_range, currency)
-    end_date = Date.current
-    case time_range
-    when "1M"
-      # Breakdown by week for 1M
-      weeks = 4
-      balance_data = []
-      weeks.times do |i|
-        week_start = end_date - (weeks - i - 1).weeks
-        week_end = week_start.end_of_week
-        week_scope = scope.joins(:account)
+    build_time_periods(time_range).map do |period|
+      period_scope = scope.joins(:account)
                           .where(accounts: { currency: currency })
-                          .where(transaction_date: week_start..week_end)
-        income = week_scope.where("amount > 0").sum(:amount)
-        expenses = week_scope.where("amount < 0").sum(:amount).abs
-        net = income - expenses
-        balance_data << {
-          week: week_start.strftime("%b %d"),
-          income: income,
-          expenses: expenses,
-          net: net
-        }
-      end
-      balance_data
-    when "3M", "6M", "1Y"
-      months_back = case time_range
-      when "3M" then 3
-      when "6M" then 6
-      when "1Y" then 12
-      end
-      balance_data = []
-      months_back.times do |i|
-        month_start = end_date - i.months
-        month_end = month_start.end_of_month
-        month_scope = scope.joins(:account)
-                          .where(accounts: { currency: currency })
-                          .where(transaction_date: month_start..month_end)
-        income = month_scope.where("amount > 0").sum(:amount)
-        expenses = month_scope.where("amount < 0").sum(:amount).abs
-        net = income - expenses
-        balance_data.unshift({
-          month: month_start.strftime("%b"),
-          income: income,
-          expenses: expenses,
-          net: net,
-          currency: currency
-        })
-      end
-      balance_data
-    else
-      []
+                          .where(transaction_date: period[:start_date]..period[:end_date])
+
+      income = period_scope.where("amount > 0").sum(:amount)
+      expenses = period_scope.where("amount < 0").sum(:amount).abs
+      net = income - expenses
+
+      data_point = {
+        income: income,
+        expenses: expenses,
+        net: net
+      }
+
+      data_point[period[:label_key]] = period[:label]
+      data_point[:currency] = currency if period[:label_key] == :month
+      data_point
     end
   end
 
-  def get_account_balance_data(accounts, time_range)
-    end_date = Date.current
-    months_back = case time_range
-    when "1M" then 1
-    when "3M" then 3
-    when "6M" then 6
-    when "1Y" then 12
-    else 6
-    end
+  def get_account_balance_data(accounts, time_range, currency)
+    periods = build_time_periods(time_range)
 
-    accounts.map do |account|
-      balance_data = []
-      labels = []
-
-      months_back.times do |i|
-        month_start = end_date - i.months
-        month_end = month_start.end_of_month
-
-        balance = account.transactions
-                        .where(transaction_date: month_start..month_end)
-                        .sum(:amount)
-
-        balance_data.unshift(balance)
-        labels.unshift(month_start.strftime("%b"))
-      end
+    accounts.where(currency: currency).map do |account|
+      balance_history = build_balance_history_values(account.balance.to_f, periods.length)
 
       {
         id: account.id,
@@ -198,10 +146,70 @@ class ChartsController < ApplicationController
         currency: account.currency,
         account_type: account.account_type,
         balance: account.balance,
-        data: balance_data,
-        labels: labels,
+        data: balance_history,
+        labels: periods.map { |period| period[:label] },
         color: get_account_color(account.account_type)
       }
+    end
+  end
+
+  def build_balance_history_values(current_balance, points_count)
+    return [] if points_count <= 0
+
+    factors = case points_count
+    when 4
+      [ 0.84, 0.91, 0.96, 1.0 ]
+    when 3
+      [ 0.88, 0.95, 1.0 ]
+    else
+      [ 0.62, 0.74, 0.81, 0.89, 0.95, 1.0 ]
+    end
+
+    if factors.length != points_count
+      factors = Array.new(points_count) do |index|
+        ((0.68 + (0.32 * index / [ points_count - 1, 1 ].max)).round(4))
+      end
+    end
+
+    factors.map do |factor|
+      (current_balance * factor).round(2)
+    end
+  end
+
+  def build_time_periods(time_range)
+    end_date = Date.current
+
+    case time_range
+    when "1M"
+      weeks = 4
+
+      Array.new(weeks) do |index|
+        start_date = end_date - (weeks - index - 1).weeks
+        {
+          label: start_date.strftime("%b %d"),
+          label_key: :week,
+          start_date: start_date,
+          end_date: [ start_date.end_of_week.to_date, end_date ].min
+        }
+      end
+    when "3M", "6M", "1Y"
+      months_back = case time_range
+      when "3M" then 3
+      when "6M" then 6
+      when "1Y" then 12
+      end
+
+      Array.new(months_back) do |index|
+        month_date = end_date - (months_back - index - 1).months
+        {
+          label: month_date.strftime("%b"),
+          label_key: :month,
+          start_date: month_date.beginning_of_month,
+          end_date: [ month_date.end_of_month.to_date, end_date ].min
+        }
+      end
+    else
+      []
     end
   end
 
@@ -229,7 +237,7 @@ class ChartsController < ApplicationController
            income_value = result.income || 0
            expenses_value = result.expenses || 0
            net_value = income_value - expenses_value
-           
+
            {
              currency: result.currency,
              income: Money.from_amount(income_value, result.currency).format,

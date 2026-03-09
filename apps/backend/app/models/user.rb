@@ -26,9 +26,12 @@ class User < ApplicationRecord
   has_many :transactions, through: :accounts, dependent: :destroy
   has_many :transaction_categories, dependent: :destroy
   alias_method :categories, :transaction_categories
-  has_many :budget_lists, dependent: :destroy
+  has_many :shopping_lists, dependent: :destroy
   has_many :tags, dependent: :destroy
   has_many :recurring_transactions, dependent: :destroy
+  has_many :rules, dependent: :destroy
+  has_many :category_groups, dependent: :destroy
+  has_many :budget_periods, dependent: :destroy
 
   monetize :balance, as: "balance_amount"
   monetize :income, as: "income_amount"
@@ -40,9 +43,9 @@ class User < ApplicationRecord
 
   has_paper_trail on: [ :update ],
                   only: [ :balance, :income, :expense, :investments_return ]
-                  # if: Proc.new { |t|
-                  #       t.versions.length.zero? ? true : t.updated_at >= t.versions.last.created_at + 1.week
-                  #     }
+  # if: Proc.new { |t|
+  #       t.versions.length.zero? ? true : t.updated_at >= t.versions.last.created_at + 1.week
+  #     }
   def balances
     GetUserBalances.for(user: self)
   end

@@ -41,7 +41,7 @@ class ApplicationController < ActionController::API
 
   def default_serializer_for(resource)
     klass = if is_collection?(resource)
-              resource.first&.class
+              resource.respond_to?(:klass) ? resource.klass : resource.first&.class
     else
               resource.class
     end

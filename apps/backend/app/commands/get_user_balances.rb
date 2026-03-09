@@ -30,7 +30,7 @@ class GetUserBalances < PowerTypes::Command.new(:user, :currency)
     if amount.is_a?(Money)
       amount.format(currency: @current_currency)
     elsif amount.is_a?(Numeric)
-      Money.new(amount * 100).format(currency: @current_currency)
+      Money.from_amount(amount.to_d, @current_currency).format
     elsif amount.is_a?(String)
       Money.from_amount(amount.to_f, @current_currency).format
     else

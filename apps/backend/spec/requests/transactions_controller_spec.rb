@@ -58,4 +58,43 @@ RSpec.describe 'Transactions API', type: :request do
       expect(response).to have_http_status(:ok)
     end
   end
+
+  describe 'POST /transactions' do
+    it 'applies matching rules after manual creation' do
+      category = create(:transaction_category, user: user, name: 'Shopping')
+
+      create(
+        :rule,
+        user: user,
+        conditions: {
+          logic: 'and',
+          children: [
+            {
+              field: 'merchant',
+              operator: 'contains',
+              value: 'amazon'
+            }
+          ]
+        },
+        actions: [
+          {
+            type: 'assign_category',
+            transaction_category_id: category.id
+          }
+        ]
+      )
+
+      post '/transactions',
+           headers: auth_headers,
+           params: {
+             account_id: account.id,
+             description: 'Amazon order',
+             amount: -19990,
+             transaction_date: '2026-03-09'
+           }
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body['transaction_category_id']).to eq(category.id)
+    end
+  end
 end
