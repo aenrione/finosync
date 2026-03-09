@@ -4,115 +4,115 @@
 
 @layer base {
   :root {
-    /* FinoSync Design System - Light Mode */
+    /* FinoSync Design System - Light Mode (Slate & Indigo) */
     --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
-    
-    /* Primary: Teal (trust, growth, financial security) */
-    --primary: 180 75% 42%;
+    --foreground: 222 47% 11%;
+
+    /* Primary: Indigo */
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
-    
-    /* Secondary: Amber (warmth, action, energy) */
-    --secondary: 43 100% 55%;
-    --secondary-foreground: 0 0% 10%;
-    
-    /* Neutral colors */
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 38%;
-    
-    --accent: 43 100% 55%;
-    --accent-foreground: 0 0% 10%;
-    
-    /* Semantic colors */
+
+    /* Secondary: Slate light */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 215 25% 27%;
+
+    /* Muted */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 226 100% 97%;
+    --accent-foreground: 239 84% 67%;
+
+    /* Semantic */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 10%;
-    
+
     /* UI elements */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-    
+    --card: 210 40% 98%;
+    --card-foreground: 222 47% 11%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-    
-    --border: 0 0% 88%;
-    --input: 0 0% 96%;
-    --ring: 180 75% 42%;
-    
-    --radius: 0.5rem;
-    
+    --popover-foreground: 222 47% 11%;
+
+    --border: 214 32% 91%;
+    --input: 210 40% 98%;
+    --ring: 239 84% 67%;
+
+    --radius: 0.75rem;
+
     /* Chart colors */
-    --chart-1: 180 75% 42%;
-    --chart-2: 43 100% 55%;
-    --chart-3: 142 71% 45%;
-    --chart-4: 271 81% 56%;
+    --chart-1: 239 84% 67%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 271 81% 56%;
+    --chart-4: 38 92% 50%;
     --chart-5: 0 84% 60%;
-    
+
     /* Sidebar */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 38%;
-    --sidebar-primary: 180 75% 42%;
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 215 16% 47%;
+    --sidebar-primary: 239 84% 67%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 180 75% 42%;
-    
+    --sidebar-accent: 226 100% 97%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 239 84% 67%;
+
     /* Status */
     --online: 142 71% 45%;
     --online-foreground: 142 71% 25%;
   }
 
   .dark {
-    /* FinoSync Design System - Dark Mode */
-    --background: 0 0% 10%;
-    --foreground: 0 0% 98%;
-    
-    --primary: 180 75% 42%;
+    /* FinoSync Design System - Dark Mode (Slate & Indigo) */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
-    
-    --secondary: 43 100% 55%;
-    --secondary-foreground: 0 0% 10%;
-    
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 62%;
-    
-    --accent: 43 100% 55%;
-    --accent-foreground: 0 0% 10%;
-    
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    
+
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
-    
-    --card: 0 0% 13%;
-    --card-foreground: 0 0% 98%;
-    
-    --popover: 0 0% 13%;
-    --popover-foreground: 0 0% 98%;
-    
-    --border: 0 0% 26%;
-    --input: 0 0% 15%;
-    --ring: 180 75% 42%;
-    
-    --chart-1: 180 75% 50%;
-    --chart-2: 43 100% 60%;
-    --chart-3: 142 71% 50%;
-    --chart-4: 271 81% 65%;
+
+    --card: 222 47% 13%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 13%;
+    --popover-foreground: 210 40% 98%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 17%;
+    --ring: 239 84% 67%;
+
+    --chart-1: 239 84% 75%;
+    --chart-2: 160 84% 45%;
+    --chart-3: 271 81% 65%;
+    --chart-4: 38 92% 55%;
     --chart-5: 0 84% 65%;
-    
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 180 75% 42%;
+
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 239 84% 67%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 180 75% 42%;
-    
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 239 84% 67%;
+
     --online: 142 71% 45%;
     --online-foreground: 142 71% 70%;
   }

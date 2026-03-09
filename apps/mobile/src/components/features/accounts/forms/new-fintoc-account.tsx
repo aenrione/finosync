@@ -8,7 +8,7 @@ import { Button, ButtonText } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Text } from "@/components/ui/text"
 
-export default function NewFintocAccount({ refresh }) {
+export default function NewFintocAccount({ refresh }: { refresh: () => void }) {
   const [api_key, setKey] = useState("")
   const [link, setLink] = useState("")
 

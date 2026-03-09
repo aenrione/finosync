@@ -1,9 +1,10 @@
-import * as Localization from "expo-localization"
+import { useStore } from "@/utils/store"
+
+import { resolveLanguage, type SupportedLanguage } from "./config"
 
 type Translations<T> = {
-  en: T
-  es: T
-}
+  [key in SupportedLanguage]: T;
+};
 
 /**
  * Hook factory for co-located per-component translations.
@@ -19,6 +20,7 @@ type Translations<T> = {
  *   const text = useTranslation()
  */
 export const useTranslationFactory = <T>(translations: Translations<T>): T => {
-  const lang = Localization.getLocales()[0]?.languageCode?.startsWith("es") ? "es" : "en"
-  return translations[lang]
+  const language = useStore((state) => state.language)
+
+  return translations[resolveLanguage(language)]
 }

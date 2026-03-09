@@ -28,25 +28,25 @@ import { Account, AccountTotal, TransactionTotal } from "@/types/account"
 export const mockAccountTotals: AccountTotal[] = [
   {
     code: "CLP",
-    totalAmount: 10000,
-    investmentReturn: 500
+    totalAmount: "10000",
+    investmentReturn: "500"
   },
   {
     code: "USD",
-    totalAmount: 5000,
-    investmentReturn: 200
+    totalAmount: "5000",
+    investmentReturn: "200"
   }
 ]
 
 export const mockTransactionTotals: TransactionTotal[] = [
   {
-    totalIncome: 3000,
-    totalExpense: 1500,
+    totalIncome: "3000",
+    totalExpense: "1500",
     code: "CLP"
   },
   {
-    totalIncome: 2000,
-    totalExpense: 1000,
+    totalIncome: "2000",
+    totalExpense: "1000",
     code: "USD"
   }
 ]

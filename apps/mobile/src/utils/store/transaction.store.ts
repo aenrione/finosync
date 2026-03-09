@@ -1,20 +1,21 @@
-import { StateCreator } from "zustand"
+import { StateCreator } from "zustand";
 
-import { Transaction } from "@/types/transaction"
+import { Transaction } from "@/types/transaction";
 
 export interface TransactionSlice {
-  currentTransaction?: Transaction
-  setCurrentTransaction: (tx: Transaction) => void
+  currentTransaction?: Transaction;
+  setCurrentTransaction: (tx: Transaction | undefined) => void;
 }
 
-export const createTransactionSlice: StateCreator<TransactionSlice & { router: any }> = (set, get) => ({
+export const createTransactionSlice: StateCreator<
+  TransactionSlice & { router?: any }
+> = (set, get) => ({
   currentTransaction: undefined,
   setCurrentTransaction: (transaction) => {
-    set({ currentTransaction: transaction })
-    const { router } = get()
+    set({ currentTransaction: transaction });
+    const { router } = get();
     if (router) {
-      router.push("/add-transaction")
+      router.push("/(app)/add-transaction");
     }
-  }
-})
-
+  },
+});

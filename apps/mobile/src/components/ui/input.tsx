@@ -1,27 +1,34 @@
-import { cn } from '@/lib/utils';
-import * as React from 'react';
-import { TextInput, type TextInputProps } from 'react-native';
+import { cn } from "@/lib/utils";
+import { colors } from "@/lib/colors";
+import * as React from "react";
+import { TextInput, type TextInputProps } from "react-native";
 
 interface InputProps extends TextInputProps {
   className?: string;
 }
 
-const Input = React.forwardRef<React.ComponentRef<typeof TextInput>, InputProps>(
-  ({ className, ...props }, ref) => {
+const Input = React.forwardRef<
+  React.ComponentRef<typeof TextInput>,
+  InputProps
+>(
+  (
+    { className, placeholderTextColor = colors.mutedForeground, ...props },
+    ref,
+  ) => {
     return (
       <TextInput
         ref={ref}
         className={cn(
-          'h-11 px-3 border border-border rounded-lg bg-input text-foreground text-base',
-          className
+          "h-12 px-4 bg-card rounded-xl text-foreground text-base",
+          className,
         )}
-        placeholderClassName="text-muted-foreground"
+        placeholderTextColor={placeholderTextColor}
         {...props}
       />
     );
-  }
+  },
 );
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 export { Input };
 export type { InputProps };

@@ -1,5 +1,5 @@
-import { useStore } from "../index"
-import { Transaction } from "@/types/transaction"
+import { useStore } from "../index";
+import { Transaction } from "@/types/transaction";
 
 describe("TransactionSlice", () => {
   const mockTransaction: Transaction = {
@@ -12,35 +12,37 @@ describe("TransactionSlice", () => {
     transaction_type: "debit",
     created_at: "2024-01-15",
     updated_at: "2024-01-15",
-  }
+  };
 
   beforeEach(() => {
     useStore.setState({
       currentTransaction: undefined,
       router: null,
-    })
-  })
+    });
+  });
 
   test("initial currentTransaction is undefined", () => {
-    expect(useStore.getState().currentTransaction).toBeUndefined()
-  })
+    expect(useStore.getState().currentTransaction).toBeUndefined();
+  });
 
   test("setCurrentTransaction updates currentTransaction", () => {
-    useStore.getState().setCurrentTransaction(mockTransaction)
+    useStore.getState().setCurrentTransaction(mockTransaction);
 
-    expect(useStore.getState().currentTransaction).toEqual(mockTransaction)
-  })
+    expect(useStore.getState().currentTransaction).toEqual(mockTransaction);
+  });
 
-  test("setCurrentTransaction navigates to add-transaction when router is set", () => {
-    const mockRouter = { push: jest.fn() }
-    useStore.setState({ router: mockRouter as any })
+  test("setCurrentTransaction navigates to the protected add-transaction route when router is set", () => {
+    const mockRouter = { push: jest.fn() };
+    useStore.setState({ router: mockRouter as any });
 
-    useStore.getState().setCurrentTransaction(mockTransaction)
+    useStore.getState().setCurrentTransaction(mockTransaction);
 
-    expect(mockRouter.push).toHaveBeenCalledWith("/add-transaction")
-  })
+    expect(mockRouter.push).toHaveBeenCalledWith("/(app)/add-transaction");
+  });
 
   test("setCurrentTransaction does not throw when router is null", () => {
-    expect(() => useStore.getState().setCurrentTransaction(mockTransaction)).not.toThrow()
-  })
-})
+    expect(() =>
+      useStore.getState().setCurrentTransaction(mockTransaction),
+    ).not.toThrow();
+  });
+});

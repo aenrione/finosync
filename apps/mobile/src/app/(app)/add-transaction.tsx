@@ -9,7 +9,7 @@ import DateTimePicker from "@react-native-community/datetimepicker"
 import { useRouter, useLocalSearchParams } from "expo-router"
 import { Picker } from "@react-native-picker/picker"
 import React, { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { useTranslation } from "@/locale/app/add-transaction.text"
 
 import { useTransactions } from "@/context/transactions.context"
 import { useCategories } from "@/context/categories.context"
@@ -25,7 +25,7 @@ import { TagSelector } from "@/components/features/tags/tag-selector"
 import { tagService } from "@/services/tag.service"
 
 const AddTransaction = () => {
-  const { t } = useTranslation()
+  const text = useTranslation()
   const router = useRouter()
   const { accountId } = useLocalSearchParams<{ accountId?: string }>()
   const { createTransaction, updateTransaction } = useTransactions()
@@ -137,11 +137,6 @@ const AddTransaction = () => {
     }
   }
 
-  const handleCancel = () => {
-    setCurrentTransaction(undefined)
-    router.back()
-  }
-
   const onChangeDate = (_event: any, selectedDate?: Date) => {
     setShowDatePicker(false)
     if (selectedDate) {
@@ -152,7 +147,7 @@ const AddTransaction = () => {
   if (localAccounts.length === 0) {
     return (
       <View className="flex-1 bg-background">
-        <BackHeader title={transaction ? t("new_transaction.edit") : t("new_transaction.new")} />
+        <BackHeader title={transaction ? text.titleEdit : text.titleNew} />
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-foreground text-lg text-center mb-4">
             You need to create a local account first to add manual transactions.
@@ -169,15 +164,15 @@ const AddTransaction = () => {
 
   return (
     <View className="flex-1 bg-background">
-      <BackHeader title={transaction ? t("new_transaction.edit") : t("new_transaction.new")} />
+      <BackHeader title={transaction ? text.titleEdit : text.titleNew} />
 
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {/* Amount */}
         <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">{t("new_transaction.amount")}</Text>
+          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.amount}</Text>
           <Input
             value={amount}
-            placeholder={t("new_transaction.amount_placeholder")}
+            placeholder={text.amountPlaceholder}
             keyboardType="numeric"
             onChangeText={setAmount}
             className="w-full"
@@ -186,10 +181,10 @@ const AddTransaction = () => {
 
         {/* Description */}
         <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">{t("new_transaction.desc")}</Text>
+          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.desc}</Text>
           <Input
             value={description}
-            placeholder={t("new_transaction.desc_placeholder")}
+            placeholder={text.descPlaceholder}
             onChangeText={setDescription}
             className="w-full"
           />
@@ -197,7 +192,7 @@ const AddTransaction = () => {
 
         {/* Comment */}
         <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">Comment (Optional)</Text>
+          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.comment}</Text>
           <Input
             value={comment}
             placeholder="Add a comment..."
@@ -210,7 +205,7 @@ const AddTransaction = () => {
 
         {/* Account Picker */}
         <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">{t("new_transaction.account")}</Text>
+          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.account}</Text>
           <View className="rounded-lg bg-muted border border-border overflow-hidden">
             <Picker
               selectedValue={selectedAccount}
@@ -230,8 +225,8 @@ const AddTransaction = () => {
 
         {/* Category Picker */}
         <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">
-            {t("new_transaction.category")} (Optional)
+          <Text className="text-sm font-medium text-muted-foreground mb-1.5">
+            {text.category}
           </Text>
           <View className="rounded-lg bg-muted border border-border overflow-hidden">
             <Picker
@@ -262,24 +257,24 @@ const AddTransaction = () => {
 
         {/* Transaction Type Switch */}
         <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">{t("new_transaction.type")}</Text>
+          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.type}</Text>
           <View className="flex-row justify-between items-center p-4 rounded-lg bg-muted border border-border">
-            <Text className={`text-base font-medium ${isIncome ? "text-green-600" : "text-muted-foreground"}`}>
-              {t("new_transaction.income")}
+            <Text className={`text-base font-medium ${isIncome ? "text-income" : "text-muted-foreground"}`}>
+              {text.income}
             </Text>
             <Switch
               value={!isIncome}
               onValueChange={() => setIsIncome(!isIncome)}
             />
-            <Text className={`text-base font-medium ${!isIncome ? "text-red-600" : "text-muted-foreground"}`}>
-              {t("new_transaction.expense")}
+            <Text className={`text-base font-medium ${!isIncome ? "text-expense" : "text-muted-foreground"}`}>
+              {text.expense}
             </Text>
           </View>
         </View>
 
         {/* Date Picker */}
         <View className="mb-6">
-          <Text className="text-sm text-muted-foreground mb-2">{t("new_transaction.date")}</Text>
+          <Text className="text-sm font-medium text-muted-foreground mb-1.5">{text.date}</Text>
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
             className="p-4 rounded-lg bg-muted border border-border"
@@ -299,24 +294,15 @@ const AddTransaction = () => {
         )}
       </ScrollView>
 
-      {/* Footer Buttons */}
+      {/* Footer Button */}
       <View className="p-6 border-t border-border bg-background">
-        <View className="flex-row space-x-3">
-          <Button
-            variant="secondary"
-            onPress={handleCancel}
-            className="flex-1"
-          >
-            <ButtonText variant="secondary">Cancel</ButtonText>
-          </Button>
-          <Button
-            disabled={!isValid() || loading}
-            onPress={handleSave}
-            className="flex-1"
-          >
-            <ButtonText>{loading ? "Saving..." : (transaction ? "Update" : "Save")}</ButtonText>
-          </Button>
-        </View>
+        <Button
+          disabled={!isValid() || loading}
+          onPress={handleSave}
+          className="w-full rounded-xl"
+        >
+          <ButtonText>{loading ? "Saving..." : (transaction ? "Update" : "Save")}</ButtonText>
+        </Button>
       </View>
     </View>
   )

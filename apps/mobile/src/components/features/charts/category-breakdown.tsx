@@ -75,11 +75,19 @@ export default function CategoryBreakdown() {
             innerRadius={radius * 0.6}
             innerCircleColor="#FFFFFF"
             centerLabelComponent={() => (
-              <View className="items-center justify-center">
+              <View
+                className="items-center justify-center"
+                style={{ width: radius * 1.1 }}
+              >
                 <Text className="text-xs text-muted-foreground">
                   {showIncome ? "Income" : "Spent"}
                 </Text>
-                <Text className="text-base font-bold font-mono text-foreground" numberOfLines={1}>
+                <Text
+                  className="text-xs font-bold font-mono text-foreground"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.6}
+                >
                   {currencyMeta.symbol}{showAmount(currentTotal)}
                 </Text>
               </View>

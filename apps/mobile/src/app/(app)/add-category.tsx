@@ -1,7 +1,7 @@
 import { View, ScrollView, TouchableOpacity, Alert } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import React, { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { useTranslation } from "@/locale/app/add-category.text"
 
 import { useCategories } from "@/context/categories.context"
 import { Button, ButtonText } from "@/components/ui/button"
@@ -21,7 +21,7 @@ const AddCategory = () => {
 
   const router = useRouter()
   const params = useLocalSearchParams()
-  const { t } = useTranslation()
+  const text = useTranslation()
   const { createCategory, updateCategory } = useCategories()
 
   const isEditing = params.id !== undefined
@@ -60,7 +60,7 @@ const AddCategory = () => {
       router.push("/(app)/(drawer)/categories")
     } catch (error) {
       Alert.alert(
-        t("error"),
+        text.errorTitle,
         error instanceof Error ? error.message : "Failed to save category"
       )
     } finally {
@@ -85,7 +85,7 @@ const AddCategory = () => {
         </TouchableOpacity>
 
         <Text className="text-foreground text-lg font-semibold">
-          {isEditing ? t("new_category.edit") : t("new_category.new")}
+          {isEditing ? text.titleEdit : text.titleNew}
         </Text>
 
         {/* Placeholder right icon for layout symmetry */}
@@ -96,7 +96,7 @@ const AddCategory = () => {
         {/* Icon Picker Section */}
         <View className="mb-6">
           <Text className="text-muted-foreground font-semibold text-sm mb-3">
-            {t("new_category.icon")}
+            {text.icon}
             <Text className="text-destructive ml-1">*</Text>
           </Text>
           <TouchableOpacity
@@ -108,7 +108,7 @@ const AddCategory = () => {
                 <Icon name={selectedIcon} />
               </View>
               <Text className="text-foreground text-base font-medium">
-                {selectedIcon === "Plus" ? t("new_category.icon_placeholder") : selectedIcon}
+                {selectedIcon === "Plus" ? text.iconPlaceholder : selectedIcon}
               </Text>
             </View>
             <Icon name="ChevronRight" />
@@ -124,12 +124,12 @@ const AddCategory = () => {
         {/* Name Input Section */}
         <View className="mb-6">
           <Text className="text-muted-foreground font-semibold text-sm mb-3">
-            {t("new_category.name")}
+            {text.name}
             <Text className="text-destructive ml-1">*</Text>
           </Text>
           <Input
             className="w-full rounded-xl px-4 py-4 text-base font-medium min-h-[56px]"
-            placeholder={t("new_category.name_placeholder")}
+            placeholder={text.namePlaceholder}
             value={name}
             onChangeText={setName}
           />
@@ -138,11 +138,11 @@ const AddCategory = () => {
         {/* Description Input Section */}
         <View className="mb-6">
           <Text className="text-muted-foreground font-semibold text-sm mb-3">
-            {t("new_category.desc")}
+            {text.desc}
           </Text>
           <Input
             className="w-full rounded-xl px-4 py-4 text-base font-medium min-h-[80px]"
-            placeholder={t("new_category.desc_placeholder")}
+            placeholder={text.descPlaceholder}
             value={description}
             onChangeText={setDescription}
             multiline
@@ -160,7 +160,7 @@ const AddCategory = () => {
           className="rounded-xl py-4"
         >
           <ButtonText>
-            {loading ? (isEditing ? "Updating..." : "Creating...") : t("save")}
+            {loading ? (isEditing ? text.updating : text.creating) : text.save}
           </ButtonText>
         </Button>
       </View>

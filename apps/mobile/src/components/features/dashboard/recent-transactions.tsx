@@ -15,7 +15,7 @@ export default function RecentTransactions({ transactions }: { transactions: Tra
   return (
     <View className="px-5 mt-6">
       <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-xl font-bold text-foreground">Recent Transactions</Text>
+        <Text className="text-lg font-semibold text-foreground">Recent Transactions</Text>
         <TouchableOpacity 
           onPress={() => router.push("/(app)/transactions")}
           className="flex-row items-center"

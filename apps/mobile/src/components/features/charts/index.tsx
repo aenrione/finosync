@@ -1,11 +1,14 @@
 import { ScrollView, RefreshControl, View, Text } from "react-native";
 import React from "react";
+import { router } from "expo-router";
 
+import RouteErrorState from "@/components/errors/route-error-state";
+import StaleDataBanner from "@/components/errors/stale-data-banner";
 import ScreenHeader from "@/components/screen-header";
 import { Spinner } from "@/components/ui/spinner";
 import { useCharts } from "@/context/charts.context";
 import { colors } from "@/lib/colors";
-import { showAmount } from "@/utils/currency";
+import { getCurrencyMeta, showAmount } from "@/utils/currency";
 import Icon from "@/components/ui/icon";
 
 import TimeRangeSelector from "./time-range-selector";
@@ -17,17 +20,32 @@ export default function ChartsScreen() {
     loading,
     error,
     refreshing,
+    isStale,
+    lastUpdated,
     refreshData,
+    expenseData,
+    incomeData,
+    balanceData,
     avgIncome,
     avgExpenses,
     avgSavings,
+    baseCurrency,
   } = useCharts();
+  const amountSymbol = getCurrencyMeta(baseCurrency).symbol;
 
   const handleRefresh = async () => {
     await refreshData();
   };
 
-  if (loading && !refreshing) {
+  const hasChartData =
+    expenseData.length > 0 ||
+    incomeData.length > 0 ||
+    balanceData.length > 0 ||
+    avgIncome !== 0 ||
+    avgExpenses !== 0 ||
+    avgSavings !== 0;
+
+  if (loading && !refreshing && !hasChartData) {
     return (
       <View className="flex-1 bg-background items-center justify-center">
         <Spinner size="small" />
@@ -36,17 +54,17 @@ export default function ChartsScreen() {
     );
   }
 
-  if (error) {
+  if (error && !hasChartData) {
     return (
-      <View className="flex-1 bg-background items-center justify-center px-6">
-        <Text className="text-destructive text-lg text-center mb-4">
-          Error loading charts
-        </Text>
-        <Text className="text-muted-foreground text-center mb-4">{error}</Text>
-        <Text className="text-muted-foreground text-center">
-          Pull down to refresh
-        </Text>
-      </View>
+      <RouteErrorState
+        error={error}
+        title="Couldn't load cash flow"
+        onRetry={handleRefresh}
+        onSecondaryAction={() =>
+          router.replace("/(app)/(drawer)/(tabs)/dashboard")
+        }
+        secondaryLabel="Open dashboard"
+      />
     );
   }
 
@@ -65,6 +83,18 @@ export default function ChartsScreen() {
     >
       <ScreenHeader variant="drawer" title="Cash Flow" />
       <View className="px-5 pt-4 pb-8">
+        {isStale ? <StaleDataBanner updatedAt={lastUpdated} /> : null}
+
+        {error && hasChartData ? (
+          <View className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3">
+            <Text className="text-sm font-semibold text-foreground">
+              Cash flow is offline
+            </Text>
+            <Text className="mt-1 text-xs leading-5 text-muted-foreground">
+              {error}
+            </Text>
+          </View>
+        ) : null}
 
         <TimeRangeSelector />
 
@@ -76,10 +106,7 @@ export default function ChartsScreen() {
           <Text
             className={`text-3xl font-mono font-bold ${avgSavings >= 0 ? "text-income" : "text-expense"}`}
           >
-            {showAmount(avgSavings)}
-          </Text>
-          <Text className="text-sm text-muted-foreground mt-1">
-            Income {showAmount(avgIncome)} − Expenses {showAmount(avgExpenses)}
+            {showAmount(avgSavings, true, amountSymbol)}
           </Text>
         </View>
 
@@ -90,7 +117,7 @@ export default function ChartsScreen() {
               Income
             </Text>
             <Text className="text-xl font-bold text-foreground">
-              {showAmount(avgIncome)}
+              {showAmount(avgIncome, true, amountSymbol)}
             </Text>
           </View>
           <View className="flex-1 bg-card rounded-2xl p-4 border border-border">
@@ -99,7 +126,7 @@ export default function ChartsScreen() {
               Expenses
             </Text>
             <Text className="text-xl font-bold text-foreground">
-              {showAmount(avgExpenses)}
+              {showAmount(avgExpenses, true, amountSymbol)}
             </Text>
           </View>
           <View className="flex-1 bg-card rounded-2xl p-4 border border-border">
@@ -108,7 +135,7 @@ export default function ChartsScreen() {
               Savings
             </Text>
             <Text className="text-xl font-bold text-foreground">
-              {showAmount(avgSavings)}
+              {showAmount(avgSavings, true, amountSymbol)}
             </Text>
           </View>
         </View>

@@ -1,4 +1,4 @@
-import { useTranslationFactory } from "@/shared/locale/translation"
+import { useTranslationFactory } from "@/shared/locale/translation";
 
 export const useTranslation = () =>
   useTranslationFactory({
@@ -13,9 +13,11 @@ export const useTranslation = () =>
       },
       items: {
         home: "Home",
+        shopping: "Shopping Lists",
         crypto: "Crypto Markets",
         categories: "Categories",
         tags: "Tags",
+        rules: "Rules",
         recurring: "Recurring",
         settings: "Settings",
         about: "About",
@@ -32,12 +34,14 @@ export const useTranslation = () =>
       },
       items: {
         home: "Inicio",
+        shopping: "Listas de Compras",
         crypto: "Mercados Cripto",
         categories: "Categorías",
         tags: "Etiquetas",
+        rules: "Reglas",
         recurring: "Recurrentes",
         settings: "Ajustes",
         about: "Acerca de",
       },
     },
-  })
+  });

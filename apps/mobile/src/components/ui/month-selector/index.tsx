@@ -149,7 +149,7 @@ const MonthSelector = ({
     </View>
   )
 
-  const handleSwipe = (gestureName: string) => {
+  const handleSwipe = (gestureName: number) => {
     const { LEFT, RIGHT } = Directions
     if (gestureName === LEFT) handleNextPrev(true)
     if (gestureName === RIGHT) handleNextPrev(false)
@@ -159,12 +159,6 @@ const MonthSelector = ({
 
   return (
     <GestureHandlerRootView
-      onSwipe={direction => swipable && handleSwipe(direction)}
-      config={{
-        velocityThreshold,
-        directionalOffsetThreshold,
-        gestureIsClickThreshold,
-      }}
       style={[{ alignItems: "center" }, containerStyle]}
     >
       {renderHeader()}

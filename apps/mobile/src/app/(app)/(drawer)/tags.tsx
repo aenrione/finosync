@@ -4,55 +4,55 @@ import {
   RefreshControl,
   FlatList,
   Alert,
-} from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import React, { useState, useCallback, useEffect } from "react"
-import { useRouter } from "expo-router"
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useState, useCallback, useEffect } from "react";
+import { useRouter } from "expo-router";
 
-import { Input } from "@/components/ui/input"
-import { Text } from "@/components/ui/text"
-import { useStore } from "@/utils/store"
-import Icon from "@/components/ui/icon"
-import { Tag } from "@/types/tag"
-import { tagService } from "@/services/tag.service"
-import { TagChip } from "@/components/features/tags/tag-chip"
+import { Input } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { useStore } from "@/utils/store";
+import Icon from "@/components/ui/icon";
+import ScreenHeader from "@/components/screen-header";
+import { Tag } from "@/types/tag";
+import { tagService } from "@/services/tag.service";
 
 const Tags = () => {
-  const router = useRouter()
-  const setCurrentTag = useStore((state) => state.setCurrentTag)
-  const [tags, setTags] = useState<Tag[]>([])
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-  const [searchVisible, setSearchVisible] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
+  const router = useRouter();
+  const setCurrentTag = useStore((state) => state.setCurrentTag);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchTags = useCallback(async () => {
     try {
-      setLoading(true)
-      const data = await tagService.fetchTags()
-      setTags(data)
+      setLoading(true);
+      const data = await tagService.fetchTags();
+      setTags(data);
     } catch (error) {
-      console.error("Failed to fetch tags:", error)
+      console.error("Failed to fetch tags:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchTags()
-  }, [fetchTags])
+    fetchTags();
+  }, [fetchTags]);
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true)
+    setRefreshing(true);
     try {
-      const data = await tagService.fetchTags()
-      setTags(data)
+      const data = await tagService.fetchTags();
+      setTags(data);
     } catch (error) {
-      console.error("Failed to refresh tags:", error)
+      console.error("Failed to refresh tags:", error);
     } finally {
-      setRefreshing(false)
+      setRefreshing(false);
     }
-  }, [])
+  }, []);
 
   const handleDelete = async (tag: Tag) => {
     Alert.alert("Delete Tag", `Delete "${tag.name}"?`, [
@@ -62,23 +62,25 @@ const Tags = () => {
         style: "destructive",
         onPress: async () => {
           try {
-            await tagService.deleteTag(tag.id)
-            setTags((prev) => prev.filter((t) => t.id !== tag.id))
+            await tagService.deleteTag(tag.id);
+            setTags((prev) => prev.filter((t) => t.id !== tag.id));
           } catch (error) {
-            console.error("Failed to delete tag:", error)
+            console.error("Failed to delete tag:", error);
           }
         },
       },
-    ])
-  }
+    ]);
+  };
 
   const handleEdit = (tag: Tag) => {
-    setCurrentTag(tag)
-  }
+    setCurrentTag(tag);
+  };
 
   const filteredTags = searchTerm
-    ? tags.filter((t) => t.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    : tags
+    ? tags.filter((t) =>
+        t.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : tags;
 
   const renderTagItem = ({ item }: { item: Tag }) => (
     <View className="flex-row items-center justify-between rounded-xl bg-card p-4 border border-border">
@@ -90,10 +92,13 @@ const Tags = () => {
           />
         )}
         <View className="flex-1">
-          <Text className="text-base font-medium text-foreground">{item.name}</Text>
+          <Text className="text-base font-medium text-foreground">
+            {item.name}
+          </Text>
           {item.transaction_count !== undefined && (
             <Text className="text-xs text-muted-foreground">
-              {item.transaction_count} transaction{item.transaction_count !== 1 ? "s" : ""}
+              {item.transaction_count} transaction
+              {item.transaction_count !== 1 ? "s" : ""}
             </Text>
           )}
         </View>
@@ -113,37 +118,34 @@ const Tags = () => {
         </TouchableOpacity>
       </View>
     </View>
-  )
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-background">
+      <ScreenHeader
+        title="Tags"
+        variant="auto"
+        rightActions={[
+          { icon: "RefreshCw", onPress: onRefresh },
+          {
+            icon: searchVisible ? "X" : "Search",
+            onPress: () => setSearchVisible(!searchVisible),
+          },
+        ]}
+      />
+
       <View className="bg-card px-5 pb-4 border-b border-border">
-        <View className="flex-row justify-between items-start pt-4">
-          <View className="flex-1">
-            <Text className="text-2xl font-bold text-foreground mb-1">Tags</Text>
-            <Text className="text-base text-muted-foreground">
-              Organize transactions with tags
-            </Text>
-          </View>
-          <View className="flex-row items-center gap-2">
-            <TouchableOpacity
-              className="w-10 h-10 rounded-full bg-muted justify-center items-center"
-              onPress={onRefresh}
-            >
-              <Icon name="RefreshCw" className="text-muted-foreground" size={20} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="w-10 h-10 rounded-full bg-muted justify-center items-center"
-              onPress={() => setSearchVisible(!searchVisible)}
-            >
-              <Icon name="Search" className="text-muted-foreground" size={20} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <Text className="text-base text-muted-foreground pt-4">
+          Organize transactions with tags
+        </Text>
         {searchVisible && (
           <View className="mt-3">
             <View className="flex-row items-center bg-muted rounded-xl px-4 py-3">
-              <Icon name="Search" className="text-muted-foreground mr-3" size={20} />
+              <Icon
+                name="Search"
+                className="text-muted-foreground mr-3"
+                size={20}
+              />
               <Input
                 className="flex-1 border-0"
                 placeholder="Search tags..."
@@ -165,14 +167,24 @@ const Tags = () => {
         {loading && !refreshing ? (
           <View className="flex-1 justify-center items-center px-5">
             <View className="items-center">
-              <Icon name="RefreshCw" className="text-muted-foreground mb-3" size={32} />
-              <Text className="text-base text-muted-foreground">Loading tags...</Text>
+              <Icon
+                name="RefreshCw"
+                className="text-muted-foreground mb-3"
+                size={32}
+              />
+              <Text className="text-base text-muted-foreground">
+                Loading tags...
+              </Text>
             </View>
           </View>
         ) : filteredTags.length === 0 ? (
           <View className="flex-1 justify-center items-center px-5">
             <View className="items-center max-w-xs">
-              <Icon name="Tag" className="text-muted-foreground mb-4" size={64} />
+              <Icon
+                name="Tag"
+                className="text-muted-foreground mb-4"
+                size={64}
+              />
               <Text className="text-xl font-semibold text-foreground mb-2">
                 {searchTerm ? "No tags found" : "No tags yet"}
               </Text>
@@ -186,8 +198,14 @@ const Tags = () => {
                   className="flex-row items-center bg-primary rounded-xl px-5 py-3"
                   onPress={() => router.push("/(app)/add-tag")}
                 >
-                  <Icon name="Plus" className="text-primary-foreground mr-2" size={16} />
-                  <Text className="text-sm font-semibold text-primary-foreground">Create Tag</Text>
+                  <Icon
+                    name="Plus"
+                    className="text-primary-foreground mr-2"
+                    size={16}
+                  />
+                  <Text className="text-sm font-semibold text-primary-foreground">
+                    Create Tag
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -215,7 +233,7 @@ const Tags = () => {
         <Icon name="Plus" className="text-primary-foreground" size={24} />
       </TouchableOpacity>
     </SafeAreaView>
-  )
-}
+  );
+};
 
-export default Tags
+export default Tags;

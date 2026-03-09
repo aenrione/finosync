@@ -20,7 +20,6 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import React, { useState, useCallback } from "react"
-import { useTranslation } from "react-i18next"
 import { useRouter } from "expo-router"
 
 import { useCategories } from "@/context/categories.context"
@@ -43,7 +42,7 @@ interface CategoryCardProps {
 export const CategoryCard: React.FC<CategoryCardProps> = ({ category, onPress, onEdit, onDelete, viewMode = "list" }) => {
   if (viewMode === "grid") {
     return (
-      <View className="bg-card rounded-2xl border border-border shadow-sm p-4 m-1" style={{ width: (width - 60) / 2 }}>
+      <View className="bg-card rounded-xl shadow-sm p-4 m-1" style={{ width: (width - 60) / 2 }}>
         <TouchableOpacity 
           className="flex-1" 
           onPress={onPress} 
@@ -66,7 +65,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category, onPress, o
                 {category.transaction_count || 0} transactions
               </Text>
               {category.total_amount && category.total_amount > 0 && (
-                <Text className="text-xs font-semibold text-green-600">
+                <Text className="text-xs font-semibold text-primary">
                     ${category.total_amount.toLocaleString()}
                 </Text>
               )}
@@ -76,14 +75,14 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category, onPress, o
           
         <View className="flex-row justify-center mt-3 gap-2">
           <TouchableOpacity
-            className="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 justify-center items-center"
+            className="w-8 h-8 rounded-full justify-center items-center"
             onPress={onEdit}
             activeOpacity={0.7}
           >
-            <Icon name="Pencil" size={14} className="text-blue-600" />
+            <Icon name="Pencil" size={14} className="text-muted-foreground" />
           </TouchableOpacity>
           <TouchableOpacity
-            className="w-8 h-8 rounded-full bg-red-50 border border-red-200 justify-center items-center"
+            className="w-8 h-8 rounded-full justify-center items-center"
             onPress={onDelete}
             activeOpacity={0.7}
           >
@@ -95,7 +94,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category, onPress, o
   }
   
   return (
-    <View className="bg-card rounded-2xl mb-3 border border-border shadow-sm flex-row items-center">
+    <View className="bg-card rounded-xl mb-3 shadow-sm flex-row items-center">
       <TouchableOpacity 
         className="flex-1 p-4" 
         onPress={onPress} 
@@ -111,8 +110,8 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category, onPress, o
                 {category.name}
               </Text>
               {category.is_active === false && (
-                <View className="bg-red-50 rounded-full px-2 py-1">
-                  <Text className="text-xs font-semibold text-red-600">Inactive</Text>
+                <View className="bg-destructive/10 rounded-full px-2 py-1">
+                  <Text className="text-xs font-semibold text-destructive">Inactive</Text>
                 </View>
               )}
             </View>
@@ -128,7 +127,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category, onPress, o
               {category.total_amount && category.total_amount > 0 && (
                 <>
                   <View className="w-1 h-1 rounded-full bg-muted-foreground mx-2" />
-                  <Text className="text-xs font-semibold text-green-600">
+                  <Text className="text-xs font-semibold text-primary">
                       ${category.total_amount.toLocaleString()}
                   </Text>
                 </>
@@ -140,14 +139,14 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category, onPress, o
         
       <View className="flex-row pr-4 gap-2">
         <TouchableOpacity
-          className="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 justify-center items-center"
+          className="w-9 h-9 rounded-full justify-center items-center"
           onPress={onEdit}
           activeOpacity={0.7}
         >
-          <Icon name="Pencil" size={16} className="text-blue-600" />
+          <Icon name="Pencil" size={16} className="text-muted-foreground" />
         </TouchableOpacity>
         <TouchableOpacity
-          className="w-9 h-9 rounded-full bg-red-50 border border-red-200 justify-center items-center"
+          className="w-9 h-9 rounded-full justify-center items-center"
           onPress={onDelete}
           activeOpacity={0.7}
         >

@@ -5,7 +5,7 @@ interface SpinnerProps extends ActivityIndicatorProps {
   className?: string;
 }
 
-function Spinner({ size = 'small', color = '#1abdbd', ...props }: SpinnerProps) {
+function Spinner({ size = 'small', color = '#4F46E5', ...props }: SpinnerProps) {
   return <ActivityIndicator size={size} color={color} {...props} />;
 }
 

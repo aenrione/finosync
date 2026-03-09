@@ -6,7 +6,7 @@ const Card = React.forwardRef<React.ComponentRef<typeof View>, ViewProps & { cla
   ({ className, ...props }, ref) => (
     <View
       ref={ref}
-      className={cn('bg-card rounded-xl border border-border shadow-sm', className)}
+      className={cn('bg-card rounded-2xl shadow-sm', className)}
       {...props}
     />
   )

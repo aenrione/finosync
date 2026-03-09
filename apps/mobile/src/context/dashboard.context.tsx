@@ -2,17 +2,17 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   useCallback,
   ReactNode,
 } from "react";
 
-import { fetchWithAuth } from "@/utils/api";
+import { fetchJsonWithAuth, getErrorMessage } from "@/utils/api";
 import { Account } from "@/types/account";
+import { loadSnapshot, saveSnapshot } from "@/utils/offline-cache";
 import { normalizeTransactions } from "@/utils/normalizers";
 import { useStore } from "@/utils/store";
-
-import { useAccounts } from "./accounts.context";
 
 type DashboardData = any; // Replace with a more specific type if available
 
@@ -20,8 +20,11 @@ type DashboardContextType = {
   dashboard: DashboardData | null;
   accounts: Account[] | null;
   loading: boolean;
+  refreshing: boolean;
   error: string | null;
-  refresh: () => void;
+  isStale: boolean;
+  lastUpdated: string | null;
+  refresh: () => Promise<void>;
 };
 
 const DashboardContext = createContext<DashboardContextType | null>(null);
@@ -33,45 +36,98 @@ type DashboardProviderProps = {
 export function DashboardProvider({ children }: DashboardProviderProps) {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { accountsData: accounts } = useAccounts();
+  const [isStale, setIsStale] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const baseCurrency = useStore((s) => s.baseCurrency);
-
-  const fetchDashboard = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetchWithAuth(`/dashboard?currency=${baseCurrency}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: DashboardData = await res.json();
-      if (Array.isArray(data?.recent_transactions)) {
-        data.recent_transactions = normalizeTransactions(
-          data.recent_transactions,
-        );
-      }
-      setDashboard(data);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Unknown error");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [baseCurrency]);
+  const cacheKey = `dashboard:${baseCurrency}`;
+  const hasDataRef = useRef(false);
 
   useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard, accounts]);
+    hasDataRef.current = Boolean(dashboard);
+  }, [dashboard]);
+
+  const fetchDashboard = useCallback(
+    async (options?: { refresh?: boolean }) => {
+      const hasLocalData = hasDataRef.current;
+
+      if (hasLocalData || options?.refresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      setError(null);
+
+      try {
+        const data = await fetchJsonWithAuth<DashboardData>(
+          `/dashboard?currency=${baseCurrency}`,
+        );
+        if (Array.isArray(data?.recent_transactions)) {
+          data.recent_transactions = normalizeTransactions(
+            data.recent_transactions,
+          );
+        }
+        setDashboard(data);
+        setIsStale(false);
+        const snapshot = await saveSnapshot(cacheKey, data);
+        setLastUpdated(snapshot.updatedAt);
+      } catch (err) {
+        setError(getErrorMessage(err));
+        if (hasLocalData) {
+          setIsStale(true);
+        } else {
+          const snapshot = await loadSnapshot<DashboardData>(cacheKey);
+          if (snapshot) {
+            setDashboard(snapshot.value);
+            setLastUpdated(snapshot.updatedAt);
+            setIsStale(true);
+          }
+        }
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [baseCurrency, cacheKey],
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    const restoreAndFetch = async () => {
+      const snapshot = await loadSnapshot<DashboardData>(cacheKey);
+
+      if (active && snapshot) {
+        setDashboard(snapshot.value);
+        setLastUpdated(snapshot.updatedAt);
+        setIsStale(true);
+        setLoading(false);
+      }
+
+      if (active) {
+        await fetchDashboard();
+      }
+    };
+
+    restoreAndFetch();
+
+    return () => {
+      active = false;
+    };
+  }, [cacheKey, fetchDashboard]);
 
   return (
     <DashboardContext.Provider
       value={{
         dashboard,
         loading,
+        refreshing,
         error,
-        refresh: fetchDashboard,
+        isStale,
+        lastUpdated,
+        refresh: () => fetchDashboard({ refresh: true }),
         accounts: dashboard?.accounts,
       }}
     >

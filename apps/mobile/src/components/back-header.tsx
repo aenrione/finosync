@@ -4,7 +4,7 @@ import React from "react"
 
 import Icon from "@/components/ui/icon"
 
-const BackHeader = ({ title }) => {
+const BackHeader = ({ title }: { title: string }) => {
   const router = useRouter()
 
   return (

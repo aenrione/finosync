@@ -1,4 +1,3 @@
-import { showMessage } from "react-native-flash-message"
 import axios from "axios"
 
 // import store from "../store"
@@ -33,10 +32,7 @@ const setAxiosDefaults = function() {
           } else {
             msg = err.response.data.errors.full_messages || err.response.data.errors
           }
-          showMessage({
-            message: `Error: ${msg}`,
-            type: "danger",
-          })
+          console.error(`Error: ${msg}`)
         } else {
           if (err.response.status === 502) {
             msg = "Server is down"
@@ -44,10 +40,7 @@ const setAxiosDefaults = function() {
           } else {
             msg = err.response.data.errors.full_messages || err.response.data.errors
           }
-          showMessage({
-            message: msg,
-            type: "danger",
-          })
+          console.error(msg)
         }
       }
       return Promise.reject(err.response)

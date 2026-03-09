@@ -7,7 +7,7 @@ export interface CategorySlice {
   setCurrentCategory: (tx: Category) => void
 }
 
-export const createCategorySlice: StateCreator<CategorySlice & { router: any }> = (set, get) => ({
+export const createCategorySlice: StateCreator<CategorySlice & { router?: any }> = (set, get) => ({
   currentCategory: undefined,
   setCurrentCategory: (category) => {
     set({ currentCategory: category })

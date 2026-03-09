@@ -3,6 +3,7 @@ import React, { useState } from "react"
 import { useQuery } from "react-query"
 import axios from "axios"
 
+import ScreenHeader from "@/components/screen-header"
 import { Spinner } from "@/components/ui/spinner"
 import CoinItem from "@/components/features/crypto/coin-item"
 import { Input } from "@/components/ui/input"
@@ -21,9 +22,9 @@ const Crypto = () => {
   const { data: coins, status, refetch } = useQuery("crypto-market", loadData)
 
   return (
-    <View className="flex-1 items-center bg-background">
-      <View className="flex-row w-[90%] justify-between mb-2.5">
-        <View />
+    <View className="flex-1 bg-background">
+      <ScreenHeader variant="drawer" title="Crypto Markets" />
+      <View className="flex-row px-5 justify-end mb-2.5">
         <Input
           placeholder="Search a Coin"
           onChangeText={(text) => text && setSearch(text)}
@@ -37,7 +38,7 @@ const Crypto = () => {
         </View>
       ) : (
         <FlatList
-          className="w-[90%]"
+          className="px-5"
           data={coins.filter(
             (coin: any) =>
               coin.name.toLowerCase().includes(search.toLocaleLowerCase()) ||

@@ -71,11 +71,11 @@ export default function TransactionFilters({
   const getFilterColor = (filterKey: string) => {
     switch (filterKey) {
     case "income":
-      return "text-green-600"
+      return "text-income"
     case "expenses":
-      return "text-red-500"
+      return "text-expense"
     case "all":
-      return "text-blue-600"
+      return "text-primary"
     default:
       return "text-muted-foreground"
     }

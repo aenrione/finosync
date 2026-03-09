@@ -1,39 +1,50 @@
-import { icons } from "lucide-react-native"
+import { icons } from "lucide-react-native";
 type ScreenConfig = {
   name: string;
   headerShown?: boolean;
   icon?: keyof typeof icons;
-}
+};
 
 export const tabScreens: ScreenConfig[] = [
-
-  {
-    name: "charts",
-    icon: "ChartPie",
-  },
   {
     name: "dashboard",
     icon: "House",
   },
   {
-    name: "to-buy",
-    icon: "ShoppingCart",
+    name: "accounts",
+    icon: "Wallet",
   },
-]
+  {
+    name: "transactions",
+    icon: "ReceiptText",
+  },
+  {
+    name: "cash-flow",
+    icon: "ChartColumn",
+  },
+  {
+    name: "budget",
+    icon: "PiggyBank",
+  },
+];
 
 export const drawerScreens: ScreenConfig[] = [
   {
     name: "(tabs)",
     headerShown: false,
     icon: "House",
-  },
+  } as ScreenConfig,
   {
-    name: "categories",
-    icon: "Copy",
+    name: "shopping",
+    icon: "ShoppingCart",
   },
   {
     name: "tags",
     icon: "Tag",
+  },
+  {
+    name: "rules",
+    icon: "SlidersHorizontal",
   },
   {
     name: "recurring",
@@ -44,7 +55,15 @@ export const drawerScreens: ScreenConfig[] = [
     icon: "Bitcoin",
   },
   {
+    name: "categories",
+    icon: "Tags",
+  },
+  {
+    name: "settings",
+    icon: "Settings",
+  },
+  {
     name: "about",
     icon: "Info",
   },
-]
+];

@@ -15,10 +15,10 @@ const buttonVariants = cva(
         ghost: 'bg-transparent',
       },
       size: {
-        sm: 'h-9 px-3 rounded-lg',
-        default: 'h-11 px-4 rounded-lg',
-        lg: 'h-14 px-6 rounded-lg',
-        icon: 'h-10 w-10 rounded-lg',
+        sm: 'h-9 px-3 rounded-xl',
+        default: 'h-12 px-4 rounded-xl',
+        lg: 'h-14 px-6 rounded-xl',
+        icon: 'h-10 w-10 rounded-xl',
       },
     },
     defaultVariants: {

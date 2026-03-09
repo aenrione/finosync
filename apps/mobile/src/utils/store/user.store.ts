@@ -12,7 +12,7 @@ export interface UserSlice {
   logout: () => void
 }
 
-export const createUserSlice: StateCreator<UserSlice & { router: any }> = (set, get) => ({
+export const createUserSlice: StateCreator<UserSlice & { router?: any }> = (set, get) => ({
   user: null,
   isVisible: true,
   setUser: (user) =>  set({ user }),

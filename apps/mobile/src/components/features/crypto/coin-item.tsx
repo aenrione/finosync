@@ -10,7 +10,15 @@ const formatter = new Intl.NumberFormat("en-US", {
   // maximumFractionDigits: 1, // (causes 2500.99 to be printed as $2,501)
 })
 
-const CoinItem = ({ coin }) => (
+type Coin = {
+  image: string
+  name: string
+  symbol: string
+  current_price: number
+  price_change_percentage_24h: number | null
+}
+
+const CoinItem = ({ coin }: { coin: Coin }) => (
   <View className="bg-card p-2.5 flex-row justify-between">
     <View className="flex-row">
       <Image source={{ uri: coin.image }} className="w-[30px] h-[30px]" />
@@ -22,9 +30,9 @@ const CoinItem = ({ coin }) => (
     <View>
       <Text className="text-foreground font-bold">{formatter.format(coin.current_price)}</Text>
       <Text
-        className={`text-right ${coin.price_change_percentage_24h > 0 ? "text-green-600" : "text-destructive"}`}
+        className={`text-right ${(coin.price_change_percentage_24h ?? 0) > 0 ? "text-income" : "text-destructive"}`}
       >
-        {coin.price_change_percentage_24h.toFixed(2)}%
+        {(coin.price_change_percentage_24h ?? 0).toFixed(2)}%
       </Text>
     </View>
   </View>

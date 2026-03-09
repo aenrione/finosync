@@ -11,54 +11,50 @@
  */
 
 export const colors = {
-  // Primary: Teal (Trust + Growth + Finance)
-  // Represents financial security, growth, and forward movement
+  // Primary: Indigo (Trust + Premium + Finance)
   primary: {
-    50: '#e6f7f7',
-    100: '#b3e9e9',
-    200: '#80dada',
-    300: '#4dcccc',
-    400: '#1abdbd',  // Main brand color
-    500: '#15a3a3',
-    600: '#108a8a',
-    700: '#0c7070',
-    800: '#075757',
-    900: '#033d3d',
-    950: '#012828',
+    50: '#EEF2FF',
+    100: '#E0E7FF',
+    200: '#C7D2FE',
+    300: '#A5B4FC',
+    400: '#818CF8',
+    500: '#6366F1',
+    600: '#4F46E5',   // Main brand color
+    700: '#4338CA',
+    800: '#3730A3',
+    900: '#312E81',
+    950: '#1E1B4B',
   },
-  
-  // Secondary: Amber (Warmth + Action)
-  // For CTAs, highlights, and energy
+
+  // Secondary: Slate (Neutral surface)
   secondary: {
-    50: '#fff8e6',
-    100: '#ffedb3',
-    200: '#ffe080',
-    300: '#ffd44d',
-    400: '#ffc71a',
-    500: '#e6b010',
-    600: '#cc9c0c',
-    700: '#b38707',
-    800: '#997303',
-    900: '#805e00',
-    950: '#664b00',
+    50: '#F8FAFC',
+    100: '#F1F5F9',
+    200: '#E2E8F0',
+    300: '#CBD5E1',
+    400: '#94A3B8',
+    500: '#64748B',
+    600: '#475569',
+    700: '#334155',
+    800: '#1E293B',
+    900: '#0F172A',
+    950: '#020617',
   },
-  
-  // Neutrals: Clean grays (Clarity)
-  // Inspired by Fintoc's Cyberspace/Silver/Network
+
+  // Neutrals: Slate scale
   neutral: {
-    0: '#ffffff',    // Pure white
-    50: '#fafafa',   // Almost white
-    100: '#f5f5f5',  // Very light gray
-    200: '#eeeeee',  // Light gray
-    300: '#e0e0e0',  // Medium-light gray
-    400: '#bdbdbd',  // Medium gray
-    500: '#9e9e9e',  // Neutral gray
-    600: '#757575',  // Medium-dark gray
-    700: '#616161',  // Dark gray
-    800: '#424242',  // Very dark gray
-    900: '#2a2a2a',  // Almost black
-    950: '#1a1a1a',  // Near black
-    1000: '#000000', // Pure black
+    0: '#FFFFFF',
+    50: '#F8FAFC',
+    100: '#F1F5F9',
+    200: '#E2E8F0',
+    300: '#CBD5E1',
+    400: '#94A3B8',
+    500: '#64748B',
+    600: '#475569',
+    700: '#334155',
+    800: '#1E293B',
+    900: '#0F172A',
+    950: '#020617',
   },
   
   // Semantic Colors
@@ -92,14 +88,14 @@ export const colors = {
   
   // UI Element colors
   background: {
-    primary: '#ffffff',
-    secondary: '#fafafa',
-    tertiary: '#f5f5f5',
+    primary: '#FFFFFF',
+    secondary: '#F8FAFC',
+    tertiary: '#F1F5F9',
   },
   border: {
-    light: '#e0e0e0',
-    DEFAULT: '#bdbdbd',
-    dark: '#757575',
+    light: '#E2E8F0',
+    DEFAULT: '#CBD5E1',
+    dark: '#94A3B8',
   },
 };
 

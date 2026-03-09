@@ -2,10 +2,10 @@ import { View, Text, TouchableOpacity } from "react-native"
 import React from "react"
 
 const currencyConfig = {
-  USD: { symbol: "$", color: "border-blue-600 bg-blue-50 text-blue-600", flag: "🇺🇸" },
-  EUR: { symbol: "€", color: "border-emerald-600 bg-emerald-50 text-emerald-600", flag: "🇪🇺" },
-  GBP: { symbol: "£", color: "border-violet-600 bg-violet-50 text-violet-600", flag: "🇬🇧" },
-  CLP: { symbol: "$", color: "border-red-600 bg-red-50 text-red-600", flag: "🇨🇱" },
+  USD: { symbol: "$", color: "border-primary bg-primary/10 text-primary", flag: "🇺🇸" },
+  EUR: { symbol: "€", color: "border-income bg-income/10 text-income", flag: "🇪🇺" },
+  GBP: { symbol: "£", color: "border-investment bg-investment/10 text-investment", flag: "🇬🇧" },
+  CLP: { symbol: "$", color: "border-destructive bg-destructive/10 text-destructive", flag: "🇨🇱" },
 }
 
 interface CurrencyFilterProps {
@@ -27,7 +27,7 @@ export default function CurrencyFilter({
           const config = currencyConfig[currency.code as keyof typeof currencyConfig]
           const selectedClasses = config
             ? `${config.color.split(" ").filter(c => c.startsWith("border-") || c.startsWith("bg-")).join(" ")}`
-            : "border-blue-600 bg-blue-50"
+            : "border-primary bg-primary/10"
           return (
             <TouchableOpacity
               key={currency.code}
@@ -42,7 +42,7 @@ export default function CurrencyFilter({
               <Text
                 className={`text-xs font-semibold ${
                   isSelected
-                    ? (config?.color.split(" ").find(c => c.startsWith("text-")) || "text-blue-600")
+                    ? (config?.color.split(" ").find(c => c.startsWith("text-")) || "text-primary")
                     : "text-muted-foreground"
                 }`}
               >

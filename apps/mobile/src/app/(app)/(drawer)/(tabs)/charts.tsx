@@ -1,11 +1,5 @@
+import { Redirect } from "expo-router";
 
-import ChartsScreen from "@/components/features/charts"
-
-export default function ProfileScreen() {
-
-  return (
-    <ChartsScreen />
-  )
+export default function LegacyChartsRoute() {
+  return <Redirect href="/(app)/(drawer)/(tabs)/cash-flow" />;
 }
-
-

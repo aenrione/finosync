@@ -8,7 +8,7 @@ import { Button, ButtonText } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Text } from "@/components/ui/text"
 
-export default function NewFintualAccount({ refresh }) {
+export default function NewFintualAccount({ refresh }: { refresh: () => void }) {
   const [email, setEmail] = useState("")
   const [passowrd, setPassword] = useState("")
 

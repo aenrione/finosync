@@ -7,7 +7,7 @@ export interface AccountSlice {
   setCurrentAccount: (tx: Account) => void
 }
 
-export const createAccountSlice: StateCreator<AccountSlice & { router: any }> = (set, get) => ({
+export const createAccountSlice: StateCreator<AccountSlice & { router?: any }> = (set, get) => ({
   currentAccount: undefined,
   setCurrentAccount: (transaction) => {
     set({ currentAccount: transaction })

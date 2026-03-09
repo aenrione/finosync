@@ -38,7 +38,7 @@ export function BalancesProvider({ children }:{ children: React.ReactNode }) {
       setError(null)
     } catch (err) {
       console.error("Error fetching accounts:", err)
-      setError(err.message)
+      setError(err instanceof Error ? err.message : "Unknown error")
     } finally {
       setLoading(false)
     }

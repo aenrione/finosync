@@ -1,16 +1,16 @@
 export type AccountTotal = {
-  code: string
-  totalAmount: string
-  investmentReturn: string
-}
+  code: string;
+  totalAmount: string;
+  investmentReturn: string;
+};
 
 export type TransactionTotal = {
-  totalIncome: string
-  totalExpense: string
-  code: string
-}
+  totalIncome: string;
+  totalExpense: string;
+  code: string;
+};
 
-export type AccountType = "local" | "fintoc" | "fintual" | "buda"
+export type AccountType = "local" | "fintoc" | "fintual" | "buda";
 
 export type Account = {
   id: string | number;
@@ -21,6 +21,7 @@ export type Account = {
   income?: string;
   expense?: string;
   investment_return?: string;
+  investments_return?: string;
   holder_name?: string;
   refreshed_at?: string;
   editable?: boolean;
@@ -28,7 +29,7 @@ export type Account = {
   secret?: string;
   currency?: string;
   change_pct?: number; // Percentage change for the month
-}
+};
 
 export type AccountFormData = {
   account_type: AccountType;
@@ -36,5 +37,4 @@ export type AccountFormData = {
   primary_key?: string;
   secret?: string;
   currency?: string;
-}
-
+};

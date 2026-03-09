@@ -8,7 +8,7 @@ import { Button, ButtonText } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Text } from "@/components/ui/text"
 
-export default function NewBudaAccount({ refresh }) {
+export default function NewBudaAccount({ refresh }: { refresh: () => void }) {
   const [api_secret, setSecret] = useState("")
   const [api_key, setKey] = useState("")
 

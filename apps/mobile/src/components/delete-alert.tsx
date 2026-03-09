@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next"
+import { useTranslation } from "@/components/_texts/delete-alert.text"
 import { Alert, Platform } from "react-native"
 import React from "react"
 
@@ -52,8 +52,8 @@ const DeleteAlert = ({
   title,
 }: DeleteAlertProps) => {
     
-  const { t } = useTranslation()
-    
+  const text = useTranslation()
+
   return (
     <View className="flex-1 bg-background">
       <AlertDialog
@@ -65,12 +65,12 @@ const DeleteAlert = ({
         <AlertDialogContent>
           <AlertDialogHeader>
             <Heading className="text-foreground font-semibold text-lg">
-              {title || t("delete.confirm_title")}
+              {title || text.confirmTitle}
             </Heading>
           </AlertDialogHeader>
           <AlertDialogBody className="mt-3 mb-4">
             <Text className="text-sm">
-              {errorMessage || t("delete.confirm_message")}
+              {errorMessage || text.confirmMessage}
             </Text>
           </AlertDialogBody>
           <AlertDialogFooter>
@@ -80,14 +80,14 @@ const DeleteAlert = ({
               onPress={onClose}
               className="mr-3"
             >
-              <ButtonText>{t("cancel")}</ButtonText>
+              <ButtonText>{text.cancel}</ButtonText>
             </Button>
             <Button
               variant="destructive"
               size="sm"
               onPress={() => { onDelete(); onClose() }}
             >
-              <ButtonText>{t("delete")}</ButtonText>
+              <ButtonText>{text.delete}</ButtonText>
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -103,7 +103,7 @@ const platformAlert: typeof Alert.alert = Platform.OS === "web"
 
 const DeleteAlertWrapper = (props: DeleteAlertProps) => {
   const { isOpen, onClose, onDelete, errorMessage, title } = props
-  const { t } = useTranslation()
+  const text = useTranslation()
 
   // For web platform, use the polyfill directly in useEffect
   React.useEffect(() => {
@@ -111,14 +111,14 @@ const DeleteAlertWrapper = (props: DeleteAlertProps) => {
       console.log("Web platform detected, showing alert dialog")
       try {
         platformAlert(
-          title || t("delete.confirm_title"),
-          errorMessage || t("delete.confirm_message"),
+          title || text.confirmTitle,
+          errorMessage || text.confirmMessage,
           [
-            { text: t("cancel"), style: "cancel", onPress: () => {
+            { text: text.cancel, style: "cancel", onPress: () => {
               console.log("Cancel pressed")
               onClose()
             }},
-            { text: t("delete"), style: "destructive", onPress: () => {
+            { text: text.delete, style: "destructive", onPress: () => {
               console.log("Delete pressed")
               onDelete()
               onClose()
@@ -129,7 +129,7 @@ const DeleteAlertWrapper = (props: DeleteAlertProps) => {
         console.error("Error showing alert:", error)
       }
     }
-  }, [isOpen, title, errorMessage, onClose, onDelete, t])
+  }, [isOpen, title, errorMessage, onClose, onDelete, text])
     
   // Always render something consistent - either the alert dialog or nothing
   // This ensures hooks are called consistently

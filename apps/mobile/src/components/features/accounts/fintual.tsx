@@ -25,7 +25,7 @@ import CustomAmountItem from "@/components/custom-amount-item"
 //     { text: 'Delete', onPress: () => deleteAccount(refetch) },
 //   ]);
 
-export function FintualAccount({ account, refetch }) {
+export function FintualAccount({ account, refetch }: { account: any; refetch: () => void }) {
   return (
     <Card>
       <CardTitle>Fintual</CardTitle>

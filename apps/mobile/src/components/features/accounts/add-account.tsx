@@ -1,7 +1,7 @@
 import { ScrollView, TextInput, Modal } from "react-native"
 import { Picker } from "@react-native-picker/picker"
 import React, { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { useTranslation } from "@/locale/app/add-account.text"
 
 import CurrenciesSelect from "@/components/search-selects/currencies"
 import { Text } from "@/components/ui/text"
@@ -11,16 +11,16 @@ import { Account } from "@/types/account"
 import { useStore } from "@/utils/store"
 
 const AddAccount = () => {
-  const [type, setType] = useState([])
+  const [type, setType] = useState<any>({})
   const [accName, setName] = useState("")
   const [amount, setAmount] = useState("")
   const [showModal, setShowModal] = useState(false)
-  const [fintocOptions, setFintocOptions] = useState()
-  const [currency, setCurrency] = useState(null)
+  const [fintocOptions, setFintocOptions] = useState<any>(null)
+  const [currency, setCurrency] = useState<string | null>(null)
   const [editable, setEdit] = useState(true)
   const [email, setEmail] = useState("")
   const [secret, setSecret] = useState("")
-  const { t } = useTranslation()
+  const text = useTranslation()
   const currentAccount = useStore((state) => state.currentAccount)
   const accounts: Account[] = []
 
@@ -42,7 +42,7 @@ const AddAccount = () => {
     // }
   }
 
-  const onSuccess = async (uri) => {
+  const onSuccess = async (uri: string) => {
     // const queryString = uri.split('?')[1];
     // const params = {};
     // queryString.split('&').forEach((param) => {
@@ -58,15 +58,15 @@ const AddAccount = () => {
     closeModal()
   }
 
-  const onEvent = (event) => {
+  const onEvent = (event: any) => {
     const data = event.nativeEvent.data
     if (data === "fintocwidget://exit") closeModal()
     else if (data.includes("fintocwidget://succeeded")) onSuccess(data)
   }
 
-  const setAccount = async (acc_type) => {
+  const setAccount = async (acc_type: any) => {
     if (acc_type.fintoc) {
-      await getOptions(setFintocOptions, fintocOptions)
+      // TODO: implement getOptions
       setShowModal(true)
     }
     setType(acc_type)
@@ -87,7 +87,7 @@ const AddAccount = () => {
       <ScrollView className="flex-1 px-5 pt-2" showsVerticalScrollIndicator={false}>
         {/* Account Type */}
         <View className="mb-5">
-          <Text className="text-muted font-medium text-sm">{t("new_account.account_type")}</Text>
+          <Text className="text-muted font-medium text-sm">{text.accountType}</Text>
           <Picker
             selectedValue={type}
             onValueChange={(itemValue) => setAccount(itemValue)}
@@ -96,7 +96,7 @@ const AddAccount = () => {
             style={{ color: "hsl(var(--muted-foreground))" }}
           >
             {accounts.map((type, index) => (
-              <Picker.Item key={index} label={t(`new_account.types.${type.subtype}`)} value={type} />
+              <Picker.Item key={index} label={text.types[(type as any).subtype as keyof typeof text.types] ?? (type as any).subtype} value={type} />
             ))}
           </Picker>
         </View>
@@ -105,12 +105,12 @@ const AddAccount = () => {
         {type.subtype !== "fintual" && (editable || currentAccount) && (
           <View className="mb-5">
             <Text className="text-muted font-medium text-sm">
-              {t("new_account.account_name")}
-              {currentAccount && <Text className="text-success"> {t("new_account.editable")}</Text>}
+              {text.accountName}
+              {currentAccount && <Text className="text-success"> {text.editable}</Text>}
             </Text>
             <TextInput
               value={accName}
-              placeholder={t("new_account.name_placeholder")}
+              placeholder={text.namePlaceholder}
               onChangeText={setName}
               placeholderTextColor="hsl(var(--muted-foreground))"
               className="mt-2 p-3 rounded-lg text-foreground bg-muted text-base"
@@ -121,11 +121,11 @@ const AddAccount = () => {
         {/* Currency Picker */}
         {type.editable && (
           <View className="mb-5">
-            <Text className="text-muted font-medium text-sm">{t("new_account.currency")}</Text>
+            <Text className="text-muted font-medium text-sm">{text.currency}</Text>
             <CurrenciesSelect
               value={currency}
               onChange={setCurrency}
-              placeholder={t("new_account.select_currency")}
+              placeholder={text.selectCurrency}
               className="mt-2"
             />
           </View>
@@ -135,21 +135,21 @@ const AddAccount = () => {
         {type.subtype === "fintual" && !currentAccount && (
           <View>
             <View className="mb-5">
-              <Text className="text-muted font-medium text-sm">{t("new_account.email")}</Text>
+              <Text className="text-muted font-medium text-sm">{text.email}</Text>
               <TextInput
                 inputMode='email'
                 value={email}
-                placeholder={t("new_account.email_placeholder")}
+                placeholder={text.emailPlaceholder}
                 onChangeText={setEmail}
                 placeholderTextColor="hsl(var(--muted-foreground))"
                 className="mt-2 p-3 rounded-lg text-foreground bg-muted text-base"
               />
             </View>
             <View className="mb-5">
-              <Text className="text-muted font-medium text-sm">{t("new_account.secret")}</Text>
+              <Text className="text-muted font-medium text-sm">{text.secret}</Text>
               <TextInput
                 value={secret}
-                placeholder={t("new_account.secret_placeholder")}
+                placeholder={text.secretPlaceholder}
                 secureTextEntry
                 onChangeText={setSecret}
                 placeholderTextColor="hsl(var(--muted-foreground))"
@@ -174,7 +174,7 @@ const AddAccount = () => {
 
       <View className="p-5">
         <Button disabled={!isValid()} onPress={__save}>
-          <ButtonText>{t("save")}</ButtonText>
+          <ButtonText>{text.save}</ButtonText>
         </Button>
       </View>
     </View>

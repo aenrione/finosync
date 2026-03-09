@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, ScrollView } from "react-native"
-import { useTranslation } from "react-i18next"
+import { useTranslation } from "./_texts/text"
 import Modal from "react-native-modal"
 import React from "react"
 
@@ -15,7 +15,7 @@ type IconPickerProps = {
 }
 
 const IconPicker = ({ onSelectIcon, isVisible, onClose }:IconPickerProps) => {
-  const { t } = useTranslation()
+  const text = useTranslation()
 
   const handleIconPress = (iconName: IconName) => {
     onSelectIcon(iconName)
@@ -40,7 +40,7 @@ const IconPicker = ({ onSelectIcon, isVisible, onClose }:IconPickerProps) => {
           className="bg-muted px-4 py-2 rounded mt-2"
           onPress={onClose}
         >
-          <Text className="text-foreground text-base">{t("cancel")}</Text>
+          <Text className="text-foreground text-base">{text.cancel}</Text>
         </TouchableOpacity>
       </View>
     </Modal>

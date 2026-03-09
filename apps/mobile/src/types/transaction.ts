@@ -1,7 +1,8 @@
-import { IconName } from "./icon"
+import { IconName } from "./icon";
 export type Transaction = {
   id: number;
   amount: number;
+  formatted_amount?: string;
   comment?: string;
   currency: string;
   description: string;
@@ -12,7 +13,7 @@ export type Transaction = {
   ignore?: boolean;
   post_date: string;
   transaction_date: string;
-  transaction_type: "credit" | "debit";
+  transaction_type?: string;
   created_at: string;
   updated_at: string;
   fintoc_bank_account_id?: number;
@@ -22,7 +23,7 @@ export type Transaction = {
     name: string;
     id: number;
   };
-  icon?: IconName
+  icon?: IconName;
   editable?: boolean;
   tags?: { id: number; name: string; color?: string }[];
 };

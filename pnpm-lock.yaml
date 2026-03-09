@@ -86,6 +86,9 @@ importers:
       expo-font:
         specifier: ~13.3.2
         version: 13.3.2(expo@53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react@19.0.0)
+      expo-linear-gradient:
+        specifier: ^55.0.8
+        version: 55.0.8(expo@53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       expo-linking:
         specifier: ~7.1.7
         version: 7.1.7(expo@53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -139,7 +142,7 @@ importers:
         version: 2.24.0(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react-native-gifted-charts:
         specifier: ^1.4.76
-        version: 1.4.76(react-native-svg@15.11.2(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+        version: 1.4.76(expo-linear-gradient@55.0.8(expo@53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-svg@15.11.2(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react-native-maps:
         specifier: 1.20.1
         version: 1.20.1(react-native-web@0.20.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -207,6 +210,9 @@ importers:
       '@types/react':
         specifier: ~19.0.10
         version: 19.0.14
+      eslint:
+        specifier: ^9.27.0
+        version: 9.27.0(jiti@2.4.2)
       jest:
         specifier: ^29.2.1
         version: 29.7.0(@types/node@22.15.25)
@@ -2451,6 +2457,13 @@ packages:
     peerDependencies:
       expo: '*'
       react: '*'
+
+  expo-linear-gradient@55.0.8:
+    resolution: {integrity: sha512-nCMgZXcHesnFslH1TUFMdqlDiE4jYTTTSHb97g1jq1gyGX2xDEOyqBxQJmiIVGrZJ+kTWH6RljJ5tYyva9mrAg==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+      react-native: '*'
 
   expo-linking@7.1.7:
     resolution: {integrity: sha512-ZJaH1RIch2G/M3hx2QJdlrKbYFUTOjVVW4g39hfxrE5bPX9xhZUYXqxqQtzMNl1ylAevw9JkgEfWbBWddbZ3UA==}
@@ -8021,6 +8034,12 @@ snapshots:
       expo: 53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react: 19.0.0
 
+  expo-linear-gradient@55.0.8(expo@53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      expo: 53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+      react-native: 0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)
+
   expo-linking@7.1.7(expo@53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
     dependencies:
       expo-constants: 17.1.8(expo@53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))
@@ -10073,12 +10092,14 @@ snapshots:
       react: 19.0.0
       react-native: 0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)
 
-  react-native-gifted-charts@1.4.76(react-native-svg@15.11.2(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
+  react-native-gifted-charts@1.4.76(expo-linear-gradient@55.0.8(expo@53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-svg@15.11.2(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
     dependencies:
       gifted-charts-core: 0.1.80(react-native-svg@15.11.2(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react: 19.0.0
       react-native: 0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)
       react-native-svg: 15.11.2(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+    optionalDependencies:
+      expo-linear-gradient: 55.0.8(expo@53.0.27(@babel/core@7.27.3)(@expo/metro-runtime@5.0.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0)))(react-native-webview@13.13.5(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
 
   react-native-is-edge-to-edge@1.1.7(react-native@0.79.6(@babel/core@7.27.3)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
     dependencies:

@@ -6,10 +6,12 @@ import {
   useEffect,
   useMemo,
   useCallback,
+  useRef,
 } from "react";
 
-import { fetchWithAuth } from "@/utils/api";
+import { fetchJsonWithAuth, getErrorMessage } from "@/utils/api";
 import { colors } from "@/lib/colors";
+import { loadSnapshot, saveSnapshot } from "@/utils/offline-cache";
 import { parseNumericAmount, getCurrencyMeta } from "@/utils/currency";
 import { useStore } from "@/utils/store";
 
@@ -22,10 +24,12 @@ type ChartData = {
 };
 
 type BalanceData = {
-  month: string;
+  month?: string;
+  week?: string;
   income: number;
   expenses: number;
   net: number;
+  currency?: string;
 };
 
 type AccountBalanceData = {
@@ -57,6 +61,8 @@ type ChartsContextType = {
   loading: boolean;
   error: string | null;
   refreshing: boolean;
+  isStale: boolean;
+  lastUpdated: string | null;
   baseCurrency: string;
   selectedAccount: number;
   timeRange: string;
@@ -91,6 +97,8 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isStale, setIsStale] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const baseCurrency = useStore((s) => s.baseCurrency);
   const [selectedAccount, setSelectedAccount] = useState<number>(0);
   const [timeRange, setTimeRange] = useState<string>("6M");
@@ -98,6 +106,8 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
   const [avgIncome, setAvgIncome] = useState<number>(0);
   const [avgExpenses, setAvgExpenses] = useState<number>(0);
   const [avgSavings, setAvgSavings] = useState<number>(0);
+  const cacheKey = `charts:${baseCurrency}:${selectedAccount}:${timeRange}`;
+  const hasDataRef = useRef(false);
 
   const generateChartColors = (count: number): string[] => {
     const palette = [
@@ -115,34 +125,53 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
     return palette.slice(0, count);
   };
 
+  useEffect(() => {
+    hasDataRef.current =
+      expenseData.length > 0 ||
+      incomeData.length > 0 ||
+      balanceData.length > 0 ||
+      accountBalances.length > 0 ||
+      currencyOverview.length > 0;
+  }, [
+    accountBalances.length,
+    balanceData.length,
+    currencyOverview.length,
+    expenseData.length,
+    incomeData.length,
+  ]);
+
   const fetchChartData = useCallback(
     async (params?: {
       currency?: string;
       accountId?: number;
       timeRange?: string;
       type?: "expense" | "income";
+      refresh?: boolean;
     }) => {
+      const nextCurrency = params?.currency ?? baseCurrency;
+      const nextAccountId = params?.accountId ?? selectedAccount;
+      const nextTimeRange = params?.timeRange ?? timeRange;
+      const nextCacheKey = `charts:${nextCurrency}:${nextAccountId}:${nextTimeRange}`;
+      const hasLocalData = hasDataRef.current;
+
       try {
-        setLoading(true);
+        if (hasLocalData || params?.refresh) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
         setError(null);
 
         const queryParams = new URLSearchParams();
-        if (params?.currency) queryParams.append("currency", params.currency);
-        if (params?.accountId)
-          queryParams.append("account_id", params.accountId.toString());
-        if (params?.timeRange)
-          queryParams.append("time_range", params.timeRange);
+        if (nextCurrency) queryParams.append("currency", nextCurrency);
+        if (nextAccountId)
+          queryParams.append("account_id", nextAccountId.toString());
+        if (nextTimeRange) queryParams.append("time_range", nextTimeRange);
         if (params?.type) queryParams.append("type", params.type);
 
-        const res = await fetchWithAuth(
+        const data = await fetchJsonWithAuth<any>(
           `/charts/data?${queryParams.toString()}`,
         );
-
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-
-        const data = await res.json();
 
         if (params?.type === "expense" || !params?.type) {
           const palette = generateChartColors(data.expenses?.length || 0);
@@ -173,7 +202,18 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (data.balance) {
-          setBalanceData(data.balance);
+          const normalizedBalanceData = (data.balance || []).map(
+            (item: any) => ({
+              month: item.month,
+              week: item.week,
+              income: parseNumericAmount(item.income) ?? 0,
+              expenses: parseNumericAmount(item.expenses) ?? 0,
+              net: parseNumericAmount(item.net) ?? 0,
+              currency: item.currency,
+            }),
+          );
+
+          setBalanceData(normalizedBalanceData);
         }
         if (data.avgIncome !== undefined)
           setAvgIncome(parseNumericAmount(data.avgIncome) ?? 0);
@@ -183,7 +223,23 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
           setAvgSavings(parseNumericAmount(data.avgSavings) ?? 0);
 
         if (data.account_balances) {
-          setAccountBalances(data.account_balances);
+          const normalizedAccountBalances = (data.account_balances || []).map(
+            (item: any) => ({
+              id: item.id,
+              name: item.name,
+              currency: item.currency,
+              account_type: item.account_type,
+              balance: parseNumericAmount(item.balance) ?? 0,
+              data: (item.data || []).map(
+                (value: string | number | null | undefined) =>
+                  parseNumericAmount(value) ?? 0,
+              ),
+              labels: item.labels || [],
+              color: item.color,
+            }),
+          );
+
+          setAccountBalances(normalizedAccountBalances);
         }
 
         if (data.currency_overview) {
@@ -197,33 +253,141 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
           }));
           setCurrencyOverview(overview);
         }
+        setIsStale(false);
+        const snapshot = await saveSnapshot(nextCacheKey, data);
+        setLastUpdated(snapshot.updatedAt);
       } catch (err) {
         console.error("Error fetching chart data:", err);
-        setError(err instanceof Error ? err.message : "Unknown error occurred");
+        setError(getErrorMessage(err));
+        if (hasLocalData) {
+          setIsStale(true);
+        } else {
+          const snapshot = await loadSnapshot<any>(nextCacheKey);
+          if (snapshot) {
+            hydrateChartState(snapshot.value);
+            setLastUpdated(snapshot.updatedAt);
+            setIsStale(true);
+          }
+        }
       } finally {
         setLoading(false);
+        setRefreshing(false);
       }
     },
-    [],
+    [baseCurrency, selectedAccount, timeRange],
   );
 
+  const hydrateChartState = useCallback((data: any) => {
+    const paletteExpenses = generateChartColors(data?.expenses?.length || 0);
+    const paletteIncome = generateChartColors(data?.income?.length || 0);
+
+    setExpenseData(
+      (data?.expenses || []).map((item: any, index: number) => ({
+        name: item.category_name || item.name,
+        amount: parseNumericAmount(item.amount) ?? 0,
+        color: paletteExpenses[index],
+        legendFontSize: 12,
+        legendFontColor: colors.neutral[700],
+      })),
+    );
+
+    setIncomeData(
+      (data?.income || []).map((item: any, index: number) => ({
+        name: item.category_name || item.name,
+        amount: parseNumericAmount(item.amount) ?? 0,
+        color: paletteIncome[index],
+        legendFontSize: 12,
+        legendFontColor: colors.neutral[700],
+      })),
+    );
+
+    setBalanceData(
+      (data?.balance || []).map((item: any) => ({
+        month: item.month,
+        week: item.week,
+        income: parseNumericAmount(item.income) ?? 0,
+        expenses: parseNumericAmount(item.expenses) ?? 0,
+        net: parseNumericAmount(item.net) ?? 0,
+        currency: item.currency,
+      })),
+    );
+
+    setAvgIncome(parseNumericAmount(data?.avgIncome) ?? 0);
+    setAvgExpenses(parseNumericAmount(data?.avgExpenses) ?? 0);
+    setAvgSavings(parseNumericAmount(data?.avgSavings) ?? 0);
+
+    setAccountBalances(
+      (data?.account_balances || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        currency: item.currency,
+        account_type: item.account_type,
+        balance: parseNumericAmount(item.balance) ?? 0,
+        data: (item.data || []).map(
+          (value: string | number | null | undefined) =>
+            parseNumericAmount(value) ?? 0,
+        ),
+        labels: item.labels || [],
+        color: item.color,
+      })),
+    );
+
+    setCurrencyOverview(
+      (data?.currency_overview || []).map((item: any) => ({
+        currency: item.currency,
+        income: parseNumericAmount(item.income) ?? 0,
+        expenses: parseNumericAmount(item.expenses) ?? 0,
+        net: parseNumericAmount(item.net) ?? 0,
+        flag: getCurrencyMeta(item.currency).flag,
+        color: colors.primary,
+      })),
+    );
+  }, []);
+
   const refreshData = useCallback(async () => {
-    setRefreshing(true);
     await fetchChartData({
       currency: baseCurrency,
       accountId: selectedAccount,
       timeRange,
+      refresh: true,
     });
-    setRefreshing(false);
   }, [fetchChartData, baseCurrency, selectedAccount, timeRange]);
 
   useEffect(() => {
-    fetchChartData({
-      currency: baseCurrency,
-      accountId: selectedAccount,
-      timeRange,
-    });
-  }, [fetchChartData, baseCurrency, selectedAccount, timeRange]);
+    let active = true;
+
+    const restoreAndFetch = async () => {
+      const snapshot = await loadSnapshot<any>(cacheKey);
+
+      if (active && snapshot) {
+        hydrateChartState(snapshot.value);
+        setLastUpdated(snapshot.updatedAt);
+        setIsStale(true);
+        setLoading(false);
+      }
+
+      if (active) {
+        await fetchChartData({
+          currency: baseCurrency,
+          accountId: selectedAccount,
+          timeRange,
+        });
+      }
+    };
+
+    restoreAndFetch();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    baseCurrency,
+    cacheKey,
+    fetchChartData,
+    hydrateChartState,
+    selectedAccount,
+    timeRange,
+  ]);
 
   const contextValue = useMemo(
     () => ({
@@ -235,6 +399,8 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
       loading,
       error,
       refreshing,
+      isStale,
+      lastUpdated,
       baseCurrency,
       selectedAccount,
       timeRange,
@@ -257,6 +423,8 @@ export function ChartsProvider({ children }: { children: React.ReactNode }) {
       loading,
       error,
       refreshing,
+      isStale,
+      lastUpdated,
       baseCurrency,
       selectedAccount,
       timeRange,
