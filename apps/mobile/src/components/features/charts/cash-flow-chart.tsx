@@ -61,7 +61,7 @@ export default function CashFlowChart() {
   return (
     <View className="mt-6">
       <View className="flex-row items-center mb-3">
-        <Icon name="BarChart3" className="text-primary mr-2" size={20} />
+        <Icon name="ChartBar" className="text-primary mr-2" size={20} />
         <Text className="text-xl font-semibold text-foreground">
           Cash Flow
         </Text>
