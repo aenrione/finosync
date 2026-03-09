@@ -32,6 +32,7 @@ type AccountBalanceData = {
   id: number;
   name: string;
   currency: string;
+  account_type: string;
   balance: number;
   data: number[];
   labels: string[];

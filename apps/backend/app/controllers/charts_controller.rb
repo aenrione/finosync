@@ -196,6 +196,7 @@ class ChartsController < ApplicationController
         id: account.id,
         name: account.account_name,
         currency: account.currency,
+        account_type: account.account_type,
         balance: account.balance,
         data: balance_data,
         labels: labels,
