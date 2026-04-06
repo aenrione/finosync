@@ -1,8 +1,7 @@
 class GetFintualAccountCurrentBalance < PowerTypes::Command.new(:fintual_account)
   def perform
-    require 'fintual'
     balance = 0
-    @client = Fintual::Client.new(@fintual_account.primary_key, @fintual_account.secret)
+    @client = FintualApiClient.new(@fintual_account.primary_key, @fintual_account.secret)
     @goals = @client.goals
     @goals.each { |g| balance += g.current }
     Money.new(balance)

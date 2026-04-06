@@ -1,15 +1,12 @@
 class UpdateFintualAccountInformation < PowerTypes::Command.new(:fintual_account)
   def perform
-    require 'fintual'
     balance = 0
     returns = 0
-    @client = Fintual::Client.new(@fintual_account.primary_key, @fintual_account.secret)
+    @client = FintualApiClient.new(@fintual_account.primary_key, @fintual_account.secret)
     @goals = @client.goals
     @goals.each do |goal|
       ActiveRecord::Base.transaction do
-        new_goal = FintualGoal.find_or_create_by!(
-          goal_to_db(goal)
-        )
+        new_goal = FintualGoal.find_or_create_by!(goal_to_db(goal))
         balance += new_goal.current
         returns += new_goal.profit
       end
