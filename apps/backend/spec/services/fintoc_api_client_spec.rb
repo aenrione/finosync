@@ -49,12 +49,9 @@ RSpec.describe FintocApiClient do
       }.to_json
     end
 
-    it "sends POST to exchange endpoint and returns parsed response" do
-      stub_request(:post, "https://api.fintoc.com/v1/link_intents/exchange")
-        .with(
-          headers: { "Authorization" => secret_key, "Content-Type" => "application/json" },
-          body: { exchange_token: "et_test_token" }.to_json
-        )
+    it "sends GET to links/exchange endpoint and returns parsed response" do
+      stub_request(:get, "https://api.fintoc.com/v1/links/exchange?exchange_token=et_test_token")
+        .with(headers: { "Authorization" => secret_key })
         .to_return(status: 200, body: exchange_response, headers: { "Content-Type" => "application/json" })
 
       result = client.exchange_token(exchange_token: "et_test_token")
@@ -63,7 +60,7 @@ RSpec.describe FintocApiClient do
     end
 
     it "raises FintocApiClient::Error on non-2xx response" do
-      stub_request(:post, "https://api.fintoc.com/v1/link_intents/exchange")
+      stub_request(:get, "https://api.fintoc.com/v1/links/exchange?exchange_token=bad_token")
         .to_return(status: 400, body: { error: { message: "Invalid exchange token" } }.to_json,
                    headers: { "Content-Type" => "application/json" })
 
