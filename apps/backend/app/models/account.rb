@@ -60,17 +60,6 @@ class Account < ApplicationRecord
     end
   end
 
-  def update_info
-      case account_type
-      when "fintoc"
-        UpdateFintocAccountInformation.for(account: self)
-      when "buda"
-        UpdateBudaAccountInformation.for(buda_account: self)
-      when "fintual"
-        UpdateFintualAccountInformation.for(fintoc_account: self)
-      end
-  end
-
   def validate_api
     if Rails.env.production?
       case account_type
