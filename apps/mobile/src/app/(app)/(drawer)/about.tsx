@@ -25,9 +25,9 @@ const DEVELOPER = {
 }
 
 const APP_LINKS = {
-  website: "https://finosync.aenrione.xyz",
-  privacy: "https://finosync.aenrione.xyz/privacy",
-  terms: "https://finosync.aenrione.xyz/terms",
+  website: "https://finosync.aenrione.com",
+  privacy: "https://finosync.aenrione.com/privacy",
+  terms: "https://finosync.aenrione.com/terms",
 }
 
 const INTEGRATIONS = [

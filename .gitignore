@@ -40,3 +40,4 @@ pnpm-debug.log*
 .playwright-mcp
 screenshots
 docs/plans
+docs/superpowers/plans
