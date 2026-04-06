@@ -74,10 +74,30 @@ jest.mock("react-native-css-interop", () => ({
   remapProps: jest.fn(),
 }));
 
+// Mock the css-interop JSX runtime (injected by babel NativeWind transform)
+jest.mock("react-native-css-interop/src/runtime/jsx-runtime", () => {
+  const React = jest.requireActual("react");
+  return {
+    jsx: React.createElement,
+    jsxs: React.createElement,
+    Fragment: React.Fragment,
+  };
+});
+
 // Mock useColorScheme hook used in themed components
 jest.mock("@/components/theme/use-color-scheme", () => ({
   useColorScheme: jest.fn(() => "light"),
 }));
+
+// Provide window.location for web-platform tests (component code reads
+// window.location.hostname to decide if it is running on localhost).
+if (typeof window !== "undefined" && !window.location) {
+  Object.defineProperty(window, "location", {
+    value: { hostname: "app.example.com" },
+    writable: true,
+    configurable: true,
+  });
+}
 
 // Clear mocked stores between tests
 beforeEach(() => {

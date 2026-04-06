@@ -4,6 +4,8 @@ import { getFintoc } from "@fintoc/fintoc-js"
 import { Text } from "@/components/ui/text"
 
 const FINTOC_PUBLIC_KEY = process.env.EXPO_PUBLIC_FINTOC_PUBLIC_KEY ?? ""
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? ""
+const FINTOC_WEBHOOK_URL = `${API_URL}/webhooks/fintoc`
 
 // The Fintoc JS SDK requires a deployed HTTPS origin — postMessage between
 // wizard.fintoc.com and a localhost parent is blocked by the browser's
@@ -47,6 +49,7 @@ const FintocWidgetModal = ({ visible, onSuccess, onExit }: Props) => {
         product: "movements",
         holderType: "individual",
         country: "cl",
+        webhookUrl: FINTOC_WEBHOOK_URL,
         onSuccess: (linkIntent: Record<string, unknown>) => {
           const token = String(linkIntent?.link_token ?? linkIntent?.exchangeToken ?? "")
           onSuccessRef.current(token)
