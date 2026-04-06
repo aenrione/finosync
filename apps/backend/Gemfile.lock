@@ -301,6 +301,13 @@ GEM
     parser (3.3.8.0)
       ast (~> 2.4.1)
       racc
+    pg (1.6.3)
+    pg (1.6.3-aarch64-linux)
+    pg (1.6.3-aarch64-linux-musl)
+    pg (1.6.3-arm64-darwin)
+    pg (1.6.3-x86_64-darwin)
+    pg (1.6.3-x86_64-linux)
+    pg (1.6.3-x86_64-linux-musl)
     power-types (0.7.0)
       activesupport
       after_commit_everywhere (~> 1.2, >= 1.2.2)
@@ -548,6 +555,7 @@ DEPENDENCIES
   nokogiri
   pagy
   paper_trail
+  pg (~> 1.5)
   power-types
   pry-byebug
   pry-rails

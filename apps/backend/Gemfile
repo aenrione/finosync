@@ -8,6 +8,8 @@ gem "puma", ">= 5.0"
 gem "jbuilder"
 # sqlite3
 gem "sqlite3", ">= 2.1"
+# PostgreSQL for production (Coolify external DB)
+gem "pg", "~> 1.5"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
