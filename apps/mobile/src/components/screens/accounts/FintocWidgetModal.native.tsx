@@ -5,13 +5,16 @@ import { WebView, WebViewNavigation } from "react-native-webview"
 import { Text } from "@/components/ui/text"
 
 const FINTOC_PUBLIC_KEY = process.env.EXPO_PUBLIC_FINTOC_PUBLIC_KEY ?? ""
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? ""
+const FINTOC_WEBHOOK_URL = `${API_URL}/webhooks/fintoc`
 
 const WIDGET_URL =
   `https://webview.fintoc.com/widget.html` +
   `?public_key=${FINTOC_PUBLIC_KEY}` +
   `&product=movements` +
   `&holder_type=individual` +
-  `&country=cl`
+  `&country=cl` +
+  `&webhook_url=${encodeURIComponent(FINTOC_WEBHOOK_URL)}`
 
 type Props = {
   visible: boolean

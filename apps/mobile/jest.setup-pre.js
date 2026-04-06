@@ -63,8 +63,35 @@ const PLATFORM_CONSTANTS_MOCK = {
   }),
 };
 
+const NATIVE_ANIMATED_MOCK = {
+  startOperationBatch: jest.fn(),
+  finishOperationBatch: jest.fn(),
+  createAnimatedNode: jest.fn(),
+  getValue: jest.fn(),
+  startListeningToAnimatedNodeValue: jest.fn(),
+  stopListeningToAnimatedNodeValue: jest.fn(),
+  connectAnimatedNodes: jest.fn(),
+  disconnectAnimatedNodes: jest.fn(),
+  startAnimatingNode: jest.fn(),
+  stopAnimation: jest.fn(),
+  setAnimatedNodeValue: jest.fn(),
+  setAnimatedNodeOffset: jest.fn(),
+  flattenAnimatedNodeOffset: jest.fn(),
+  extractAnimatedNodeOffset: jest.fn(),
+  connectAnimatedNodeToView: jest.fn(),
+  disconnectAnimatedNodeFromView: jest.fn(),
+  restoreDefaultValues: jest.fn(),
+  dropAnimatedNode: jest.fn(),
+  addAnimatedEventToView: jest.fn(),
+  removeAnimatedEventFromView: jest.fn(),
+  addListener: jest.fn(),
+  removeListeners: jest.fn(),
+};
+
 TurboModuleRegistry.get = (name) => {
   if (name === 'PlatformConstants') return PLATFORM_CONSTANTS_MOCK;
+  if (name === 'NativeAnimatedTurboModule') return NATIVE_ANIMATED_MOCK;
+  if (name === 'NativeAnimatedModule') return NATIVE_ANIMATED_MOCK;
   try { return originalGet(name); } catch { return null; }
 };
 
@@ -80,6 +107,33 @@ const NATIVE_MODULE_MOCKS = {
     getConstants: () => ({ colorScheme: null }),
     addListener: jest.fn(),
     removeListeners: jest.fn(),
+  },
+  DeviceInfo: {
+    getConstants: () => ({
+      Dimensions: {
+        window: { width: 375, height: 812, scale: 2, fontScale: 1 },
+        screen: { width: 375, height: 812, scale: 2, fontScale: 1 },
+      },
+    }),
+  },
+  UIManager: {
+    getConstants: () => ({}),
+    getConstantsForViewManager: jest.fn(() => ({})),
+    getViewManagerConfig: jest.fn(() => null),
+    lazilyLoadView: jest.fn(() => ({})),
+    createView: jest.fn(),
+    updateView: jest.fn(),
+    manageChildren: jest.fn(),
+    setChildren: jest.fn(),
+    removeSubviews: jest.fn(),
+    measure: jest.fn(),
+    measureInWindow: jest.fn(),
+    measureLayout: jest.fn(),
+    dispatchViewManagerCommand: jest.fn(),
+    configureNextLayoutAnimation: jest.fn(),
+    sendAccessibilityEvent: jest.fn(),
+    showPopupMenu: jest.fn(),
+    dismissPopupMenu: jest.fn(),
   },
 };
 
