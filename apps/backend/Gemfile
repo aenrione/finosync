@@ -49,8 +49,6 @@ gem "power-types"
 gem "pundit"
 gem "rack-cors"
 gem "rails-i18n"
-gem "sidekiq"
-gem "sidekiq-scheduler"
 
 group :development do
   gem "annotaterb"
