@@ -70,4 +70,7 @@ Rails.application.routes.draw do
   get "/currencies", to: "currencies#index"
 
   resources :feedbacks, only: [ :create ]
+
+  # Webhooks (unauthenticated — called by external services)
+  post "/webhooks/fintoc", to: "webhooks#fintoc"
 end
