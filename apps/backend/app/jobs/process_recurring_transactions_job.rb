@@ -1,6 +1,4 @@
 class ProcessRecurringTransactionsJob < ApplicationJob
-  require "sidekiq-scheduler"
-
   def perform
     RecurringTransaction.auto_creatable.find_each do |recurring|
       recurring.create_auto_transaction!
