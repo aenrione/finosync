@@ -17,6 +17,7 @@ import { FormSection } from "@/components/ui/form-section"
 import ScreenHeader from "@/components/screen-header"
 import { Text } from "@/components/ui/text"
 import Icon from "@/components/ui/icon"
+import { fetchJsonWithAuth } from "@/utils/api"
 
 const AVAILABLE_TYPES = getAvailableAccountTypes()
 
@@ -40,14 +41,19 @@ const AddAccount = () => {
     if (!accountName.trim()) return false
     if (accountConfig.usesWidget) return Boolean(primaryKey.trim())
     if (accountConfig.requiresCredentials) {
-      if (accountConfig.requiresEmail && !email.trim()) return false
-      if (!primaryKey.trim() || !secret.trim()) return false
+      if (accountConfig.requiresEmail) {
+        // Fintual: email is the primary credential, no separate API key
+        if (!email.trim() || !secret.trim()) return false
+      } else {
+        if (!primaryKey.trim() || !secret.trim()) return false
+      }
     }
     return true
   }
 
   const handleSave = async (overridePrimaryKey?: string) => {
-    const key = overridePrimaryKey ?? primaryKey
+    // For Fintual, email is stored as primary_key (no separate email column in backend)
+    const key = overridePrimaryKey ?? (accountConfig.requiresEmail ? email : primaryKey)
     setLoading(true)
     try {
       await createAccount({
@@ -66,10 +72,26 @@ const AddAccount = () => {
     }
   }
 
-  const handleWidgetSuccess = (linkToken: string) => {
+  const handleWidgetSuccess = async (exchangeToken: string) => {
     setShowWidget(false)
-    setPrimaryKey(linkToken)
-    handleSave(linkToken)
+    setLoading(true)
+    try {
+      await fetchJsonWithAuth("/fintoc/exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          exchange_token: exchangeToken,
+          account_name: accountName.trim() || "Bank Account",
+          currency: currency ? (typeof currency === "string" ? currency : currency.code) : "CLP",
+        }),
+      })
+      await refreshData()
+      router.back()
+    } catch (error) {
+      Alert.alert(text.error, error instanceof Error ? error.message : text.createError)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const typeOptions = AVAILABLE_TYPES.map((type) => ({
@@ -170,8 +192,8 @@ const AddAccount = () => {
                 />
               )}
 
-              {/* API Key - Buda */}
-              {!accountConfig.requiresLink && accountConfig.requiresCredentials && (
+              {/* API Key - Buda only (Fintual uses email as primary_key) */}
+              {!accountConfig.requiresLink && accountConfig.requiresCredentials && !accountConfig.requiresEmail && (
                 <FormField
                   label={text.apiKey}
                   value={primaryKey}
@@ -182,12 +204,12 @@ const AddAccount = () => {
                 />
               )}
 
-              {/* Secret */}
+              {/* Secret / Password */}
               {accountConfig.requiresCredentials && (
                 <FormField
-                  label={text.secret}
+                  label={accountConfig.requiresEmail ? text.password : text.secret}
                   value={secret}
-                  placeholder={text.secretPlaceholder}
+                  placeholder={accountConfig.requiresEmail ? text.passwordPlaceholder : text.secretPlaceholder}
                   secureTextEntry
                   onChangeText={setSecret}
                   icon={ShieldCheck}
