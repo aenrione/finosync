@@ -3,3 +3,8 @@ production:
     class: ProcessRecurringTransactionsJob
     queue: default
     schedule: at 6am every day
+
+  update_all_user_information:
+    class: UpdateUserInformationJob
+    queue: default
+    schedule: every 2 hours
