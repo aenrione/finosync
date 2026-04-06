@@ -33,12 +33,12 @@ class RulesController < ApplicationController
   end
 
   def run
-    RunRuleJob.perform_async(@rule.id)
+    RunRuleJob.perform_later(@rule.id)
     render json: { message: "Rule queued" }, status: :accepted
   end
 
   def run_all
-    RunAllRulesJob.perform_async(current_user.id)
+    RunAllRulesJob.perform_later(current_user.id)
     render json: { message: "Rules queued" }, status: :accepted
   end
 

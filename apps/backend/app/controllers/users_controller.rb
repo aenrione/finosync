@@ -40,7 +40,7 @@ class UsersController < ApplicationController
   end
 
   def update_everything
-    UpdateOneUserJob.perform_async(current_user.email)
+    UpdateOneUserJob.perform_later(current_user.email)
     respond_with(current_user, status: :ok)
   end
 

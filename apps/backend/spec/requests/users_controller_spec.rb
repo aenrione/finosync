@@ -56,7 +56,7 @@ RSpec.describe UsersController, type: :request do
 
   describe "POST /update_everything" do
     it "queues a background job" do
-      expect(UpdateOneUserJob).to receive(:perform_async).with(user.email)
+      expect(UpdateOneUserJob).to receive(:perform_later).with(user.email)
 
       post "/user/update_info", headers: auth_headers
 

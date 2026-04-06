@@ -84,7 +84,7 @@ RSpec.describe "Rules API", type: :request do
     it "queues the rule job" do
       rule = create(:rule, user: user)
 
-      expect(RunRuleJob).to receive(:perform_async).with(rule.id)
+      expect(RunRuleJob).to receive(:perform_later).with(rule.id)
 
       post "/rules/#{rule.id}/run", headers: auth_headers
 
@@ -94,7 +94,7 @@ RSpec.describe "Rules API", type: :request do
 
   describe "POST /rules/run_all" do
     it "queues the run all job" do
-      expect(RunAllRulesJob).to receive(:perform_async).with(user.id)
+      expect(RunAllRulesJob).to receive(:perform_later).with(user.id)
 
       post "/rules/run_all", headers: auth_headers
 
