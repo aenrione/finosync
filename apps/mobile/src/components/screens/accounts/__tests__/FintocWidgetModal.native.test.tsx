@@ -1,7 +1,7 @@
 import React from "react"
 import { render } from "@testing-library/react-native"
 
-const MOCK_API_URL = "https://api.example.com"
+const MOCK_API_URL = process.env.EXPO_PUBLIC_API_URL ?? ""
 
 // Mock react-native-webview
 const MockWebView = jest.fn((_props: any) => null)

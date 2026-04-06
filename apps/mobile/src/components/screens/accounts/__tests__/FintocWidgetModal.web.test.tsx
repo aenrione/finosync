@@ -2,7 +2,7 @@ import React from "react"
 import { render, waitFor } from "@testing-library/react-native"
 import FintocWidgetModal from "../FintocWidgetModal.web"
 
-const MOCK_API_URL = "https://api.example.com"
+const MOCK_API_URL = process.env.EXPO_PUBLIC_API_URL ?? ""
 
 // Mock @fintoc/fintoc-js
 const mockOpen = jest.fn()
