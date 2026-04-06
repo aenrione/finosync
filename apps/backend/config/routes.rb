@@ -71,6 +71,10 @@ Rails.application.routes.draw do
 
   resources :feedbacks, only: [ :create ]
 
+  # Fintoc bank connection (exchange token flow)
+  post "/fintoc/link_intent", to: "fintoc_connections#create_link_intent"
+  post "/fintoc/exchange", to: "fintoc_connections#exchange"
+
   # Webhooks (unauthenticated — called by external services)
   post "/webhooks/fintoc", to: "webhooks#fintoc"
 end
