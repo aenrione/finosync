@@ -73,7 +73,6 @@ class AccountsController < ApplicationController
     @account.user = current_user
 
     if @account.save
-      FetchAccountDataJob.perform_later(@account.id) unless @account.local?
       render_jsonapi @account
     else
       render json: { error: @account.errors.full_messages.join(", ") }, status: :bad_request

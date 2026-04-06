@@ -46,12 +46,17 @@ class Account < ApplicationRecord
   validate :validate_api, on: :create
 
   before_create :set_default_credentials_for_local
+  after_create_commit :enqueue_initial_fetch, unless: :local?
 
   def editable?
     local?
   end
 
   private
+
+  def enqueue_initial_fetch
+    FetchAccountDataJob.perform_later(id)
+  end
 
   def set_default_credentials_for_local
     if local?
