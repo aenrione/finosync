@@ -136,6 +136,7 @@ export default function AccountDetailsScreen() {
       await deleteAccount(id.toString());
       console.log("Account deleted, refreshing data");
       await refreshData();
+      router.replace("/(app)/(drawer)/(tabs)/accounts");
     } catch (error) {
       console.error("Failed to delete account:", error);
     } finally {
