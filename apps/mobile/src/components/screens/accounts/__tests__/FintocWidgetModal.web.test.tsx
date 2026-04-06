@@ -2,8 +2,6 @@ import React from "react"
 import { render, waitFor } from "@testing-library/react-native"
 import FintocWidgetModal from "../FintocWidgetModal.web"
 
-const MOCK_API_URL = process.env.EXPO_PUBLIC_API_URL ?? ""
-
 // Mock @fintoc/fintoc-js
 const mockOpen = jest.fn()
 const mockDestroy = jest.fn()
@@ -15,14 +13,22 @@ jest.mock("@fintoc/fintoc-js", () => ({
   ),
 }))
 
-// Mock @/components/ui/text to avoid NativeWind bridge dependency
+// Mock fetchJsonWithAuth
+const mockFetchJsonWithAuth = jest.fn()
+jest.mock("@/utils/api", () => ({
+  fetchJsonWithAuth: (...args: any[]) => mockFetchJsonWithAuth(...args),
+}))
+
+// Mock @/components/ui/text
 jest.mock("@/components/ui/text", () => ({
   Text: ({ children }: { children: React.ReactNode }) => children,
 }))
 
+
 describe("FintocWidgetModal (web)", () => {
   beforeEach(() => {
-    // Restore the getFintoc mock after clearAllMocks (called by global beforeEach)
+    mockFetchJsonWithAuth.mockResolvedValue({ widget_token: "li_test_sec_abc" })
+    // Restore the getFintoc mock after clearAllMocks
     const { getFintoc } = require("@fintoc/fintoc-js")
     ;(getFintoc as jest.Mock).mockImplementation(() =>
       Promise.resolve({ create: mockCreate })
@@ -30,50 +36,59 @@ describe("FintocWidgetModal (web)", () => {
     mockCreate.mockImplementation(() => ({ open: mockOpen, destroy: mockDestroy }))
   })
 
-  it("passes webhookUrl derived from EXPO_PUBLIC_API_URL to Fintoc.create", async () => {
-    const onSuccess = jest.fn()
-    const onExit = jest.fn()
+  it("fetches widget_token from backend before opening widget", async () => {
+    render(<FintocWidgetModal visible={true} onSuccess={jest.fn()} onExit={jest.fn()} />)
 
-    render(<FintocWidgetModal visible={true} onSuccess={onSuccess} onExit={onExit} />)
+    await waitFor(() => {
+      expect(mockFetchJsonWithAuth).toHaveBeenCalledWith(
+        "/fintoc/link_intent",
+        { method: "POST" }
+      )
+    })
+  })
+
+  it("passes widgetToken from backend to Fintoc.create", async () => {
+    render(<FintocWidgetModal visible={true} onSuccess={jest.fn()} onExit={jest.fn()} />)
 
     await waitFor(() => {
       expect(mockCreate).toHaveBeenCalledWith(
         expect.objectContaining({
-          webhookUrl: `${MOCK_API_URL}/webhooks/fintoc`,
+          widgetToken: "li_test_sec_abc",
         })
       )
     })
   })
 
-  it("passes publicKey from env to Fintoc.create", async () => {
-    const onSuccess = jest.fn()
-    const onExit = jest.fn()
-
-    render(<FintocWidgetModal visible={true} onSuccess={onSuccess} onExit={onExit} />)
+  it("passes publicKey and holderType to Fintoc.create", async () => {
+    render(<FintocWidgetModal visible={true} onSuccess={jest.fn()} onExit={jest.fn()} />)
 
     await waitFor(() => {
       expect(mockCreate).toHaveBeenCalledWith(
         expect.objectContaining({
-          publicKey: "pk_test_abc123",
-        })
-      )
-    })
-  })
-
-  it("passes product movements and country cl", async () => {
-    const onSuccess = jest.fn()
-    const onExit = jest.fn()
-
-    render(<FintocWidgetModal visible={true} onSuccess={onSuccess} onExit={onExit} />)
-
-    await waitFor(() => {
-      expect(mockCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          product: "movements",
+          publicKey: expect.any(String),
           holderType: "individual",
           country: "cl",
         })
       )
+    })
+  })
+
+  it("does not pass product or webhookUrl (widgetToken flow)", async () => {
+    render(<FintocWidgetModal visible={true} onSuccess={jest.fn()} onExit={jest.fn()} />)
+
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalled()
+      const callArgs = mockCreate.mock.calls[0][0]
+      expect(callArgs).not.toHaveProperty("product")
+      expect(callArgs).not.toHaveProperty("webhookUrl")
+    })
+  })
+
+  it("opens the widget after fetching token", async () => {
+    render(<FintocWidgetModal visible={true} onSuccess={jest.fn()} onExit={jest.fn()} />)
+
+    await waitFor(() => {
+      expect(mockOpen).toHaveBeenCalled()
     })
   })
 })

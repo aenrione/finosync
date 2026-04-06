@@ -89,6 +89,7 @@ jest.mock("@/components/theme/use-color-scheme", () => ({
   useColorScheme: jest.fn(() => "light"),
 }));
 
+
 // Provide window.location for web-platform tests (component code reads
 // window.location.hostname to decide if it is running on localhost).
 if (typeof window !== "undefined" && !window.location) {

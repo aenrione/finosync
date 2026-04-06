@@ -88,15 +88,33 @@ const NATIVE_ANIMATED_MOCK = {
   removeListeners: jest.fn(),
 };
 
+const KEYBOARD_OBSERVER_MOCK = {
+  addListener: jest.fn(),
+  removeListeners: jest.fn(),
+};
+
+const LINKING_MANAGER_MOCK = {
+  addListener: jest.fn(),
+  removeListeners: jest.fn(),
+  openURL: jest.fn(() => Promise.resolve()),
+  canOpenURL: jest.fn(() => Promise.resolve(false)),
+  openSettings: jest.fn(() => Promise.resolve()),
+  getInitialURL: jest.fn(() => Promise.resolve(null)),
+};
+
 TurboModuleRegistry.get = (name) => {
   if (name === 'PlatformConstants') return PLATFORM_CONSTANTS_MOCK;
   if (name === 'NativeAnimatedTurboModule') return NATIVE_ANIMATED_MOCK;
   if (name === 'NativeAnimatedModule') return NATIVE_ANIMATED_MOCK;
+  if (name === 'KeyboardObserver') return KEYBOARD_OBSERVER_MOCK;
+  if (name === 'LinkingManager') return LINKING_MANAGER_MOCK;
   try { return originalGet(name); } catch { return null; }
 };
 
 const NATIVE_MODULE_MOCKS = {
   PlatformConstants: PLATFORM_CONSTANTS_MOCK,
+  KeyboardObserver: KEYBOARD_OBSERVER_MOCK,
+  LinkingManager: LINKING_MANAGER_MOCK,
   AppState: {
     getConstants: () => ({ initialAppState: 'active' }),
     addEventListener: jest.fn(),
