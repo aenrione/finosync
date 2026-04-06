@@ -5,7 +5,6 @@ class UpdateFintualAccountInformation < PowerTypes::Command.new(:fintual_account
     returns = 0
     @client = Fintual::Client.new(@fintual_account.primary_key, @fintual_account.secret)
     @goals = @client.goals
-    binding.pry
     @goals.each do |goal|
       ActiveRecord::Base.transaction do
         new_goal = FintualGoal.find_or_create_by!(

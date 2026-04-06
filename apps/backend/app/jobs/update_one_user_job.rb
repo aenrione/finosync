@@ -1,6 +1,6 @@
 class UpdateOneUserJob < ApplicationJob
   def perform(user_email)
-    @user = User.find_by(email: user_email)
+    @user = User.find_by(email_address: user_email)
     update_user(@user)
   end
 

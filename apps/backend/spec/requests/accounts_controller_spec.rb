@@ -43,6 +43,18 @@ RSpec.describe AccountsController, type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body).to be_present
       end
+
+      it "enqueues a FetchAccountDataJob for non-local accounts" do
+        expect {
+          post "/accounts", params: valid_params.merge(account_type: "buda", account_name: "My Buda"), headers: auth_headers
+        }.to have_enqueued_job(FetchAccountDataJob)
+      end
+
+      it "does not enqueue FetchAccountDataJob for local accounts" do
+        expect {
+          post "/accounts", params: { account_name: "My Local", account_type: "local" }, headers: auth_headers
+        }.not_to have_enqueued_job(FetchAccountDataJob)
+      end
     end
 
     context "with invalid params" do
