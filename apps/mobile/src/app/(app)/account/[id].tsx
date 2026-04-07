@@ -51,7 +51,7 @@ const getAccountTypeColor = (type: string) => {
 export default function AccountDetailsScreen() {
   const { id } = useLocalSearchParams();
   const text = useTranslation();
-  const { accountsData: accounts, deleteAccount } = useAccounts();
+  const { accountsData: accounts, deleteAccount, refreshData: refreshAccounts } = useAccounts();
   const {
     transactionsData: transactions,
     loading,
@@ -162,6 +162,7 @@ export default function AccountDetailsScreen() {
     try {
       await Promise.all([
         refreshData(),
+        refreshAccounts(),
         fetchJsonWithAuth<AccountDetailData>(
           `/accounts/${id}?time_range=6M`,
         ).then(async (data) => {
@@ -178,7 +179,7 @@ export default function AccountDetailsScreen() {
     } finally {
       setRefreshing(false);
     }
-  }, [accountCacheKey, accountData, id, refreshData]);
+  }, [accountCacheKey, accountData, id, refreshData, refreshAccounts]);
 
   const [syncing, setSyncing] = useState(false);
 
