@@ -21,6 +21,7 @@ export default function TabLayout() {
         name="settings"
         options={{
           headerShown: true,
+          title: "Server Settings",
         }}
       />
       <Stack.Screen

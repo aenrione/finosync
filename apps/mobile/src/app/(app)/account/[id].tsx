@@ -23,6 +23,7 @@ import { useAccounts } from "@/context/accounts.context";
 import { showAmount } from "@/utils/currency";
 import { fetchJsonWithAuth, getErrorMessage } from "@/utils/api";
 import { loadSnapshot, saveSnapshot } from "@/utils/offline-cache";
+import { accountService } from "@/services/accountService";
 import { Text } from "@/components/ui/text";
 import { useStore } from "@/utils/store";
 import Icon from "@/components/ui/icon";
@@ -71,6 +72,7 @@ export default function AccountDetailsScreen() {
     null,
   );
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const accountCacheKey = `account:${id}:6M`;
 
   useEffect(() => {
@@ -178,6 +180,23 @@ export default function AccountDetailsScreen() {
     }
   }, [accountCacheKey, accountData, id, refreshData]);
 
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = useCallback(async () => {
+    if (!id || syncing) return;
+    setSyncing(true);
+    try {
+      await accountService.syncAccount(id.toString());
+      await onRefresh();
+      setToastMessage("Account synced");
+    } catch (error) {
+      setToastMessage(getErrorMessage(error));
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setToastMessage(null), 3000);
+    }
+  }, [id, syncing, onRefresh]);
+
   if (!account) {
     return (
       <SafeAreaView className="flex-1 bg-background">
@@ -221,7 +240,10 @@ export default function AccountDetailsScreen() {
         title={account.account_name}
         variant="back"
         rightActions={[
-          { icon: "Trash2", onPress: () => setShowDeleteAlert(true) },
+          ...(account.account_type !== "local"
+            ? [{ icon: "RefreshCw" as const, onPress: handleSync }]
+            : []),
+          { icon: "Trash2" as const, onPress: () => setShowDeleteAlert(true) },
         ]}
       />
       {/* Always render the component, even if not open */}
@@ -390,6 +412,16 @@ export default function AccountDetailsScreen() {
           />
         </View>
       </ScrollView>
+
+      {toastMessage ? (
+        <View className="absolute bottom-6 left-5 right-5">
+          <View className="bg-foreground rounded-xl px-4 py-3 shadow-lg">
+            <Text className="text-background text-sm text-center">
+              {toastMessage}
+            </Text>
+          </View>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }

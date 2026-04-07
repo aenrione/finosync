@@ -1,5 +1,5 @@
 class AccountsController < ApplicationController
-  before_action :find_account, only: [ :show, :destroy, :charts ]
+  before_action :find_account, only: [ :show, :destroy, :charts, :sync ]
 
   def index
     @accounts = current_user.accounts
@@ -79,6 +79,24 @@ class AccountsController < ApplicationController
     end
   rescue => e
     render json: { error: "Failed to create account: #{e.message}" }, status: :bad_request
+  end
+
+  SYNC_COOLDOWN = 5.minutes
+
+  def sync
+    if @account.local?
+      return render json: { error: "Local accounts cannot be synced" }, status: :unprocessable_entity
+    end
+
+    last_sync = @account.updated_at
+    if last_sync && last_sync > SYNC_COOLDOWN.ago
+      wait = ((last_sync + SYNC_COOLDOWN - Time.current) / 60.0).ceil
+      return render json: { error: "Please wait #{wait} #{"minute".pluralize(wait)} before syncing again" }, status: :too_many_requests
+    end
+
+    FetchAccountDataJob.perform_now(@account.id)
+    @account.reload
+    render_jsonapi @account
   end
 
   def destroy

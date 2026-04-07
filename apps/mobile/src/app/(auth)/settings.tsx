@@ -1,21 +1,24 @@
 import { View, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { Server } from "lucide-react-native"
+import { useRouter } from "expo-router"
 
 import { Button, ButtonText } from "@/components/ui/button"
 import { FormField } from "@/components/ui/form-field"
 import { Text } from "@/components/ui/text"
+import { useStore } from "@/utils/store"
 
 export default function SettingScreen() {
-  const state = { baseUrl: "https://example.com" }
-  const [currentUrl, setUrl] = useState(state.baseUrl || "https://")
+  const storeUrl = useStore((s) => s.url)
+  const setStoreUrl = useStore((s) => s.setUrl)
+  const router = useRouter()
 
-  useEffect(() => {})
+  const [currentUrl, setUrl] = useState(storeUrl || "https://")
 
-  const updateUrl = async () => {
-    // store.dispatch(changeUrl({ url: currentUrl }));
-    // navigation.navigate('SignIn');
+  const updateUrl = () => {
+    setStoreUrl(currentUrl)
+    router.replace("/sign-in")
   }
 
   const isValid = currentUrl.trim().length > 0 && currentUrl !== "https://"

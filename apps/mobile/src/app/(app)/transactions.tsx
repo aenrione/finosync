@@ -4,6 +4,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   TextInput,
+  Platform,
 } from "react-native"
 import Animated, {
   useSharedValue,
@@ -288,9 +289,25 @@ export default function TransactionsScreen() {
       <View className="px-5 pb-2">
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center">
+            {Platform.OS === "web" && (
+              <TouchableOpacity
+                onPress={() => showSwipeToast(-1)}
+                className="mr-2 p-1 rounded-full bg-muted"
+              >
+                <Icon name="ChevronLeft" size={16} className="text-foreground" />
+              </TouchableOpacity>
+            )}
             <Text className="text-sm font-extrabold text-foreground">
               {formatMonthLabel(selectedMonth)}
             </Text>
+            {Platform.OS === "web" && (
+              <TouchableOpacity
+                onPress={() => showSwipeToast(1)}
+                className="ml-2 p-1 rounded-full bg-muted"
+              >
+                <Icon name="ChevronRight" size={16} className="text-foreground" />
+              </TouchableOpacity>
+            )}
             {!isCurrentMonth && (
               <TouchableOpacity
                 onPress={goToToday}
