@@ -10,7 +10,7 @@ class FetchAccountDataJob < ApplicationJob
     when "fintoc"
       UpdateFintocAccountInformation.for(account: account)
     when "fintual"
-      UpdateFintualAccountInformation.for(fintual_account: account)
+      Rails.logger.info("FetchAccountDataJob: Fintual integration is temporarily disabled (API auth change)")
     end
   rescue => e
     Rails.logger.error("FetchAccountDataJob failed for account #{account_id}: #{e.message}")

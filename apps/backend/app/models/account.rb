@@ -38,7 +38,7 @@ class Account < ApplicationRecord
 
   enum :account_type, { local: 0, fintoc: 1, fintual: 2, buda: 3 }
 
-  encrypts :primary_key, deterministic: false
+  encrypts :primary_key, deterministic: false if Rails.env.production?
 
   validates :account_name, presence: true
   validates :primary_key, presence: true, unless: :local?
@@ -72,8 +72,7 @@ class Account < ApplicationRecord
         fintoc_validate
       when "buda"
         buda_validate
-      else
-        ""
+      # fintual: temporarily disabled — Fintual API now requires session-based 2FA auth
       end
     end
   end
@@ -88,9 +87,8 @@ class Account < ApplicationRecord
 
   def buda_validate
     ValidateBudaAccount.for(buda_account: self)
-  rescue Buda::Errors::InvalidApiKeyError
-    errors.add(:secret, "Invalida")
-  rescue Buda::Errors::InvalidLinkTokenError
-    errors.add(:primary_key, "Invalido")
+  rescue BudaApiClient::Error => e
+    errors.add(:base, e.message)
   end
+
 end

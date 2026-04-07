@@ -65,5 +65,9 @@ export const getAccountTypeConfig = (type: AccountType): AccountTypeConfig =>
  */
 export const getAvailableAccountTypes = (): AccountTypeConfig[] => {
   const hasFintocKey = Boolean(process.env.EXPO_PUBLIC_FINTOC_PUBLIC_KEY)
-  return ACCOUNT_TYPES.filter((config) => config.type !== "fintoc" || hasFintocKey)
+  return ACCOUNT_TYPES.filter(
+    (config) =>
+      config.type !== "fintual" &&
+      (config.type !== "fintoc" || hasFintocKey)
+  )
 }
