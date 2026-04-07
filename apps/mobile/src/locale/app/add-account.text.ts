@@ -31,6 +31,16 @@ export const useTranslation = () =>
         connect: "Connect with your bank",
         reconnect: "Reconnect bank",
       },
+      fintual2FA: {
+        title: "Verification",
+        description: "A verification code was sent to your Fintual email.",
+        codeLabel: "Verification Code",
+        codePlaceholder: "Enter 6-digit code",
+        sendCode: "Send Verification Code",
+        verify: "Verify & Connect",
+        resend: "Resend Code",
+        resendIn: "Resend in",
+      },
       types: {
         local: "Local account",
         fintoc: "Bank account",
@@ -66,6 +76,16 @@ export const useTranslation = () =>
         reconnectHint: "Toca abajo para reconectar con otra cuenta",
         connect: "Conectar con tu banco",
         reconnect: "Reconectar banco",
+      },
+      fintual2FA: {
+        title: "Verificación",
+        description: "Se envió un código de verificación a tu email de Fintual.",
+        codeLabel: "Código de verificación",
+        codePlaceholder: "Ingresa el código de 6 dígitos",
+        sendCode: "Enviar código de verificación",
+        verify: "Verificar y conectar",
+        resend: "Reenviar código",
+        resendIn: "Reenviar en",
       },
       types: {
         local: "Cuenta local",

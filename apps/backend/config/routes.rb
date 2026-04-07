@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   resources :accounts do
     member do
       get :charts
+      post :sync
     end
   end
 
@@ -74,6 +75,10 @@ Rails.application.routes.draw do
   # Fintoc bank connection (exchange token flow)
   post "/fintoc/link_intent", to: "fintoc_connections#create_link_intent"
   post "/fintoc/exchange", to: "fintoc_connections#exchange"
+
+  # Fintual connection (2FA flow)
+  post "/fintual/initiate_login", to: "fintual_connections#initiate_login"
+  post "/fintual/finalize_login", to: "fintual_connections#finalize_login"
 
   # Webhooks (unauthenticated — called by external services)
   post "/webhooks/fintoc", to: "webhooks#fintoc"

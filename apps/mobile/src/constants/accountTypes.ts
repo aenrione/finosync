@@ -9,6 +9,7 @@ export type AccountTypeConfig = {
   requiresLink: boolean
   requiresName: boolean
   usesWidget: boolean
+  uses2FA: boolean
   icon?: string
 }
 
@@ -22,6 +23,7 @@ export const ACCOUNT_TYPES: AccountTypeConfig[] = [
     requiresLink: false,
     requiresName: true,
     usesWidget: false,
+    uses2FA: false,
   },
   {
     type: "fintoc",
@@ -32,6 +34,7 @@ export const ACCOUNT_TYPES: AccountTypeConfig[] = [
     requiresLink: false,
     requiresName: true,
     usesWidget: true,
+    uses2FA: false,
   },
   {
     type: "fintual",
@@ -42,6 +45,7 @@ export const ACCOUNT_TYPES: AccountTypeConfig[] = [
     requiresLink: false,
     requiresName: true,
     usesWidget: false,
+    uses2FA: true,
   },
   {
     type: "buda",
@@ -52,6 +56,7 @@ export const ACCOUNT_TYPES: AccountTypeConfig[] = [
     requiresLink: false,
     requiresName: true,
     usesWidget: false,
+    uses2FA: false,
   },
 ]
 
@@ -66,8 +71,6 @@ export const getAccountTypeConfig = (type: AccountType): AccountTypeConfig =>
 export const getAvailableAccountTypes = (): AccountTypeConfig[] => {
   const hasFintocKey = Boolean(process.env.EXPO_PUBLIC_FINTOC_PUBLIC_KEY)
   return ACCOUNT_TYPES.filter(
-    (config) =>
-      config.type !== "fintual" &&
-      (config.type !== "fintoc" || hasFintocKey)
+    (config) => config.type !== "fintoc" || hasFintocKey
   )
 }

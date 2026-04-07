@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_09_215740) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_07_120032) do
   create_table "account_assets", force: :cascade do |t|
     t.string "name", null: false
     t.date "creation_date"
@@ -39,6 +39,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_09_215740) do
     t.decimal "expense", precision: 14, scale: 2, default: "0.0"
     t.decimal "investments_return", precision: 14, scale: 2, default: "0.0"
     t.integer "account_type", default: 0, null: false
+    t.string "session_token"
+    t.datetime "session_expires_at"
     t.index ["user_id"], name: "index_accounts_on_user_id"
   end
 

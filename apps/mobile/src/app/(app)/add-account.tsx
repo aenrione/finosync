@@ -1,9 +1,9 @@
 import { ScrollView, Alert, KeyboardAvoidingView, Platform, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "@/locale/app/add-account.text"
-import React, { useState } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "expo-router"
-import { Wallet, Key, ShieldCheck, Mail, Link2 } from "lucide-react-native"
+import { Wallet, Key, ShieldCheck, Mail, Link2, KeyRound } from "lucide-react-native"
 
 import { getAvailableAccountTypes, getAccountTypeConfig } from "@/constants/accountTypes"
 import FintocWidgetModal from "@/components/screens/accounts/FintocWidgetModal"
@@ -11,6 +11,7 @@ import CurrenciesSelect from "@/components/search-selects/currencies"
 import { AccountType, AccountFormData } from "@/types/account"
 import { Button, ButtonText } from "@/components/ui/button"
 import { useAccounts } from "@/context/accounts.context"
+import { accountService } from "@/services/accountService"
 import { FormField } from "@/components/ui/form-field"
 import { FormSelect } from "@/components/ui/form-select"
 import { FormSection } from "@/components/ui/form-section"
@@ -30,6 +31,10 @@ const AddAccount = () => {
   const [currency, setCurrency] = useState<{ code: string; name: string; symbol: string } | string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showWidget, setShowWidget] = useState(false)
+  const [twoFAStep, setTwoFAStep] = useState<"idle" | "code">("idle")
+  const [verificationCode, setVerificationCode] = useState("")
+  const [resendCountdown, setResendCountdown] = useState(0)
+  const resendTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const text = useTranslation()
   const router = useRouter()
@@ -37,12 +42,51 @@ const AddAccount = () => {
 
   const accountConfig = getAccountTypeConfig(selectedType)
 
+  const getButtonLabel = () => {
+    if (loading) return text.creating
+    if (accountConfig.uses2FA) {
+      return twoFAStep === "code" ? text.fintual2FA.verify : text.fintual2FA.sendCode
+    }
+    return text.save
+  }
+
+  const startResendCountdown = useCallback(() => {
+    setResendCountdown(60)
+    if (resendTimer.current) clearInterval(resendTimer.current)
+    resendTimer.current = setInterval(() => {
+      setResendCountdown((prev) => {
+        if (prev <= 1) {
+          if (resendTimer.current) clearInterval(resendTimer.current)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (resendTimer.current) clearInterval(resendTimer.current)
+    }
+  }, [])
+
+  const handleResendCode = async () => {
+    try {
+      await accountService.fintualInitiateLogin(email.trim(), secret.trim())
+      startResendCountdown()
+    } catch (error) {
+      Alert.alert(text.error, error instanceof Error ? error.message : text.createError)
+    }
+  }
+
   const isValid = () => {
     if (!accountName.trim()) return false
     if (accountConfig.usesWidget) return Boolean(primaryKey.trim())
+    if (accountConfig.uses2FA && twoFAStep === "code") {
+      return Boolean(verificationCode.trim())
+    }
     if (accountConfig.requiresCredentials) {
       if (accountConfig.requiresEmail) {
-        // Fintual: email is the primary credential, no separate API key
         if (!email.trim() || !secret.trim()) return false
       } else {
         if (!primaryKey.trim() || !secret.trim()) return false
@@ -52,7 +96,9 @@ const AddAccount = () => {
   }
 
   const handleSave = async (overridePrimaryKey?: string) => {
-    // For Fintual, email is stored as primary_key (no separate email column in backend)
+    if (accountConfig.uses2FA) {
+      return handleFintual2FA()
+    }
     const key = overridePrimaryKey ?? (accountConfig.requiresEmail ? email : primaryKey)
     setLoading(true)
     try {
@@ -69,6 +115,37 @@ const AddAccount = () => {
       Alert.alert(text.error, error instanceof Error ? error.message : text.createError)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleFintual2FA = async () => {
+    if (twoFAStep === "idle") {
+      setLoading(true)
+      try {
+        await accountService.fintualInitiateLogin(email.trim(), secret.trim())
+        setTwoFAStep("code")
+        startResendCountdown()
+      } catch (error) {
+        Alert.alert(text.error, error instanceof Error ? error.message : text.createError)
+      } finally {
+        setLoading(false)
+      }
+    } else {
+      setLoading(true)
+      try {
+        await accountService.fintualFinalizeLogin(
+          email.trim(),
+          secret.trim(),
+          verificationCode.trim(),
+          accountName.trim() || "Fintual"
+        )
+        await refreshData()
+        router.back()
+      } catch (error) {
+        Alert.alert(text.error, error instanceof Error ? error.message : text.createError)
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -251,6 +328,37 @@ const AddAccount = () => {
             </FormSection>
           )}
 
+          {/* 2FA Verification Code - Fintual */}
+          {accountConfig.uses2FA && twoFAStep === "code" && (
+            <FormSection
+              title={text.fintual2FA.title}
+              description={text.fintual2FA.description}
+            >
+              <FormField
+                label={text.fintual2FA.codeLabel}
+                value={verificationCode}
+                placeholder={text.fintual2FA.codePlaceholder}
+                onChangeText={setVerificationCode}
+                keyboardType="number-pad"
+                icon={KeyRound}
+                required
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={resendCountdown > 0}
+                onPress={handleResendCode}
+                className="self-center"
+              >
+                <ButtonText variant="ghost" className="text-sm">
+                  {resendCountdown > 0
+                    ? `${text.fintual2FA.resendIn} ${resendCountdown}s`
+                    : text.fintual2FA.resend}
+                </ButtonText>
+              </Button>
+            </FormSection>
+          )}
+
           <FintocWidgetModal
             visible={showWidget}
             onSuccess={handleWidgetSuccess}
@@ -270,9 +378,7 @@ const AddAccount = () => {
             className="w-full"
             size="lg"
           >
-            <ButtonText size="lg">
-              {loading ? text.creating : text.save}
-            </ButtonText>
+            <ButtonText size="lg">{getButtonLabel()}</ButtonText>
           </Button>
         </View>
       )}

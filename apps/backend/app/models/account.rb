@@ -12,6 +12,8 @@
 #  investments_return :decimal(14, 2)   default(0.0)
 #  primary_key        :string           not null
 #  secret             :string
+#  session_expires_at :datetime
+#  session_token      :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  user_id            :integer          not null
@@ -38,11 +40,14 @@ class Account < ApplicationRecord
 
   enum :account_type, { local: 0, fintoc: 1, fintual: 2, buda: 3 }
 
-  encrypts :primary_key, deterministic: false if Rails.env.production?
+  if Rails.env.production?
+    encrypts :primary_key, deterministic: false
+    encrypts :session_token, deterministic: false
+  end
 
   validates :account_name, presence: true
   validates :primary_key, presence: true, unless: :local?
-  validates :secret, presence: true, unless: -> { local? || fintoc? }
+  validates :secret, presence: true, unless: -> { local? || fintoc? || fintual? }
   validate :validate_api, on: :create
 
   before_create :set_default_credentials_for_local
@@ -72,7 +77,7 @@ class Account < ApplicationRecord
         fintoc_validate
       when "buda"
         buda_validate
-      # fintual: temporarily disabled — Fintual API now requires session-based 2FA auth
+      # fintual: validated via 2FA flow in FintualConnectionsController
       end
     end
   end
