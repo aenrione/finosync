@@ -1,5 +1,10 @@
 # FinoSync
 
+> ⚠️ **Vibecoded with AI.** This monorepo is a personal experiment in
+> AI-assisted development — most of the code was generated and iterated on
+> with LLM agents (Claude Code, Codex, and friends). Treat it as a playground,
+> not production-grade software.
+
 Personal finance management application with multi-account support, transaction tracking, budgeting, and financial insights.
 
 ## Features
