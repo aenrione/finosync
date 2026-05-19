@@ -1,6 +1,19 @@
 class UpdateFintocAccountInformation < PowerTypes::Command.new(:account)
   require "fintoc"
 
+  # Errors we treat as transient upstream failures — log and skip the
+  # affected sub-account (or the whole link) instead of crashing the
+  # parent job and rolling back unrelated users' updates.
+  TRANSIENT_FINTOC_ERRORS = [
+    JSON::ParserError,
+    Net::OpenTimeout,
+    Net::ReadTimeout,
+    SocketError,
+    Errno::ECONNRESET,
+    Errno::ECONNREFUSED,
+    Errno::ETIMEDOUT,
+  ].freeze
+
   def perform
     return unless @account.fintoc?
 
@@ -8,19 +21,40 @@ class UpdateFintocAccountInformation < PowerTypes::Command.new(:account)
     @income = 0
     @expense = 0
     @client = Fintoc::Client.new(ENV.fetch("FINTOC_SECRET_KEY"))
-    @link = @client.get_link(@account.primary_key)
+
+    begin
+      @link = @client.get_link(@account.primary_key)
+    rescue *TRANSIENT_FINTOC_ERRORS => e
+      log_fintoc_error(e, scope: "get_link")
+      return
+    end
 
     @link.accounts.each do |fintoc_acc|
       ActiveRecord::Base.transaction do
         sync_transactions_from_fintoc_account(fintoc_acc)
         update_balance_from_fintoc_account(fintoc_acc)
       end
+    rescue *TRANSIENT_FINTOC_ERRORS => e
+      log_fintoc_error(e, scope: "fintoc_sub_account", fintoc_account_id: fintoc_acc.id)
+      next
     end
 
     @account.balance = @balance
     @account.income = @income
     @account.expense = @expense
     @account.save!
+  end
+
+  def log_fintoc_error(error, scope:, **context)
+    payload = {
+      command: "UpdateFintocAccountInformation",
+      scope: scope,
+      account_id: @account.id,
+      error_class: error.class.name,
+      error_message: error.message.to_s[0, 200],
+      **context,
+    }
+    Rails.logger.error(payload.to_json)
   end
 
   def update_balance_from_fintoc_account(fintoc_acc)
