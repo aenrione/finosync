@@ -47,6 +47,7 @@ type TransactionFormData = {
   account_id: number;
   transaction_category_id?: number;
   comment?: string;
+  ignore?: boolean;
 };
 
 type PaginationMeta = {

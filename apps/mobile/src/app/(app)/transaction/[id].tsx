@@ -14,8 +14,11 @@ import Icon from "@/components/ui/icon";
 
 export default function TransactionDetailsScreen() {
   const { id } = useLocalSearchParams();
-  const { transactionsData: transactions, deleteTransaction } =
-    useTransactions();
+  const {
+    transactionsData: transactions,
+    deleteTransaction,
+    updateTransaction,
+  } = useTransactions();
   const { categoriesData: categories } = useCategories();
   const { accountsData: accounts } = useAccounts();
   const isVisible = useStore((state) => state.isVisible);
@@ -109,14 +112,6 @@ export default function TransactionDetailsScreen() {
   };
 
   const handleEditTransaction = () => {
-    if (!account?.editable) {
-      Alert.alert(
-        "Read-only transaction",
-        "Only manual transactions can be edited right now.",
-      );
-      return;
-    }
-
     setCurrentTransaction(transaction);
   };
 
@@ -157,8 +152,17 @@ export default function TransactionDetailsScreen() {
         { text: "Cancel", style: "cancel" },
         {
           text: "Confirm",
-          onPress: () => {
-            // Toggle ignore logic
+          onPress: async () => {
+            try {
+              await updateTransaction(transaction.id, { ignore: !isIgnored });
+            } catch (error) {
+              Alert.alert(
+                "Update failed",
+                error instanceof Error
+                  ? error.message
+                  : "Could not update transaction.",
+              );
+            }
           },
         },
       ],
@@ -395,15 +399,17 @@ export default function TransactionDetailsScreen() {
         {/* Action Buttons */}
         <View className="px-5 mt-4">
           <View className="flex-row gap-2.5">
-            <TouchableOpacity
-              className="flex-1 bg-card border border-border rounded-2xl py-3.5 px-3 items-center shadow-sm"
-              onPress={handleEditTransaction}
-            >
-              <View className="w-10 h-10 rounded-xl bg-primary/10 justify-center items-center mb-2">
-                <Icon name="Pencil" className="text-primary" size={18} />
-              </View>
-              <Text className="text-sm font-bold text-foreground">Edit</Text>
-            </TouchableOpacity>
+            {account?.editable && (
+              <TouchableOpacity
+                className="flex-1 bg-card border border-border rounded-2xl py-3.5 px-3 items-center shadow-sm"
+                onPress={handleEditTransaction}
+              >
+                <View className="w-10 h-10 rounded-xl bg-primary/10 justify-center items-center mb-2">
+                  <Icon name="Pencil" className="text-primary" size={18} />
+                </View>
+                <Text className="text-sm font-bold text-foreground">Edit</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               className="flex-1 bg-card border border-border rounded-2xl py-3.5 px-3 items-center shadow-sm"
@@ -421,15 +427,17 @@ export default function TransactionDetailsScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              className="flex-1 bg-card border border-border rounded-2xl py-3.5 px-3 items-center shadow-sm"
-              onPress={handleDeleteTransaction}
-            >
-              <View className="w-10 h-10 rounded-xl bg-expense/10 justify-center items-center mb-2">
-                <Icon name="Trash2" className="text-destructive" size={18} />
-              </View>
-              <Text className="text-sm font-bold text-foreground">Delete</Text>
-            </TouchableOpacity>
+            {account?.editable && (
+              <TouchableOpacity
+                className="flex-1 bg-card border border-border rounded-2xl py-3.5 px-3 items-center shadow-sm"
+                onPress={handleDeleteTransaction}
+              >
+                <View className="w-10 h-10 rounded-xl bg-expense/10 justify-center items-center mb-2">
+                  <Icon name="Trash2" className="text-destructive" size={18} />
+                </View>
+                <Text className="text-sm font-bold text-foreground">Delete</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
