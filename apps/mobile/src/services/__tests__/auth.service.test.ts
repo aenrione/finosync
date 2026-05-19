@@ -1,34 +1,48 @@
 import { login, checkSession } from "../auth.service"
 import { useStore } from "@/utils/store"
 
-// Mock session-store
 jest.mock("@/utils/store/session-store", () => ({
   getToken: jest.fn(),
   setToken: jest.fn(),
   deleteToken: jest.fn(),
 }))
 
+jest.mock("@/utils/api", () => ({
+  markLoginTimestamp: jest.fn(),
+}))
+
 const { getToken, setToken } = require("@/utils/store/session-store")
+
+// Build a fetch mock that returns different bodies based on the request URL.
+const fetchByUrl = (mapping: Record<string, any>) =>
+  jest.fn(async (url: string) => {
+    const key = Object.keys(mapping).find((k) => url.endsWith(k))
+    if (!key) throw new Error(`Unexpected fetch URL: ${url}`)
+    return mapping[key]
+  })
 
 describe("login", () => {
   const mockSetUser = jest.fn()
+  const mockSetBaseCurrency = jest.fn()
   const mockRouter = { push: jest.fn(), replace: jest.fn(), navigate: jest.fn() }
 
   beforeEach(() => {
     useStore.setState({
       url: "http://localhost:2999",
       setUser: mockSetUser,
+      setBaseCurrency: mockSetBaseCurrency,
       router: mockRouter as any,
     } as any)
-    global.fetch = jest.fn()
   })
 
   test("given valid credentials, stores token, sets user, and navigates to dashboard", async () => {
-    const mockUser = { id: 1, name: "Test User" }
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => ({ token: "new-token", user: mockUser }),
-    })
+    const mockUser = { id: 1, name: "Test User", onboarding_completed: true }
+    // After login stores the token, checkSession reads it back via getToken.
+    getToken.mockResolvedValue("new-token")
+    global.fetch = fetchByUrl({
+      "/session": { ok: true, json: async () => ({ token: "new-token" }) },
+      "/user": { ok: true, json: async () => mockUser },
+    }) as any
 
     const result = await login("test@email.com", "password123")
 
@@ -46,11 +60,25 @@ describe("login", () => {
     expect(result).toEqual({ success: true })
   })
 
+  test("given a user who hasn't completed onboarding, redirects to welcome", async () => {
+    const mockUser = { id: 1, name: "Newbie", onboarding_completed: false }
+    getToken.mockResolvedValue("new-token")
+    global.fetch = fetchByUrl({
+      "/session": { ok: true, json: async () => ({ token: "new-token" }) },
+      "/user": { ok: true, json: async () => mockUser },
+    }) as any
+
+    await login("test@email.com", "password123")
+
+    expect(mockRouter.replace).toHaveBeenCalledWith("/(app)/(onboarding)/welcome")
+    expect(mockRouter.push).not.toHaveBeenCalled()
+  })
+
   test("given invalid credentials (non-ok response), returns failure", async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValue({
+    global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       json: async () => ({ error: "Invalid" }),
-    })
+    }) as any
 
     const result = await login("bad@email.com", "wrong")
 
@@ -60,7 +88,7 @@ describe("login", () => {
   })
 
   test("given network error, returns failure with error message", async () => {
-    ;(global.fetch as jest.Mock).mockRejectedValue(new Error("Network error"))
+    global.fetch = jest.fn().mockRejectedValue(new Error("Network error")) as any
 
     const result = await login("test@email.com", "password")
 
@@ -79,7 +107,7 @@ describe("checkSession", () => {
       setUser: mockSetUser,
       setBaseCurrency: mockSetBaseCurrency,
     } as any)
-    global.fetch = jest.fn()
+    global.fetch = jest.fn() as any
   })
 
   test("given no stored token, returns null without making API call", async () => {
